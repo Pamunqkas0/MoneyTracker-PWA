@@ -114,17 +114,20 @@ export async function POST(req: Request) {
     if (text === "/help" || text === "/start") {
       const helpText = 
         `💡 *Panduan Penggunaan MoneyTracker Bot*\n\n` +
-        `Anda bisa mencatat transaksi dengan format sederhana berikut:\n\n` +
-        `💸 *Catat Pengeluaran (Expense)*\n` +
-        `Format: \`[nominal] [nama_barang]\`\n` +
-        `Contoh: \`25000 kopi susu hangat\`\n\n` +
-        `💰 *Catat Pemasukan (Income)*\n` +
-        `Format: \`+[nominal] [nama_sumber]\`\n` +
-        `Contoh: \`+500000 bonus project\`\n\n` +
-        `✍️ *Catatan*:\n` +
-        `- Penggunaan titik/koma pada angka diperbolehkan (misal: \`25.000\` atau \`25,000\`).\n` +
-        `- Transaksi akan otomatis dicatat ke rekening default (biasanya "Uang Tunai" atau rekening pertama Anda).\n` +
-        `- Kategori transaksi akan otomatis masuk ke kategori "Lainnya" (dapat Anda ganti sewaktu-waktu di web dashboard).`;
+        `Anda bisa mencatat transaksi dengan format dasar:\n` +
+        `• *Pengeluaran*: \`[nominal] [keterangan]\` -> \`25000 kopi\`\n` +
+        `• *Pemasukan*: \`+[nominal] [keterangan]\` -> \`+500000 bonus\`\n\n` +
+        `⚡ *Fitur Efisien (Tag Rekening & Kategori)*:\n` +
+        `Anda bisa menentukan Rekening menggunakan tag *@* dan Kategori menggunakan tag *#* secara langsung di chat!\n\n` +
+        `📌 *Format Lanjutan*:\n` +
+        `\`[nominal] [keterangan] @[nama_rekening] #[nama_kategori]\`\n\n` +
+        `✍️ *Contoh Penggunaan*:\n` +
+        `• \`25000 Nasi Padang @bca #makanan\`\n` +
+        `• \`12000 bayar parkir @cash #transportasi\`\n` +
+        `• \`+1500000 cashback gajian @gopay #freelance\`\n\n` +
+        `💡 *Catatan*:\n` +
+        `- Nama rekening/kategori tidak harus ditulis lengkap, cukup kata kunci saja (misal: \`@bca\` untuk BCA Xpresi, \`#makan\` untuk Makanan).\n` +
+        `- Jika tag *@* atau *#* dilewatkan, bot otomatis menggunakan rekening default Anda (misal: Uang Tunai) dan kategori "Lainnya".`;
       await sendTelegramMessage(chatId, helpText);
       return NextResponse.json({ ok: true });
     }
@@ -149,7 +152,7 @@ export async function POST(req: Request) {
     // Regex parser: 
     // Group 1: Tanda + opsional (menandakan pemasukan)
     // Group 2: Angka nominal (bisa menggunakan pemisah titik/koma)
-    // Group 3: Nama barang/keterangan transaksi
+    // Group 3: Sisa teks (keterangan + tag)
     const txRegex = /^(\+)?([\d.,]+)\s+(.+)$/;
     const match = text.match(txRegex);
 
@@ -164,16 +167,33 @@ export async function POST(req: Request) {
     const isIncome = !!match[1];
     const amountRaw = match[2].replace(/[.,]/g, ""); // Hapus titik dan koma pembatas ribuan
     const amount = parseFloat(amountRaw);
-    const name = match[3].trim();
+    const rawRest = match[3].trim();
     const type = isIncome ? "income" : "expense";
-    const category = "other"; // Default: Lainnya
 
     if (isNaN(amount) || amount <= 0) {
       await sendTelegramMessage(chatId, "❌ Nominal transaksi harus berupa angka positif yang valid.");
       return NextResponse.json({ ok: true });
     }
 
-    // 1. Ambil rekening bank milik user (default gunakan cash/rekening pertama)
+    // Ekstrak tag rekening (@nama) dan kategori (#kategori)
+    const accountTagMatch = rawRest.match(/@(\S+)/);
+    const accountTag = accountTagMatch ? accountTagMatch[1].toLowerCase() : null;
+
+    const categoryTagMatch = rawRest.match(/#(\S+)/);
+    const categoryTag = categoryTagMatch ? categoryTagMatch[1].toLowerCase() : null;
+
+    // Bersihkan keterangan dari tag @ dan #
+    let cleanName = rawRest
+      .replace(/@\S+/g, "")
+      .replace(/#\S+/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!cleanName) {
+      cleanName = "Transaksi via Telegram";
+    }
+
+    // 1. Ambil rekening bank milik user
     const { data: accounts, error: accountError } = await supabaseAdmin
       .from("bank_accounts")
       .select("id, name, balance")
@@ -188,28 +208,59 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    // Pilih rekening "cash" atau "tunai" jika ada, jika tidak gunakan yang pertama
+    // Pilih rekening default (cash/tunai)
     const defaultAccount = accounts.find(acc => 
       acc.name.toLowerCase().includes("cash") || 
       acc.name.toLowerCase().includes("tunai") ||
       acc.name.toLowerCase().includes("dompet")
     ) || accounts[0];
 
+    let selectedAccount = defaultAccount;
+    if (accountTag) {
+      const matchedAcc = accounts.find(acc => 
+        acc.name.toLowerCase().includes(accountTag)
+      );
+      if (matchedAcc) {
+        selectedAccount = matchedAcc;
+      }
+    }
+
+    // 2. Ambil kategori milik user
+    const { data: userCategories } = await supabaseAdmin
+      .from("categories")
+      .select("slug, name")
+      .eq("user_id", profile.id)
+      .eq("type", type);
+
+    let selectedCategory = "other"; // Default: Lainnya
+    let selectedCategoryName = "Lainnya";
+
+    if (categoryTag && userCategories) {
+      const matchedCat = userCategories.find(cat => 
+        cat.slug.toLowerCase() === categoryTag || 
+        cat.name.toLowerCase().includes(categoryTag)
+      );
+      if (matchedCat) {
+        selectedCategory = matchedCat.slug;
+        selectedCategoryName = matchedCat.name;
+      }
+    }
+
     const transactionId = crypto.randomUUID();
     const dateToday = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-    // 2. Simpan Transaksi
+    // 3. Simpan Transaksi
     const { error: insertTxError } = await supabaseAdmin
       .from("transactions")
       .insert({
         id: transactionId,
         user_id: profile.id,
-        name: name,
+        name: cleanName,
         amount: amount,
         type: type,
-        category: category,
+        category: selectedCategory,
         date: dateToday,
-        bank_account_id: defaultAccount.id,
+        bank_account_id: selectedAccount.id,
         notes: "Dicatat otomatis via Telegram Bot",
       });
 
@@ -219,9 +270,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    // 3. Update Saldo Rekening (applyAccountDelta)
+    // 4. Update Saldo Rekening (applyAccountDelta)
     const delta = type === "income" ? amount : -amount;
-    const newBalance = Number(defaultAccount.balance) + delta;
+    const newBalance = Number(selectedAccount.balance) + delta;
 
     const { error: updateAccError } = await supabaseAdmin
       .from("bank_accounts")
@@ -229,20 +280,19 @@ export async function POST(req: Request) {
         balance: newBalance,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", defaultAccount.id);
+      .eq("id", selectedAccount.id);
 
     if (updateAccError) {
       console.error("Error updating account balance:", updateAccError);
-      // Tetap lanjutkan karena transaksi sudah berhasil diinsert
     }
 
-    // 4. Update Budget spent jika tipe pengeluaran (applyBudgetDelta)
+    // 5. Update Budget spent jika tipe pengeluaran (applyBudgetDelta)
     if (type === "expense") {
       const { data: budget } = await supabaseAdmin
         .from("budget_items")
         .select("id, spent")
         .eq("user_id", profile.id)
-        .eq("category", category)
+        .eq("category", selectedCategory)
         .maybeSingle();
 
       if (budget) {
@@ -267,9 +317,10 @@ export async function POST(req: Request) {
       chatId,
       `✅ *Transaksi Berhasil Dicatat!*\n\n` +
       `📌 *Jenis*: ${typeEmoji}\n` +
-      `📝 *Keterangan*: ${name}\n` +
+      `📝 *Keterangan*: ${cleanName}\n` +
+      `🏷️ *Kategori*: ${selectedCategoryName}\n` +
       `💵 *Nominal*: *${formattedAmount}*\n` +
-      `💳 *Rekening*: ${defaultAccount.name}\n\n` +
+      `💳 *Rekening*: ${selectedAccount.name}\n\n` +
       `_Catatan berhasil disimpan ke dalam MoneyTracker Anda._`
     );
 
