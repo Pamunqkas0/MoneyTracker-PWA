@@ -27,6 +27,7 @@ import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
 import { CategorySettingsCard } from "@/components/dashboard/category-settings-card";
 import { ThemeSettingsCard } from "@/components/dashboard/theme-settings-card";
 import { AppLockSettingsCard } from "@/components/dashboard/app-lock-settings-card";
+import { TelegramSettingsCard } from "@/components/dashboard/telegram-settings-card";
 import type { CategoryRow } from "@/lib/supabase/types";
 
 interface ProfileClientProps {
@@ -173,6 +174,8 @@ export function ProfileClient({ stats, user, categories }: ProfileClientProps) {
         </div>
 
         <CategorySettingsCard categories={categories} />
+
+        <TelegramSettingsCard />
 
         <AppLockSettingsCard />
         <PasskeySettingsCard />

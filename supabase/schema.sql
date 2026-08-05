@@ -7,11 +7,14 @@ create extension if not exists "pgcrypto";
 
 -- ── Profiles ─────────────────────────────────────────────────────────────
 create table if not exists public.profiles (
-  id         uuid primary key references auth.users(id) on delete cascade,
-  full_name  text,
-  email      text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  id                          uuid primary key references auth.users(id) on delete cascade,
+  full_name                   text,
+  email                       text,
+  telegram_chat_id            text unique,
+  telegram_pairing_code       text unique,
+  telegram_pairing_expires_at timestamptz,
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
 );
 
 -- ── Bank Accounts ────────────────────────────────────────────────────────
@@ -113,6 +116,9 @@ create table if not exists public.upcoming_bills (
 );
 
 -- Existing-database migration helpers. These are no-ops on a fresh database.
+alter table public.profiles add column if not exists telegram_chat_id text unique;
+alter table public.profiles add column if not exists telegram_pairing_code text unique;
+alter table public.profiles add column if not exists telegram_pairing_expires_at timestamptz;
 alter table public.bank_accounts add column if not exists user_id uuid references auth.users(id) on delete cascade;
 alter table public.transactions add column if not exists user_id uuid references auth.users(id) on delete cascade;
 alter table public.transactions add column if not exists transfer_account_id text;
