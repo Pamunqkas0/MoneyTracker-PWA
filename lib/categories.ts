@@ -58,9 +58,16 @@ export function getFallbackCategoryMeta(
     };
   }
 
+  const formattedName = slug
+    ? slug
+        .split(/[-_]+/)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ")
+    : "Lainnya";
+
   return {
-    slug,
-    name: slug,
+    slug: slug || "other",
+    name: formattedName,
     type: type || "expense",
     emoji: "🏷️",
     color: "#94a3b8",

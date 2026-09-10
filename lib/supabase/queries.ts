@@ -144,29 +144,39 @@ export async function getAvailableTransactionCategories(): Promise<AvailableTran
   const incomeCategories: CategoryOption[] = [];
   const expenseCategories: CategoryOption[] = [];
 
-  const addCategory = (category: CategoryOption) => {
+  const addCategory = (category: CategoryOption, isSelectable = true) => {
     const normalized = normalizeCategoryOption(category);
     const existing = bySlug.get(normalized.slug);
-    if (existing) return existing;
+    if (!existing) {
+      bySlug.set(normalized.slug, normalized);
+    }
 
-    bySlug.set(normalized.slug, normalized);
-    if (normalized.type === "income") incomeCategories.push(normalized);
-    if (normalized.type === "expense") expenseCategories.push(normalized);
-    return normalized;
+    if (isSelectable) {
+      if (normalized.type === "income" && !incomeCategories.some((item) => item.slug === normalized.slug)) {
+        incomeCategories.push(normalized);
+      }
+      if (normalized.type === "expense" && !expenseCategories.some((item) => item.slug === normalized.slug)) {
+        expenseCategories.push(normalized);
+      }
+    }
+    return existing ?? normalized;
   };
 
   if (!categoriesResult.error) {
     const categories = (categoriesResult.data ?? []) as CategoryRow[];
     categories.forEach((category) => {
-      addCategory({
-        id: category.id,
-        slug: category.slug,
-        name: category.name,
-        type: category.type,
-        emoji: category.emoji,
-        color: category.color,
-        is_system: category.is_system,
-      });
+      addCategory(
+        {
+          id: category.id,
+          slug: category.slug,
+          name: category.name,
+          type: category.type,
+          emoji: category.emoji,
+          color: category.color,
+          is_system: category.is_system,
+        },
+        true
+      );
     });
   } else {
     console.error("[getAvailableTransactionCategories.categories]", categoriesResult.error.message);
@@ -178,7 +188,7 @@ export async function getAvailableTransactionCategories(): Promise<AvailableTran
     transactions.forEach((tx) => {
       if (!tx.category) return;
       if ((tx.type === "income" || tx.type === "expense") && !bySlug.has(tx.category)) {
-        addCategory(createSyntheticCategory(tx.category, tx.type));
+        addCategory(createSyntheticCategory(tx.category, tx.type), false);
       }
     });
   } else {
@@ -189,7 +199,7 @@ export async function getAvailableTransactionCategories(): Promise<AvailableTran
     const budgetCategories = (budgetResult.data ?? []) as Pick<BudgetItemRow, "category">[];
     budgetCategories.forEach((item) => {
       if (item.category && !bySlug.has(item.category)) {
-        addCategory(createSyntheticCategory(item.category, "expense"));
+        addCategory(createSyntheticCategory(item.category, "expense"), false);
       }
     });
   } else {
@@ -508,50 +518,47 @@ export async function getCategoryExpenses(month?: number, year?: number) {
   const supabase = await createClient();
   const { start, end } = getMonthBounds(month, year);
 
-  const { data, error } = (await supabase
-    .from("transactions")
-    .select("amount, category")
-    .eq("type", "expense")
-    .gte("date", start)
-    .lte("date", end)) as { data: { amount: number; category: string }[] | null, error: any };
+  const [txResult, catResult] = await Promise.all([
+    supabase
+      .from("transactions")
+      .select("amount, category")
+      .eq("type", "expense")
+      .gte("date", start)
+      .lte("date", end),
+    supabase.from("categories").select("slug, name, color"),
+  ]);
 
-  if (error || !data) return [];
+  if (txResult.error || !txResult.data) return [];
 
-  const CATEGORY_META: Record<string, { label: string; color: string }> = {
-    food: { label: "Makanan", color: "#10b981" },
-    transport: { label: "Transportasi", color: "#6366f1" },
-    shopping: { label: "Belanja", color: "#f59e0b" },
-    bills: { label: "Tagihan", color: "#3b82f6" },
-    entertainment: { label: "Hiburan", color: "#ec4899" },
-    health: { label: "Kesehatan", color: "#14b8a6" },
-    relationship: { label: "Pacaran / Pasangan", color: "#f43f5e" },
-    hobby: { label: "Hobi & Kreatif", color: "#a855f7" },
-    groceries: { label: "Belanja Bulanan", color: "#22c55e" },
-    coffee: { label: "Kopi & Nongkrong", color: "#78350f" },
-    education: { label: "Edukasi & Buku", color: "#4f46e5" },
-    charity: { label: "Donasi & Zakat", color: "#f97316" },
-    selfcare: { label: "Perawatan Diri", color: "#df168a" },
-    emergency: { label: "Dana Darurat", color: "#ef4444" },
-    saving: { label: "Tabungan", color: "#db2777" },
-    other: { label: "Lainnya", color: "#94a3b8" },
-  };
+  const transactions = txResult.data as unknown as { amount: number; category: string }[];
+  const categories = (catResult.data ?? []) as unknown as { slug: string; name: string; color: string }[];
 
-  const totalExpense = data.reduce((sum, tx) => sum + tx.amount, 0);
+  const categoryMap = new Map<string, { label: string; color: string }>();
+  categories.forEach((c) => {
+    categoryMap.set(c.slug, { label: c.name, color: c.color });
+  });
+
+  const totalExpense = transactions.reduce((sum, tx) => sum + tx.amount, 0);
   if (totalExpense === 0) return [];
 
   const map = new Map<string, number>();
-  data.forEach(tx => {
-    map.set(tx.category, (map.get(tx.category) || 0) + tx.amount);
+  transactions.forEach((tx) => {
+    const key = (tx.category && tx.category.trim()) ? tx.category.trim() : "other";
+    map.set(key, (map.get(key) || 0) + tx.amount);
   });
 
   const result = Array.from(map.entries()).map(([category, amount]) => {
-    const meta = CATEGORY_META[category] || CATEGORY_META.other;
+    const existing = categoryMap.get(category);
+    const fallback = getFallbackCategoryMeta(category, "expense");
+    const label = existing?.label || fallback.name || "Lainnya";
+    const color = existing?.color || fallback.color || "#94a3b8";
+
     return {
       category: category as any,
-      label: meta.label,
+      label,
       amount,
       percentage: Number(((amount / totalExpense) * 100).toFixed(1)),
-      color: meta.color,
+      color,
     };
   });
 
