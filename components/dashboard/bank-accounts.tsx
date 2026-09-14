@@ -189,71 +189,75 @@ function EditBalanceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showHandle className="max-w-md p-0 overflow-hidden rounded-t-3xl sm:rounded-2xl">
-        <DialogHeader className="p-5 pb-3 border-b border-[var(--card-border)]/40">
+      <DialogContent showHandle className="max-w-md p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white border border-black/[0.04] shadow-2xl w-full mx-auto">
+        <DialogHeader className="p-6 pb-4 border-b border-stone-100">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
-              <PencilLine className="h-4 w-4" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FAD170] text-stone-900 shadow-xs">
+              <PencilLine className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-sm sm:text-base font-semibold">Ubah Nominal Saldo</DialogTitle>
-              <DialogDescription className="text-[11px] sm:text-xs mt-0.5">
+              <DialogTitle className="text-lg font-bold text-[#18181B]">Ubah Nominal Saldo</DialogTitle>
+              <DialogDescription className="text-xs text-stone-500 mt-0.5">
                 Revisi saldo aktual untuk rekening atau dompet yang dipilih.
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 p-5">
+        <form onSubmit={handleSubmit} className="space-y-4 p-6 pt-3">
           {account && (
-            <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--muted)]/20 p-3">
-              <p className="text-xs font-semibold text-[var(--foreground)]">{account.name}</p>
-              <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{account.bank_name}</p>
-              <p className="mt-2 text-[11px] text-[var(--muted-foreground)]">
-                Saldo saat ini: <span className="font-semibold text-[var(--foreground)]">{formatCurrency(account.balance)}</span>
+            <div className="rounded-2xl border border-stone-200/60 bg-surface-muted/50 p-3.5">
+              <p className="text-xs font-bold text-[#18181B]">{account.name}</p>
+              <p className="mt-0.5 text-[11px] text-stone-500 font-medium">{account.bank_name}</p>
+              <p className="mt-2 text-xs text-stone-600 font-medium">
+                Saldo saat ini: <span className="font-bold text-[#18181B] tabular-nums">{formatCurrency(account.balance)}</span>
               </p>
             </div>
           )}
 
           {errorMsg && (
-            <div className="flex items-center gap-2 rounded-xl bg-rose-500/10 border border-rose-500/20 px-3 py-2.5 text-xs text-rose-600">
+            <div className="flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-500/20 px-3.5 py-2.5 text-xs text-rose-600 font-medium">
               <AlertCircle className="h-4 w-4 shrink-0" />
               {errorMsg}
             </div>
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="edit-balance" className="text-xs font-medium text-[var(--muted-foreground)]">
-              Nominal saldo terbaru
+            <Label htmlFor="edit-balance" className="text-xs font-semibold text-stone-500">
+              Nominal Saldo Terbaru
             </Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--muted-foreground)]">Rp</span>
+            <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200/50 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
+              <span className="pl-3 text-sm font-bold text-stone-400">Rp</span>
               <Input
                 id="edit-balance"
                 inputMode="numeric"
                 placeholder="0"
                 value={rawBalance ? Number(rawBalance).toLocaleString("id-ID") : ""}
                 onChange={(e) => setRawBalance(e.target.value.replace(/\D/g, ""))}
-                className="h-11 pl-9 text-right font-bold text-sm rounded-xl tabular-nums"
+                className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] tabular-nums bg-transparent pr-2"
               />
             </div>
           </div>
 
-          <div className="flex gap-2 pt-1">
+          <div className="flex gap-2.5 pt-2">
             <Button
               type="button"
               variant="ghost"
-              className="flex-1 h-11 rounded-xl"
+              className="flex-1 h-12 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold cursor-pointer text-sm"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
               Batal
             </Button>
-            <Button type="submit" className="flex-1 h-11 rounded-xl" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="flex-1 h-12 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white font-bold cursor-pointer shadow-sm text-sm transition-all active:scale-[0.99]"
+              disabled={isLoading}
+            >
               {isLoading ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Menyimpan...</>
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Menyimpan...</>
               ) : (
-                <><PencilLine className="h-4 w-4" /> Simpan Saldo</>
+                <><PencilLine className="h-4 w-4 mr-1.5" /> Simpan Saldo</>
               )}
             </Button>
           </div>
@@ -264,7 +268,6 @@ function EditBalanceDialog({
 }
 
 /* ── Add-account dialog ────────────────────────────────── */
-// (Komponen ini tidak mengalami perubahan logika internal, hanya memanggil PresetButton yang sudah diperbarui)
 function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const [rawBalance, setRawBalance] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -347,48 +350,48 @@ function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent showHandle className="max-w-lg p-0 overflow-hidden rounded-t-3xl sm:rounded-2xl">
-        <DialogHeader className="p-5 pb-3 border-b border-[var(--card-border)]/40">
+      <DialogContent showHandle className="max-w-lg p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white border border-black/[0.04] shadow-2xl w-full mx-auto">
+        <DialogHeader className="p-6 pb-4 border-b border-stone-100">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
-              <Landmark className="h-4 w-4" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E0E6FD] text-[#3B4CCA] shadow-xs">
+              <Landmark className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-sm sm:text-base font-semibold">Tambah Rekening</DialogTitle>
-              <DialogDescription className="text-[11px] sm:text-xs mt-0.5">
+              <DialogTitle className="text-lg font-bold text-[#18181B]">Tambah Rekening</DialogTitle>
+              <DialogDescription className="text-xs text-stone-500 mt-0.5">
                 Tambahkan bank atau e-wallet kamu secara instan
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="px-5 py-4 overflow-y-auto max-h-[72vh] sm:max-h-[600px] space-y-4 custom-scrollbar">
+        <div className="px-6 py-4 overflow-y-auto max-h-[72vh] sm:max-h-[600px] space-y-4 custom-scrollbar">
           <AnimatePresence mode="wait">
             {isSuccess ? (
               <motion.div
                 key="ok"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center justify-center py-12 gap-3"
+                className="flex flex-col items-center justify-center py-10 gap-3"
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10">
-                  <CheckCircle2 className="h-7 w-7 text-emerald-500" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F5A2] text-stone-900 shadow-sm">
+                  <CheckCircle2 className="h-8 w-8 text-stone-800" />
                 </div>
                 <div className="text-center">
-                  <p className="font-semibold text-base text-[var(--foreground)]">Rekening Ditambahkan!</p>
-                  <p className="text-xs text-[var(--muted-foreground)] mt-0.5">Rekening baru berhasil disimpan ke sistem.</p>
+                  <p className="font-bold text-lg text-[#18181B]">Rekening Ditambahkan!</p>
+                  <p className="text-xs text-stone-500 mt-1">Rekening baru berhasil disimpan ke sistem.</p>
                 </div>
               </motion.div>
             ) : (
               <motion.form
                 key="form"
                 onSubmit={handleSubmit(onSubmit)}
-                className="space-y-4"
+                className="space-y-4 pt-1"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
                 {errorMsg && (
-                  <div className="flex items-center gap-2 rounded-xl bg-rose-500/10 border border-rose-500/20 px-3 py-2.5 text-xs text-rose-600">
+                  <div className="flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-500/20 px-3.5 py-2.5 text-xs text-rose-600 font-medium">
                     <AlertCircle className="h-4 w-4 shrink-0" />
                     {errorMsg}
                   </div>
@@ -399,10 +402,10 @@ function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
                   name="presetId"
                   control={control}
                   render={({ field }) => (
-                    <div className="space-y-3 bg-[var(--muted)]/20 border border-[var(--card-border)]/40 p-3 rounded-2xl">
+                    <div className="space-y-3 bg-surface-muted/40 border border-stone-200/60 p-3.5 rounded-3xl">
                       {/* Banks */}
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-1.5">🏦 Bank</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">🏦 Bank</p>
                         <div className="grid grid-cols-3 xs:grid-cols-4 gap-2">
                           {bankPresets.map((p) => (
                             <PresetButton key={p.id} preset={p} selected={field.value === p.id} onSelect={() => field.onChange(p.id)} />
@@ -411,7 +414,7 @@ function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
                       </div>
                       {/* E-wallets */}
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-1.5">💳 E-Wallet</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">💳 E-Wallet</p>
                         <div className="grid grid-cols-3 xs:grid-cols-4 gap-2">
                           {ewalletPresets.map((p) => (
                             <PresetButton key={p.id} preset={p} selected={field.value === p.id} onSelect={() => field.onChange(p.id)} />
@@ -420,7 +423,7 @@ function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
                       </div>
                       {/* Cash */}
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-1.5">💵 Lainnya</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">💵 Lainnya</p>
                         <div className="grid grid-cols-3 xs:grid-cols-4 gap-2">
                           {cashPresets.map((p) => (
                             <PresetButton key={p.id} preset={p} selected={field.value === p.id} onSelect={() => field.onChange(p.id)} />
@@ -431,53 +434,60 @@ function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
                   )}
                 />
                 {errors.presetId && (
-                  <p className="text-[11px] text-rose-500 font-medium -mt-2">{errors.presetId.message}</p>
+                  <p className="text-[11px] text-[#E85024] font-medium -mt-2">{errors.presetId.message}</p>
                 )}
 
                 {/* Nickname */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="acc-nick" className="text-xs font-medium text-[var(--muted-foreground)]">Nama Panggilan Rekening</Label>
-                  <Input id="acc-nick" placeholder="Mis. BCA Tabungan, GoPay Utama…" className="h-10 text-sm rounded-xl" {...register("nickname")} />
+                  <Label htmlFor="acc-nick" className="text-xs font-semibold text-stone-500">Nama Panggilan Rekening</Label>
+                  <Input id="acc-nick" placeholder="Mis. BCA Tabungan, GoPay Utama…" className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium" {...register("nickname")} />
                   {errors.nickname && (
-                    <p className="text-[11px] text-rose-500 font-medium">{errors.nickname.message}</p>
+                    <p className="text-[11px] text-[#E85024] font-medium">{errors.nickname.message}</p>
                   )}
                 </div>
 
                 {/* Responsive Input Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="acc-num" className="text-xs font-medium text-[var(--muted-foreground)]">
-                      No. Rekening <span className="text-[var(--muted-foreground)]/60 font-normal">(opsional)</span>
+                    <Label htmlFor="acc-num" className="text-xs font-semibold text-stone-500">
+                      No. Rekening <span className="text-stone-400 font-normal">(opsional)</span>
                     </Label>
-                    <Input id="acc-num" placeholder="4 digit terakhir" maxLength={25} className="h-10 text-sm rounded-xl" {...register("accountNumber")} />
+                    <Input id="acc-num" placeholder="4 digit terakhir" maxLength={25} className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium" {...register("accountNumber")} />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="acc-bal" className="text-xs font-medium text-[var(--muted-foreground)]">Saldo Awal</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--muted-foreground)]">Rp</span>
+                    <Label htmlFor="acc-bal" className="text-xs font-semibold text-stone-500">Saldo Awal</Label>
+                    <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200/50 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
+                      <span className="pl-3 text-sm font-bold text-stone-400">Rp</span>
                       <Input
                         id="acc-bal"
                         inputMode="numeric"
                         placeholder="0"
                         value={rawBalance ? Number(rawBalance).toLocaleString("id-ID") : ""}
                         onChange={handleBalanceChange}
-                        className="h-10 pl-9 text-right font-bold text-sm rounded-xl tabular-nums"
+                        className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] tabular-nums bg-transparent pr-2"
                       />
                     </div>
                     {errors.initialBalance && (
-                      <p className="text-[11px] text-rose-500 font-medium">{errors.initialBalance.message}</p>
+                      <p className="text-[11px] text-[#E85024] font-medium">{errors.initialBalance.message}</p>
                     )}
                   </div>
                 </div>
 
-                <Button type="submit" size="lg" className="w-full h-11 text-sm font-semibold rounded-xl cursor-pointer mt-2 text-white bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500" disabled={isLoading}>
-                  {isLoading ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> Menyimpan...</>
-                  ) : (
-                    <><Plus className="h-4 w-4" /> Tambah Rekening</>
-                  )}
-                </Button>
+                <div className="pt-2">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full h-12 text-sm font-bold rounded-full cursor-pointer text-white bg-[#E85024] hover:bg-[#d44319] shadow-sm transition-all active:scale-[0.99]"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Menyimpan...</>
+                    ) : (
+                      <><Plus className="h-4 w-4 mr-1.5" /> Tambah Rekening</>
+                    )}
+                  </Button>
+                </div>
               </motion.form>
             )}
           </AnimatePresence>
@@ -496,21 +506,20 @@ function PresetButton({ preset, selected, onSelect }: { preset: BankPreset; sele
       type="button"
       onClick={onSelect}
       className={cn(
-        "flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2 text-center transition-all duration-150 select-none cursor-pointer min-h-[64px]",
+        "flex flex-col items-center justify-center gap-1.5 rounded-2xl border p-2 text-center transition-all duration-150 select-none cursor-pointer min-h-[64px]",
         selected
-          ? "border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold"
-          : "border-[var(--card-border)] bg-[var(--muted)]/40 hover:bg-[var(--muted)]/80 text-[var(--muted-foreground)]"
+          ? "border-[#1A1A1A] bg-[#1A1A1A] text-white font-bold shadow-xs"
+          : "border-stone-200/60 bg-white hover:bg-stone-50 text-stone-700"
       )}
     >
-      {/* UBAHAN 2: Render Gambar Logo Bank di Tombol Form Modal Dialog */}
       {isImgLogo ? (
-        <div className="h-5 flex items-center justify-center">
-          <img src={preset.logo} alt={preset.name} className="h-full w-auto object-contain max-w-[44px]" />
+        <div className={cn("h-5 flex items-center justify-center rounded-md p-0.5 w-9", selected ? "bg-white/95" : "")}>
+          <img src={preset.logo} alt={preset.name} className="h-full w-auto object-contain max-w-[38px]" />
         </div>
       ) : (
-        <span className="text-base sm:text-lg leading-none ">{preset.logo}</span>
+        <span className="text-base sm:text-lg leading-none">{preset.logo}</span>
       )}
-      <span className="text-[9px] font-semibold leading-tight tracking-tight truncate max-w-full">
+      <span className={cn("text-[9px] font-semibold leading-tight tracking-tight truncate max-w-full", selected ? "text-white" : "text-[#18181B]")}>
         {preset.name}
       </span>
     </button>

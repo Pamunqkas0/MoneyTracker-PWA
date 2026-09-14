@@ -8,6 +8,19 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
+  /* SavOr Theme Colors */
+  --color-bg-warm: #F7F4EE;
+  --color-warm: #F7F4EE;
+  --color-surface-card: #FFFFFF;
+  --color-surface-muted: #F2EFEB;
+  --color-brand-orange: #E85024;
+  --color-brand-dark: #1A1A1A;
+  --color-pastel-yellow: #FAD170;
+  --color-pastel-green: #D8F5A2;
+  --color-pastel-peach: #FDD5C1;
+  --color-pastel-blue: #E0E6FD;
+  --color-pastel-mint: #DAEFEA;
+
   --color-emerald-50: oklch(0.979 0.021 166.113);
   --color-emerald-100: oklch(0.95 0.052 163.051);
   --color-emerald-200: oklch(0.905 0.093 164.15);
@@ -22,22 +35,34 @@
 }
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  /* SavOr Theme Variables */
+  --bg-warm: #F7F4EE;
+  --surface-card: #FFFFFF;
+  --surface-muted: #F2EFEB;
+  --brand-orange: #E85024;
+  --brand-dark: #1A1A1A;
+  --pastel-yellow: #FAD170;
+  --pastel-green: #D8F5A2;
+  --pastel-peach: #FDD5C1;
+  --pastel-blue: #E0E6FD;
+  --pastel-mint: #DAEFEA;
+
+  --background: #F7F4EE;
+  --foreground: #18181B;
 
   --card: #ffffff;
-  --card-foreground: #0f172a;
-  --card-border: rgba(226, 232, 240, 0.8);
+  --card-foreground: #18181b;
+  --card-border: rgba(0, 0, 0, 0.04);
 
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted: #F2EFEB;
+  --muted-foreground: #71717A;
 
-  --primary: #10b981;
+  --primary: #E85024;
   --primary-foreground: #ffffff;
 
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 4px 24px -4px rgba(16, 185, 129, 0.08), 0 1px 3px rgba(0,0,0,0.06);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --glass-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
 
   --income-color: #10b981;
   --expense-color: #f43f5e;
@@ -83,11 +108,13 @@
   -ms-touch-action: manipulation;
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
   /* Lock viewport - tidak bisa di-zoom */
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Cegah iOS zoom saat focus input (iOS akan zoom jika font-size < 16px) */

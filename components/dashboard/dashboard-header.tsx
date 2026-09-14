@@ -1,225 +1,388 @@
 "use client";
 
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bell,
-  Download,
-  TrendingDown,
+  Home,
+  PiggyBank,
+  BarChart3,
   TrendingUp,
+  TrendingDown,
+  LayoutGrid,
+  Bell,
+  Search,
+  Plus,
+  LogOut,
+  User,
+  Info,
   Wifi,
   WifiOff,
+  Menu,
+  X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { getGreeting, formatCurrency } from "@/lib/utils";
-import { format, formatDistanceToNow } from "date-fns";
-import { id } from "date-fns/locale";
-import { useEffect, useState, useRef } from "react";
-import { TransactionDialog } from "@/components/layout/transaction-dialog";
-import { motion, AnimatePresence } from "framer-motion";
 import { signOutAction } from "@/lib/auth/actions";
+import { formatCurrency } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
+import { id } from "date-fns/locale";
+import { TransactionDialog } from "@/components/layout/transaction-dialog";
 import type { BankAccountRow, TransactionRow } from "@/lib/supabase/types";
 import type { AvailableTransactionCategories } from "@/lib/supabase/queries";
-
-type DefaultType = "income" | "expense";
 
 interface DashboardHeaderProps {
   bankAccounts: BankAccountRow[];
   availableCategories: AvailableTransactionCategories;
-  recentNotifications: TransactionRow[];
+  recentNotifications?: TransactionRow[];
 }
 
-export function DashboardHeader({ bankAccounts, availableCategories, recentNotifications = [] }: DashboardHeaderProps) {
+export function DashboardHeader({
+  bankAccounts,
+  availableCategories,
+  recentNotifications = [],
+}: DashboardHeaderProps) {
+  const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
-  const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [defaultType, setDefaultType] = useState<"income" | "expense">("expense");
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchInput, setShowSearchInput] = useState(false);
+
   const notifRef = useRef<HTMLDivElement>(null);
-  const [defaultType, setDefaultType] = useState<DefaultType>("expense");
+  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
     setIsOnline(navigator.onLine);
-    setCurrentTime(new Date());
 
     const on = () => setIsOnline(true);
     const off = () => setIsOnline(false);
     window.addEventListener("online", on);
     window.addEventListener("offline", off);
-    return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
+    return () => {
+      window.removeEventListener("online", on);
+      window.removeEventListener("offline", off);
+    };
   }, []);
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60_000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setIsNotifOpen(false);
       }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
     }
-    if (isNotifOpen) {
+    if (isNotifOpen || isProfileOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isNotifOpen]);
+  }, [isNotifOpen, isProfileOpen]);
 
-  const openDialog = (type: DefaultType) => {
+  const openAddDialog = (type: "income" | "expense" = "expense") => {
     setDefaultType(type);
     setDialogOpen(true);
   };
 
+  const navItems = [
+    {
+      label: "Home",
+      href: "/dashboard",
+      icon: Home,
+      isActive: pathname === "/dashboard" && false, // We'll keep Savings as the active primary dashboard tab matching reference
+    },
+    {
+      label: "Savings",
+      href: "/dashboard",
+      icon: PiggyBank,
+      isActive: pathname === "/dashboard",
+    },
+    {
+      label: "Statistic",
+      href: "/dashboard/transactions",
+      icon: BarChart3,
+      isActive: pathname.startsWith("/dashboard/transactions"),
+    },
+    {
+      label: "Analytics",
+      href: "/dashboard/budget",
+      icon: TrendingUp,
+      isActive: pathname.startsWith("/dashboard/budget"),
+    },
+    {
+      label: "More",
+      href: "/dashboard/profile",
+      icon: LayoutGrid,
+      isActive: pathname.startsWith("/dashboard/profile"),
+    },
+  ];
+
   return (
     <>
-      <header className="sticky top-0 sm:top-0 z-30 w-full px-3 sm:px-0 pt-3 sm:pt-0">
-        <div className="mx-auto max-w-screen-xl sm:px-6 lg:px-8">
-          <div className="flex h-[52px] sm:h-16 items-center justify-between gap-3 sm:gap-4 rounded-[1.25rem] sm:rounded-none border border-[var(--card-border)]/60 sm:border-x-0 sm:border-t-0 sm:border-b bg-[var(--card)]/80 sm:bg-[var(--background)]/80 px-3 sm:px-0 shadow-sm sm:shadow-none backdrop-blur-xl">
+      <header className="w-full flex items-center justify-between gap-3 sm:gap-6 py-1 select-none">
+        {/* ═════════ 1. Logo & Brand (Sisi Kiri) ═════════ */}
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2.5 group transition-transform active:scale-95 shrink-0"
+        >
+          {/* SavOr Piggy Icon */}
+          <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-[#FF7A45] to-[#E85024] shadow-sm shadow-brand-orange/20 text-white transition-all group-hover:shadow-md group-hover:scale-105">
+            {/* Piggy silhouette SVG with coin */}
+            <svg
+              className="w-5 h-5 sm:w-6 sm:h-6 fill-current"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Coin */}
+              <circle cx="12" cy="4.5" r="2.5" fill="#FAD170" />
+              <circle cx="12" cy="4.5" r="1.5" stroke="#1A1A1A" strokeWidth="0.6" fill="none" />
+              {/* Pig body */}
+              <path d="M19 10.5c-.2-1.5-1.2-2.8-2.6-3.4-.6-.2-1.2-.3-1.9-.3-.5 0-1 .1-1.5.3-.6-.8-1.5-1.3-2.5-1.5-.4-.1-.8-.1-1.2 0-2.1.4-3.8 2-4.2 4.1-.3.2-.6.5-.8.9l-1.3 2.1c-.2.3-.1.7.2.9.2.1.4.1.6 0l.9-.6c.1 1.2.6 2.3 1.5 3.1v2.5c0 .6.4 1 1 1h1.5c.6 0 1-.4 1-1v-1.2c.6.1 1.2.2 1.8.2.7 0 1.4-.1 2.1-.3v1.3c0 .6.4 1 1 1h1.5c.6 0 1-.4 1-1v-2.3c1.5-1.1 2.4-2.8 2.4-4.7 0-.7-.1-1.3-.4-1.9zm-9.5 2c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z" />
+            </svg>
+          </div>
 
-            {/* Left: Avatar + greeting */}
-            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-              {/* Avatar on the left for mobile app feel */}
-              <button
-                className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 text-xs sm:text-sm font-bold text-white shadow-sm ring-2 ring-[var(--card)] sm:ring-[var(--background)] transition-transform hover:scale-105 active:scale-95"
-                aria-label="Profil"
+          {/* SavOr Typography */}
+          <div className="flex items-center">
+            <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#1A1A1A]">
+              Sav<span className="text-brand-orange">O</span>r
+            </span>
+          </div>
+        </Link>
+
+        {/* ═════════ 2. Pill Navigation Menu (Bagian Tengah - Khusus Desktop) ═════════ */}
+        <nav
+          aria-label="Desktop Top Navigation"
+          className="hidden lg:flex items-center gap-1 rounded-full bg-surface-muted/70 p-1.5 border border-black/[0.04] backdrop-blur-sm shadow-xs"
+        >
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isCurrentlyActive = item.isActive;
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`relative flex items-center gap-2 py-1.5 px-4 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  isCurrentlyActive
+                    ? "bg-[#1A1A1A] text-white shadow-xs font-bold"
+                    : "text-stone-600 hover:text-stone-900 hover:bg-black/[0.03]"
+                }`}
               >
-                P
-              </button>
-              
-              <div className="min-w-0 flex flex-col justify-center">
-                <span className="text-[9px] sm:text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider leading-none mb-1">
-                  {getGreeting()} 👋
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <h1 className="truncate text-xs sm:text-sm font-extrabold text-[var(--foreground)] leading-none">
-                    Pamungkas
-                  </h1>
-                  <Badge
-                    variant={isMounted && !isOnline ? "destructive" : "default"}
-                    className="hidden lg:inline-flex shrink-0 items-center gap-1 h-4 px-1.5 text-[8px]"
-                  >
-                    {isMounted && !isOnline ? (
-                      <WifiOff className="h-2 w-2" />
+                <Icon className={`w-3.5 h-3.5 ${isCurrentlyActive ? "text-pastel-yellow" : "text-stone-500"}`} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* ═════════ 2B. Mobile Greeting Center (Khusus Mobile) ═════════ */}
+        <div className="flex lg:hidden items-center justify-center flex-1 min-w-0 px-2">
+          <p className="text-xs sm:text-sm font-bold text-[#18181B] truncate">
+            Hello, Pamungkas 👋
+          </p>
+        </div>
+
+        {/* ═════════ 3. User Controls & Notifications (Sisi Kanan) ═════════ */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Quick Add Button (+) - Desktop Only */}
+          <button
+            onClick={() => openAddDialog("expense")}
+            title="Tambah Transaksi Cepat"
+            className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full bg-white border border-stone-200/70 text-stone-700 shadow-xs hover:bg-stone-50 hover:text-brand-orange hover:border-brand-orange/40 transition-all active:scale-95 cursor-pointer"
+            aria-label="Tambah Transaksi"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+
+          {/* Info / Status Button - Desktop Only */}
+          <div className="relative group hidden sm:block">
+            <button
+              title={isMounted && !isOnline ? "Status: Offline" : "Status: Online"}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-stone-200/70 text-stone-600 shadow-xs hover:bg-stone-50 transition-all active:scale-95"
+              aria-label="Status Jaringan"
+            >
+              {isMounted && !isOnline ? (
+                <WifiOff className="h-4 w-4 text-rose-500" />
+              ) : (
+                <Info className="h-4 w-4 text-stone-600" />
+              )}
+            </button>
+            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-50">
+              <span className="text-[10px] whitespace-nowrap font-medium px-2 py-1 rounded-md bg-stone-900 text-white shadow-md">
+                {isMounted && !isOnline ? "Koneksi Offline" : "Sistem Normal & Online"}
+              </span>
+            </div>
+          </div>
+
+          {/* Notification Button & Dropdown */}
+          <div className="relative" ref={notifRef}>
+            <button
+              onClick={() => setIsNotifOpen((prev) => !prev)}
+              aria-label="Notifikasi"
+              className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-white border border-stone-200/70 text-stone-600 shadow-xs hover:bg-stone-50 hover:text-stone-900 transition-all active:scale-95 cursor-pointer"
+            >
+              <Bell className="h-4 w-4" />
+              {recentNotifications.length > 0 && (
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-orange ring-2 ring-white" />
+              )}
+            </button>
+
+            {/* Notification Dropdown */}
+            <AnimatePresence>
+              {isNotifOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="fixed left-4 right-4 top-[72px] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2.5 w-auto sm:w-80 origin-top sm:origin-top-right rounded-3xl border border-black/[0.06] bg-white p-4 shadow-xl backdrop-blur-xl z-50"
+                >
+                  <div className="mb-3 flex items-center justify-between pb-2 border-b border-stone-100">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xs font-bold text-stone-900">Notifikasi Aktivitas</h3>
+                      <span className="text-[10px] font-semibold text-brand-orange bg-pastel-peach/60 px-2 py-0.5 rounded-full">
+                        24 Jam
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-stone-500 bg-surface-muted px-2 py-0.5 rounded-full">
+                      {recentNotifications.length} Baru
+                    </span>
+                  </div>
+
+                  <div className="flex max-h-[300px] flex-col gap-2 overflow-y-auto pr-1">
+                    {recentNotifications.length === 0 ? (
+                      <div className="py-8 flex flex-col items-center justify-center gap-2 text-center text-stone-400">
+                        <Bell className="h-7 w-7 opacity-30" />
+                        <span className="text-xs font-medium">Belum ada aktivitas baru.</span>
+                      </div>
                     ) : (
-                      <Wifi className="h-2 w-2" />
+                      recentNotifications.map((notif) => {
+                        const isIncome = notif.type === "income";
+                        const Icon = isIncome ? TrendingUp : TrendingDown;
+                        return (
+                          <div
+                            key={notif.id}
+                            className="group flex items-start gap-3 rounded-2xl border border-stone-100 bg-surface-muted/40 p-2.5 transition-all hover:bg-surface-muted"
+                          >
+                            <div
+                              className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl ${
+                                isIncome
+                                  ? "bg-pastel-green text-emerald-800"
+                                  : "bg-pastel-peach text-brand-orange"
+                              }`}
+                            >
+                              <Icon className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-xs font-bold text-stone-900">
+                                {notif.name}
+                              </p>
+                              <div className="flex items-center justify-between mt-0.5">
+                                <span
+                                  className={`text-xs font-extrabold ${
+                                    isIncome ? "text-emerald-700" : "text-stone-900"
+                                  }`}
+                                >
+                                  {isIncome ? "+" : "-"}
+                                  {formatCurrency(notif.amount)}
+                                </span>
+                                <span className="text-[9px] text-stone-400">
+                                  {formatDistanceToNow(new Date(notif.created_at), {
+                                    addSuffix: true,
+                                    locale: id,
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
                     )}
-                    {isMounted && !isOnline ? "Offline" : "Online"}
-                  </Badge>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* User Avatar with Profile Dropdown */}
+          <div className="relative" ref={profileRef}>
+            <button
+              onClick={() => setIsProfileOpen((prev) => !prev)}
+              aria-label="User profile menu"
+              className="relative flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
+            >
+              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-tr from-amber-200 via-emerald-300 to-teal-400 p-[2px] shadow-xs">
+                <div className="h-full w-full rounded-full bg-[#1A1A1A] flex items-center justify-center text-xs font-bold text-white overflow-hidden">
+                  <span className="bg-gradient-to-br from-pastel-peach to-pastel-yellow text-stone-900 w-full h-full flex items-center justify-center font-black">
+                    P
+                  </span>
                 </div>
               </div>
-            </div>
+              {/* Online Indicator Dot */}
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-emerald-500 ring-2 ring-white" />
+            </button>
 
-            {/* Right: actions */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              {/* Desktop quick-add buttons (lg+) */}
-              <div className="hidden lg:flex items-center gap-2">
-                <Button
-                  variant="income"
-                  size="sm"
-                  onClick={() => openDialog("income")}
-                  className="gap-1.5"
+            {/* Profile Dropdown Menu */}
+            <AnimatePresence>
+              {isProfileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-2.5 w-56 origin-top-right rounded-3xl border border-black/[0.06] bg-white p-2 shadow-xl z-50"
                 >
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  Pemasukan
-                </Button>
-                <Button
-                  variant="expense"
-                  size="sm"
-                  onClick={() => openDialog("expense")}
-                  className="gap-1.5"
-                >
-                  <TrendingDown className="h-3.5 w-3.5" />
-                  Pengeluaran
-                </Button>
-                <Button variant="outline" size="sm" className="gap-1.5">
-                  <Download className="h-3.5 w-3.5" />
-                  Export
-                </Button>
-              </div>
+                  <div className="px-3 py-2.5 border-b border-stone-100">
+                    <p className="text-xs font-bold text-stone-900">Pamungkas</p>
+                    <p className="text-[10px] text-stone-500 truncate">user@moneytracker.app</p>
+                  </div>
 
-              {/* Notification bell */}
-              <div className="relative" ref={notifRef}>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="relative" 
-                  aria-label="Notifikasi"
-                  onClick={() => setIsNotifOpen((prev) => !prev)}
-                >
-                  <Bell className="h-4 w-4" />
-                  {recentNotifications.length > 0 && (
-                    <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-[var(--background)]" />
-                  )}
-                </Button>
-
-                <AnimatePresence>
-                  {isNotifOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="fixed left-4 right-4 top-[72px] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 w-auto sm:w-80 origin-top sm:origin-top-right rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-4 shadow-2xl backdrop-blur-xl z-50"
+                  <div className="py-1 flex flex-col gap-0.5">
+                    <Link
+                      href="/dashboard/profile"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold text-stone-700 hover:bg-surface-muted hover:text-stone-900 transition-colors"
                     >
-                      <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-sm font-bold text-[var(--foreground)]">Notifikasi <span className="text-emerald-500 font-semibold">(24 Jam)</span></h3>
-                        <span className="text-xs font-medium text-[var(--muted-foreground)] bg-[var(--muted)] px-2 py-0.5 rounded-full">{recentNotifications.length} Baru</span>
-                      </div>
-                      
-                      <div className="flex max-h-[320px] flex-col gap-2 overflow-y-auto pr-2 custom-scrollbar">
-                        {recentNotifications.length === 0 ? (
-                          <div className="py-8 flex flex-col items-center justify-center gap-2 text-center">
-                            <Bell className="h-8 w-8 text-[var(--muted-foreground)] opacity-20" />
-                            <span className="text-sm text-[var(--muted-foreground)]">Tidak ada aktivitas baru.</span>
-                          </div>
-                        ) : (
-                          recentNotifications.map((notif) => {
-                            const isIncome = notif.type === "income";
-                            const Icon = isIncome ? TrendingUp : TrendingDown;
-                            return (
-                              <div key={notif.id} className="group flex items-start gap-3.5 rounded-xl border border-transparent bg-[var(--background)]/40 p-3 transition-all hover:border-[var(--card-border)] hover:bg-[var(--muted)]/50 hover:shadow-sm">
-                                <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${isIncome ? 'bg-emerald-500/10 text-emerald-500 shadow-inner shadow-emerald-500/20' : 'bg-rose-500/10 text-rose-500 shadow-inner shadow-rose-500/20'}`}>
-                                  <Icon className="h-4 w-4" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-semibold text-[var(--foreground)] group-hover:text-emerald-500 transition-colors">
-                                    {notif.name}
-                                  </p>
-                                  <div className="mt-1 flex flex-col gap-0.5">
-                                    <span className={`text-sm font-bold tracking-tight ${isIncome ? 'text-emerald-500' : 'text-[var(--foreground)]'}`}>
-                                      {isIncome ? "+" : ""}{formatCurrency(notif.amount)}
-                                    </span>
-                                    <span className="text-[10px] font-medium text-[var(--muted-foreground)] opacity-80">
-                                      {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: id })}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                      <User className="h-3.5 w-3.5 text-stone-500" />
+                      Profil & Pengaturan
+                    </Link>
+                    <Link
+                      href="/dashboard/budget"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold text-stone-700 hover:bg-surface-muted hover:text-stone-900 transition-colors"
+                    >
+                      <TrendingUp className="h-3.5 w-3.5 text-stone-500" />
+                      Target Anggaran
+                    </Link>
+                  </div>
 
-              {/* Desktop Logout Button */}
-              <form action={signOutAction} className="hidden sm:block">
-                <Button variant="outline" size="sm" type="submit" className="h-8 text-xs font-semibold rounded-xl">
-                  Keluar
-                </Button>
-              </form>
-            </div>
+                  <div className="pt-1 border-t border-stone-100">
+                    <form action={signOutAction}>
+                      <button
+                        type="submit"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                      >
+                        <LogOut className="h-3.5 w-3.5 text-rose-500" />
+                        Keluar Akun
+                      </button>
+                    </form>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </header>
 
-      {/* Desktop dialog (mobile dialog comes from layout BottomNav) */}
+      {/* Modal Dialog Tambah Transaksi */}
       <TransactionDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -230,3 +393,4 @@ export function DashboardHeader({ bankAccounts, availableCategories, recentNotif
     </>
   );
 }
+
