@@ -69,10 +69,10 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex lg:hidden pointer-events-none w-full justify-center px-4">
+    <div className="fixed bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 flex lg:hidden pointer-events-none w-full justify-center px-4">
       <nav
         aria-label="Mobile Floating Navigation"
-        className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-full p-1.5 shadow-2xl border border-black/[0.06] flex items-center justify-between gap-1 max-w-sm w-full"
+        className="pointer-events-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-[30px] sm:rounded-full p-2 sm:p-2.5 shadow-[0_16px_40px_rgba(0,0,0,0.16)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.5)] border border-black/[0.07] dark:border-slate-800 flex items-center justify-between gap-1.5 w-full max-w-[410px] transition-colors"
       >
         {NAV_ITEMS.map((item) => {
           const isActive = getIsActive(item);
@@ -84,11 +84,11 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
                 key={item.id}
                 type="button"
                 onClick={onAddClick}
-                className="relative flex items-center justify-center cursor-pointer transition-transform active:scale-90 select-none w-10 h-10 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white shadow-md mx-1 shrink-0"
+                className="relative flex items-center justify-center cursor-pointer transition-transform active:scale-90 select-none w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white shadow-lg shadow-orange-500/25 mx-1 shrink-0"
                 aria-label="Tambah Transaksi"
                 title="Tambah Transaksi"
               >
-                <Plus className="w-5 h-5 stroke-[2.8]" />
+                <Plus className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
               </button>
             );
           }
@@ -103,15 +103,17 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
               {isActive ? (
                 <motion.div
                   layoutId="savor-bottom-nav-active"
-                  className="bg-[#1A1A1A] text-white px-3.5 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-bold shadow-xs"
+                  className="bg-[#1A1A1A] text-white dark:bg-white dark:text-slate-950 px-4 sm:px-4.5 py-2.5 sm:py-2.5 rounded-[22px] sm:rounded-full flex items-center gap-2 text-xs sm:text-sm font-bold shadow-sm"
                   transition={{ type: "spring", stiffness: 450, damping: 32 }}
                 >
-                  <Icon className="w-3.5 h-3.5 text-[#FAD170] stroke-[2.2]" />
-                  <span className="text-white text-xs font-bold leading-none">{item.label}</span>
+                  <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#FAD170] dark:text-[#E85024] stroke-[2.4]" />
+                  <span className="text-white dark:text-slate-950 text-xs sm:text-sm font-black tracking-tight leading-none">
+                    {item.label}
+                  </span>
                 </motion.div>
               ) : (
-                <div className="p-2.5 rounded-full text-stone-700 hover:text-stone-950 flex items-center justify-center transition-colors">
-                  <Icon className="w-4 h-4 stroke-[2]" />
+                <div className="p-3 sm:p-3.5 rounded-[22px] sm:rounded-full text-stone-600 dark:text-slate-400 hover:text-stone-950 dark:hover:text-white hover:bg-stone-100/70 dark:hover:bg-slate-800/80 flex items-center justify-center transition-colors">
+                  <Icon className="w-5 h-5 stroke-[2.2]" />
                 </div>
               )}
             </Link>
@@ -121,6 +123,3 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
     </div>
   );
 }
-
-
-

@@ -151,7 +151,7 @@ export function DashboardHeader({
 
           {/* SavOr Typography */}
           <div className="flex items-center">
-            <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#1A1A1A]">
+            <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#1A1A1A] dark:text-white">
               Sav<span className="text-brand-orange">O</span>r
             </span>
           </div>
@@ -160,7 +160,7 @@ export function DashboardHeader({
         {/* ═════════ 2. Pill Navigation Menu (Bagian Tengah - Khusus Desktop) ═════════ */}
         <nav
           aria-label="Desktop Top Navigation"
-          className="hidden lg:flex items-center gap-1 rounded-full bg-surface-muted/70 p-1.5 border border-black/[0.04] backdrop-blur-sm shadow-xs"
+          className="hidden lg:flex items-center gap-1 rounded-full bg-surface-muted/70 dark:bg-slate-800/80 p-1.5 border border-black/[0.04] dark:border-slate-700/60 backdrop-blur-sm shadow-xs"
         >
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -172,11 +172,11 @@ export function DashboardHeader({
                 href={item.href}
                 className={`relative flex items-center gap-2 py-1.5 px-4 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   isCurrentlyActive
-                    ? "bg-[#1A1A1A] text-white shadow-xs font-bold"
-                    : "text-stone-600 hover:text-stone-900 hover:bg-black/[0.03]"
+                    ? "bg-[#1A1A1A] dark:bg-white text-white dark:text-slate-900 shadow-xs font-bold"
+                    : "text-stone-600 dark:text-slate-300 hover:text-stone-900 dark:hover:text-white hover:bg-black/[0.03] dark:hover:bg-white/10"
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isCurrentlyActive ? "text-pastel-yellow" : "text-stone-500"}`} />
+                <Icon className={`w-3.5 h-3.5 ${isCurrentlyActive ? "text-pastel-yellow dark:text-brand-orange" : "text-stone-500 dark:text-slate-400"}`} />
                 <span>{item.label}</span>
               </Link>
             );
@@ -185,7 +185,7 @@ export function DashboardHeader({
 
         {/* ═════════ 2B. Mobile Greeting Center (Khusus Mobile) ═════════ */}
         <div className="flex lg:hidden items-center justify-center flex-1 min-w-0 px-2">
-          <p className="text-xs sm:text-sm font-bold text-[#18181B] truncate">
+          <p className="text-xs sm:text-sm font-bold text-[#18181B] dark:text-slate-100 truncate">
             Hello, Pamungkas 👋
           </p>
         </div>
@@ -196,7 +196,7 @@ export function DashboardHeader({
           <button
             onClick={() => openAddDialog("expense")}
             title="Tambah Transaksi Cepat"
-            className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full bg-white border border-stone-200/70 text-stone-700 shadow-xs hover:bg-stone-50 hover:text-brand-orange hover:border-brand-orange/40 transition-all active:scale-95 cursor-pointer"
+            className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-stone-200/70 dark:border-slate-700 text-stone-700 dark:text-slate-200 shadow-xs hover:bg-stone-50 dark:hover:bg-slate-700 hover:text-brand-orange dark:hover:text-brand-orange hover:border-brand-orange/40 transition-all active:scale-95 cursor-pointer"
             aria-label="Tambah Transaksi"
           >
             <Plus className="h-4 w-4" />
@@ -206,17 +206,17 @@ export function DashboardHeader({
           <div className="relative group hidden sm:block">
             <button
               title={isMounted && !isOnline ? "Status: Offline" : "Status: Online"}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-stone-200/70 text-stone-600 shadow-xs hover:bg-stone-50 transition-all active:scale-95"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-stone-200/70 dark:border-slate-700 text-stone-600 dark:text-slate-300 shadow-xs hover:bg-stone-50 dark:hover:bg-slate-700 transition-all active:scale-95"
               aria-label="Status Jaringan"
             >
               {isMounted && !isOnline ? (
                 <WifiOff className="h-4 w-4 text-rose-500" />
               ) : (
-                <Info className="h-4 w-4 text-stone-600" />
+                <Info className="h-4 w-4 text-stone-600 dark:text-slate-300" />
               )}
             </button>
             <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-50">
-              <span className="text-[10px] whitespace-nowrap font-medium px-2 py-1 rounded-md bg-stone-900 text-white shadow-md">
+              <span className="text-[10px] whitespace-nowrap font-medium px-2 py-1 rounded-md bg-stone-900 dark:bg-slate-800 text-white shadow-md border border-black/10 dark:border-slate-700">
                 {isMounted && !isOnline ? "Koneksi Offline" : "Sistem Normal & Online"}
               </span>
             </div>
@@ -227,11 +227,11 @@ export function DashboardHeader({
             <button
               onClick={() => setIsNotifOpen((prev) => !prev)}
               aria-label="Notifikasi"
-              className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-white border border-stone-200/70 text-stone-600 shadow-xs hover:bg-stone-50 hover:text-stone-900 transition-all active:scale-95 cursor-pointer"
+              className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-stone-200/70 dark:border-slate-700 text-stone-600 dark:text-slate-300 shadow-xs hover:bg-stone-50 dark:hover:bg-slate-700 hover:text-stone-900 dark:hover:text-white transition-all active:scale-95 cursor-pointer"
             >
               <Bell className="h-4 w-4" />
               {recentNotifications.length > 0 && (
-                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-orange ring-2 ring-white" />
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-orange ring-2 ring-white dark:ring-slate-800" />
               )}
             </button>
 
@@ -243,23 +243,23 @@ export function DashboardHeader({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.96 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="fixed left-4 right-4 top-[72px] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2.5 w-auto sm:w-80 origin-top sm:origin-top-right rounded-3xl border border-black/[0.06] bg-white p-4 shadow-xl backdrop-blur-xl z-50"
+                  className="fixed left-4 right-4 top-[72px] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2.5 w-auto sm:w-80 origin-top sm:origin-top-right rounded-3xl border border-black/[0.06] dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xl backdrop-blur-xl z-50"
                 >
-                  <div className="mb-3 flex items-center justify-between pb-2 border-b border-stone-100">
+                  <div className="mb-3 flex items-center justify-between pb-2 border-b border-stone-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-xs font-bold text-stone-900">Notifikasi Aktivitas</h3>
-                      <span className="text-[10px] font-semibold text-brand-orange bg-pastel-peach/60 px-2 py-0.5 rounded-full">
+                      <h3 className="text-xs font-bold text-stone-900 dark:text-slate-100">Notifikasi Aktivitas</h3>
+                      <span className="text-[10px] font-semibold text-brand-orange bg-pastel-peach/60 dark:bg-brand-orange/20 px-2 py-0.5 rounded-full">
                         24 Jam
                       </span>
                     </div>
-                    <span className="text-[10px] font-semibold text-stone-500 bg-surface-muted px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-semibold text-stone-500 dark:text-slate-400 bg-surface-muted dark:bg-slate-800 px-2 py-0.5 rounded-full">
                       {recentNotifications.length} Baru
                     </span>
                   </div>
 
                   <div className="flex max-h-[300px] flex-col gap-2 overflow-y-auto pr-1">
                     {recentNotifications.length === 0 ? (
-                      <div className="py-8 flex flex-col items-center justify-center gap-2 text-center text-stone-400">
+                      <div className="py-8 flex flex-col items-center justify-center gap-2 text-center text-stone-400 dark:text-slate-500">
                         <Bell className="h-7 w-7 opacity-30" />
                         <span className="text-xs font-medium">Belum ada aktivitas baru.</span>
                       </div>
@@ -270,31 +270,31 @@ export function DashboardHeader({
                         return (
                           <div
                             key={notif.id}
-                            className="group flex items-start gap-3 rounded-2xl border border-stone-100 bg-surface-muted/40 p-2.5 transition-all hover:bg-surface-muted"
+                            className="group flex items-start gap-3 rounded-2xl border border-stone-100 dark:border-slate-800 bg-surface-muted/40 dark:bg-slate-800/50 p-2.5 transition-all hover:bg-surface-muted dark:hover:bg-slate-800"
                           >
                             <div
                               className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl ${
                                 isIncome
-                                  ? "bg-pastel-green text-emerald-800"
-                                  : "bg-pastel-peach text-brand-orange"
+                                  ? "bg-pastel-green dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300"
+                                  : "bg-pastel-peach dark:bg-rose-950/80 text-brand-orange dark:text-rose-300"
                               }`}
                             >
                               <Icon className="h-3.5 w-3.5" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-xs font-bold text-stone-900">
+                              <p className="truncate text-xs font-bold text-stone-900 dark:text-slate-100">
                                 {notif.name}
                               </p>
                               <div className="flex items-center justify-between mt-0.5">
                                 <span
                                   className={`text-xs font-extrabold ${
-                                    isIncome ? "text-emerald-700" : "text-stone-900"
+                                    isIncome ? "text-emerald-700 dark:text-emerald-400" : "text-stone-900 dark:text-slate-200"
                                   }`}
                                 >
                                   {isIncome ? "+" : "-"}
                                   {formatCurrency(notif.amount)}
                                 </span>
-                                <span className="text-[9px] text-stone-400">
+                                <span className="text-[9px] text-stone-400 dark:text-slate-500">
                                   {formatDistanceToNow(new Date(notif.created_at), {
                                     addSuffix: true,
                                     locale: id,
@@ -327,7 +327,7 @@ export function DashboardHeader({
                 </div>
               </div>
               {/* Online Indicator Dot */}
-              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-emerald-500 ring-2 ring-white" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
             </button>
 
             {/* Profile Dropdown Menu */}
@@ -338,39 +338,39 @@ export function DashboardHeader({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.96 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2.5 w-56 origin-top-right rounded-3xl border border-black/[0.06] bg-white p-2 shadow-xl z-50"
+                  className="absolute right-0 top-full mt-2.5 w-56 origin-top-right rounded-3xl border border-black/[0.06] dark:border-slate-800 bg-white dark:bg-slate-900 p-2 shadow-xl z-50"
                 >
-                  <div className="px-3 py-2.5 border-b border-stone-100">
-                    <p className="text-xs font-bold text-stone-900">Pamungkas</p>
-                    <p className="text-[10px] text-stone-500 truncate">user@moneytracker.app</p>
+                  <div className="px-3 py-2.5 border-b border-stone-100 dark:border-slate-800">
+                    <p className="text-xs font-bold text-stone-900 dark:text-slate-100">Pamungkas</p>
+                    <p className="text-[10px] text-stone-500 dark:text-slate-400 truncate">user@moneytracker.app</p>
                   </div>
 
                   <div className="py-1 flex flex-col gap-0.5">
                     <Link
                       href="/dashboard/profile"
                       onClick={() => setIsProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold text-stone-700 hover:bg-surface-muted hover:text-stone-900 transition-colors"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold text-stone-700 dark:text-slate-200 hover:bg-surface-muted dark:hover:bg-slate-800 hover:text-stone-900 dark:hover:text-white transition-colors"
                     >
-                      <User className="h-3.5 w-3.5 text-stone-500" />
+                      <User className="h-3.5 w-3.5 text-stone-500 dark:text-slate-400" />
                       Profil & Pengaturan
                     </Link>
                     <Link
                       href="/dashboard/budget"
                       onClick={() => setIsProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold text-stone-700 hover:bg-surface-muted hover:text-stone-900 transition-colors"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold text-stone-700 dark:text-slate-200 hover:bg-surface-muted dark:hover:bg-slate-800 hover:text-stone-900 dark:hover:text-white transition-colors"
                     >
-                      <TrendingUp className="h-3.5 w-3.5 text-stone-500" />
+                      <TrendingUp className="h-3.5 w-3.5 text-stone-500 dark:text-slate-400" />
                       Target Anggaran
                     </Link>
                   </div>
 
-                  <div className="pt-1 border-t border-stone-100">
+                  <div className="pt-1 border-t border-stone-100 dark:border-slate-800">
                     <form action={signOutAction}>
                       <button
                         type="submit"
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors text-left cursor-pointer"
                       >
-                        <LogOut className="h-3.5 w-3.5 text-rose-500" />
+                        <LogOut className="h-3.5 w-3.5 text-rose-500 dark:text-rose-400" />
                         Keluar Akun
                       </button>
                     </form>

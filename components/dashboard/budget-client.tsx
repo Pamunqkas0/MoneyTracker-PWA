@@ -273,35 +273,35 @@ export function BudgetClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F4EE] text-[#18181B] p-3 sm:p-5 md:p-6 lg:p-8 pb-36 flex justify-center items-start selection:bg-brand-orange/20">
+    <div className="min-h-screen bg-[#F7F4EE] dark:bg-[#0b0f1a] text-[#18181B] dark:text-[#f1f5f9] px-3 pb-3 pt-0 sm:p-5 md:p-6 lg:p-8 flex justify-center items-start selection:bg-brand-orange/20">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="w-full max-w-xl md:max-w-2xl lg:max-w-3xl rounded-[32px] sm:rounded-[36px] bg-white/95 backdrop-blur-sm border border-black/[0.04] p-5 sm:p-7 md:p-8 shadow-xs flex flex-col gap-6"
+        className="w-full max-w-xl md:max-w-2xl lg:max-w-3xl rounded-[32px] sm:rounded-[36px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-black/[0.04] dark:border-slate-800 p-5 sm:p-7 md:p-8 shadow-xs flex flex-col gap-6"
       >
         {/* ── 1. TOP HEADER MOBILE (☰ vs Hello, Fred vs 👤) ── */}
         <div className="flex items-center justify-between">
           <Link
             href="/dashboard"
-            className="w-11 h-11 rounded-2xl bg-white border border-black/[0.06] shadow-xs flex items-center justify-center text-stone-800 hover:bg-stone-50 active:scale-95 transition-all cursor-pointer"
+            className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-800 border border-black/[0.06] dark:border-slate-700 shadow-xs flex items-center justify-center text-stone-800 dark:text-slate-200 hover:bg-stone-50 dark:hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
             aria-label="Kembali ke Dashboard"
           >
             <Menu className="w-5 h-5 stroke-[2.2]" />
           </Link>
 
           <div className="flex flex-col items-center text-center">
-            <h1 className="text-sm sm:text-base font-bold text-[#18181B] leading-tight">
+            <h1 className="text-sm sm:text-base font-bold text-[#18181B] dark:text-slate-100 leading-tight">
               Hello, Fred
             </h1>
-            <span className="text-xs text-stone-400 font-medium leading-tight">
+            <span className="text-xs text-stone-400 dark:text-slate-400 font-medium leading-tight">
               @freddoe12
             </span>
           </div>
 
           <Link
             href="/dashboard/profile"
-            className="w-11 h-11 rounded-2xl bg-white border border-black/[0.06] shadow-xs flex items-center justify-center text-stone-700 hover:bg-stone-50 active:scale-95 transition-all cursor-pointer"
+            className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-800 border border-black/[0.06] dark:border-slate-700 shadow-xs flex items-center justify-center text-stone-700 dark:text-slate-200 hover:bg-stone-50 dark:hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
             aria-label="Profil Pengguna"
           >
             <User className="w-5 h-5 stroke-[2.2]" />
@@ -311,12 +311,12 @@ export function BudgetClient({
         {/* ── 2. SAVINGS TITLE & TIMEFRAME SELECTOR ── */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl sm:text-2xl font-black text-[#18181B] tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-[#18181B] dark:text-slate-100 tracking-tight">
               Savings
             </h2>
 
             {/* Timeframe selector pill */}
-            <div className="flex items-center bg-surface-muted/80 p-1 rounded-full border border-black/[0.03] text-xs font-medium">
+            <div className="flex items-center bg-surface-muted/80 dark:bg-slate-800/80 p-1 rounded-full border border-black/[0.03] dark:border-slate-700/60 text-xs font-medium">
               {(["24h", "7d", "30d"] as const).map((tf) => (
                 <button
                   key={tf}
@@ -326,7 +326,7 @@ export function BudgetClient({
                     "px-3 py-1 rounded-full transition-all cursor-pointer font-bold",
                     selectedTimeframe === tf
                       ? "bg-[#E85024] text-white shadow-xs"
-                      : "text-stone-500 hover:text-stone-900"
+                      : "text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white"
                   )}
                 >
                   {tf}
@@ -337,13 +337,13 @@ export function BudgetClient({
 
           {/* Big Amount */}
           <div className="my-1">
-            <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#18181B] tracking-tight tabular-nums block">
+            <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#18181B] dark:text-slate-100 tracking-tight tabular-nums block">
               $ {totalSavings.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
 
           {/* Gain subtext */}
-          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400">
             <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>$3,0043.99 (0,34%)</span>
           </div>
@@ -369,7 +369,7 @@ export function BudgetClient({
                     className={cn(
                       "w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shadow-xs transition-all",
                       goal.color,
-                      isActive ? "ring-2 ring-black/20 scale-105" : "opacity-85 hover:opacity-100"
+                      isActive ? "ring-2 ring-black/20 dark:ring-white/40 scale-105" : "opacity-85 hover:opacity-100"
                     )}
                   >
                     <GoalIcon className="w-5 h-5 sm:w-6 sm:h-6 text-stone-900" />
@@ -378,10 +378,10 @@ export function BudgetClient({
                   {/* Active Goal Label Info */}
                   {isActive && (
                     <div className="flex flex-col">
-                      <span className="text-xs font-bold text-[#18181B] leading-tight">
+                      <span className="text-xs font-bold text-[#18181B] dark:text-slate-100 leading-tight">
                         {goal.name}
                       </span>
-                      <span className="text-[11px] font-semibold text-stone-500 tabular-nums">
+                      <span className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 tabular-nums">
                         {goal.current_amount.toLocaleString("en-US")} / {goal.target_amount.toLocaleString("en-US")}
                       </span>
                     </div>
@@ -435,7 +435,7 @@ export function BudgetClient({
         {/* ── 4. TEAM MEMBERS SECTION ── */}
         <div className="flex flex-col gap-2 pt-1">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-[#18181B] tracking-tight">
+            <h3 className="text-base font-bold text-[#18181B] dark:text-slate-100 tracking-tight">
               Team Members
             </h3>
             <button
@@ -450,21 +450,21 @@ export function BudgetClient({
             <div className="flex items-center gap-3">
               {/* Stacked Circular Avatars */}
               <div className="flex items-center -space-x-2.5">
-                <div className="w-9 h-9 rounded-full border-2 border-white overflow-hidden shadow-xs bg-amber-100 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full border-2 border-white dark:border-slate-800 overflow-hidden shadow-xs bg-amber-100 flex items-center justify-center">
                   <img
                     src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80"
                     alt="Member 1"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="w-9 h-9 rounded-full border-2 border-white overflow-hidden shadow-xs bg-stone-800 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full border-2 border-white dark:border-slate-800 overflow-hidden shadow-xs bg-stone-800 flex items-center justify-center">
                   <img
                     src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
                     alt="Member 2"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="w-9 h-9 rounded-full border-2 border-white overflow-hidden shadow-xs bg-rose-100 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full border-2 border-white dark:border-slate-800 overflow-hidden shadow-xs bg-rose-100 flex items-center justify-center">
                   <img
                     src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
                     alt="Member 3"
@@ -473,7 +473,7 @@ export function BudgetClient({
                 </div>
               </div>
 
-              <span className="text-xs font-semibold text-stone-700">
+              <span className="text-xs font-semibold text-stone-700 dark:text-slate-300">
                 You & 2 members
               </span>
             </div>
@@ -491,13 +491,13 @@ export function BudgetClient({
         </div>
 
         {/* ── 5. WIDGET "TOP UP NOW" (Koin Emas $50, $100, $150, $250) ── */}
-        <div className="rounded-3xl border border-stone-200/60 bg-surface-muted/30 p-4 sm:p-5 flex flex-col gap-3.5">
+        <div className="rounded-3xl border border-stone-200/60 dark:border-slate-700/60 bg-surface-muted/30 dark:bg-slate-800/40 p-4 sm:p-5 flex flex-col gap-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-2xs">
                 <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
               </div>
-              <span className="text-xs sm:text-sm font-bold text-[#18181B]">
+              <span className="text-xs sm:text-sm font-bold text-[#18181B] dark:text-slate-100">
                 Top up now
               </span>
             </div>
@@ -506,7 +506,7 @@ export function BudgetClient({
               <motion.span
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full"
+                className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-full"
               >
                 {topUpSuccessMsg}
               </motion.span>
@@ -520,7 +520,7 @@ export function BudgetClient({
                 key={val}
                 type="button"
                 onClick={() => handleTopUp(val)}
-                className="bg-white rounded-2xl p-3 sm:p-3.5 border border-stone-200/70 shadow-xs flex flex-col items-center justify-center gap-1.5 hover:scale-105 hover:border-amber-400 hover:shadow-md active:scale-95 transition-all cursor-pointer group"
+                className="bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-3.5 border border-stone-200/70 dark:border-slate-700 shadow-xs flex flex-col items-center justify-center gap-1.5 hover:scale-105 hover:border-amber-400 hover:shadow-md active:scale-95 transition-all cursor-pointer group"
               >
                 {/* Shiny Gold Coin Emblem */}
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-200 flex items-center justify-center shadow-xs border border-amber-300 group-hover:rotate-12 transition-transform">
@@ -528,7 +528,7 @@ export function BudgetClient({
                     🪙
                   </span>
                 </div>
-                <span className="text-xs font-bold text-stone-800 tabular-nums">
+                <span className="text-xs font-bold text-stone-800 dark:text-slate-200 tabular-nums">
                   ${val}
                 </span>
               </button>
@@ -537,13 +537,13 @@ export function BudgetClient({
         </div>
 
         {/* ── 6. MONTHLY BUDGET BREAKDOWN SECTION (Preserved) ── */}
-        <div className="flex flex-col gap-4 pt-2 border-t border-stone-100">
+        <div className="flex flex-col gap-4 pt-2 border-t border-stone-100 dark:border-slate-800">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-[#18181B]">
+              <h3 className="text-sm sm:text-base font-bold text-[#18181B] dark:text-slate-100">
                 Batas Pengeluaran Bulanan
               </h3>
-              <p className="text-xs text-stone-500 font-medium">
+              <p className="text-xs text-stone-500 dark:text-slate-400 font-medium">
                 Kontrol limit pengeluaran per kategori
               </p>
             </div>
@@ -554,11 +554,11 @@ export function BudgetClient({
                 value={String(currentMonth)}
                 onValueChange={(val) => handlePeriodChange(Number(val), currentYear)}
               >
-                <SelectTrigger className="w-28 rounded-2xl bg-surface-muted/60 border-stone-200 text-xs font-bold h-9">
-                  <Calendar className="h-3.5 w-3.5 mr-1 text-stone-400" />
+                <SelectTrigger className="w-28 rounded-2xl bg-surface-muted/60 dark:bg-slate-800 border-stone-200 dark:border-slate-700 text-xs font-bold h-9 text-[#18181B] dark:text-slate-200">
+                  <Calendar className="h-3.5 w-3.5 mr-1 text-stone-400 dark:text-slate-400" />
                   <SelectValue placeholder="Bulan" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl">
+                <SelectContent className="rounded-2xl dark:border-slate-800 dark:bg-slate-900">
                   {MONTHS.map((m) => (
                     <SelectItem key={m.value} value={String(m.value)} className="text-xs font-medium">
                       {m.label}
@@ -571,10 +571,10 @@ export function BudgetClient({
                 value={String(currentYear)}
                 onValueChange={(val) => handlePeriodChange(currentMonth, Number(val))}
               >
-                <SelectTrigger className="w-24 rounded-2xl bg-surface-muted/60 border-stone-200 text-xs font-bold h-9">
+                <SelectTrigger className="w-24 rounded-2xl bg-surface-muted/60 dark:bg-slate-800 border-stone-200 dark:border-slate-700 text-xs font-bold h-9 text-[#18181B] dark:text-slate-200">
                   <SelectValue placeholder="Tahun" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl">
+                <SelectContent className="rounded-2xl dark:border-slate-800 dark:bg-slate-900">
                   {YEARS.map((y) => (
                     <SelectItem key={y} value={String(y)} className="text-xs font-medium">
                       {y}
@@ -585,7 +585,7 @@ export function BudgetClient({
 
               <Button
                 onClick={handleOpenAdd}
-                className="h-9 px-3.5 rounded-full bg-[#1A1A1A] hover:bg-black text-white text-xs font-bold shadow-xs cursor-pointer"
+                className="h-9 px-3.5 rounded-full bg-[#1A1A1A] dark:bg-white hover:bg-black dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold shadow-xs cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 <span>Limit</span>
@@ -596,10 +596,10 @@ export function BudgetClient({
           {/* Budget Items List */}
           <div className="space-y-2.5">
             {initialBudgets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 rounded-3xl bg-surface-muted/30 border border-stone-200/50 text-center px-4">
-                <Target className="h-8 w-8 text-stone-300 mb-2" />
-                <p className="text-xs font-bold text-[#18181B]">Belum Ada Anggaran</p>
-                <p className="text-[11px] text-stone-500 mt-0.5">Buat limit pengeluaran bulanan pertama Anda.</p>
+              <div className="flex flex-col items-center justify-center py-10 rounded-3xl bg-surface-muted/30 dark:bg-slate-800/40 border border-stone-200/50 dark:border-slate-700/60 text-center px-4">
+                <Target className="h-8 w-8 text-stone-300 dark:text-slate-600 mb-2" />
+                <p className="text-xs font-bold text-[#18181B] dark:text-slate-100">Belum Ada Anggaran</p>
+                <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5">Buat limit pengeluaran bulanan pertama Anda.</p>
                 <Button
                   onClick={handleOpenAdd}
                   className="mt-3 h-8 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white text-xs font-bold"
@@ -620,37 +620,37 @@ export function BudgetClient({
                 return (
                   <div
                     key={item.id}
-                    className="p-3.5 rounded-2xl bg-surface-muted/40 hover:bg-surface-muted/70 transition-colors border border-stone-200/50 flex flex-col gap-2"
+                    className="p-3.5 rounded-2xl bg-surface-muted/40 dark:bg-slate-800/60 hover:bg-surface-muted/70 dark:hover:bg-slate-800 transition-colors border border-stone-200/50 dark:border-slate-700/60 flex flex-col gap-2"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-base leading-none">{metaEmoji}</span>
-                        <span className="text-xs font-bold text-[#18181B]">{metaLabel}</span>
+                        <span className="text-xs font-bold text-[#18181B] dark:text-slate-100">{metaLabel}</span>
                         {isOver && (
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300">
                             Overlimit
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className="text-xs font-black tabular-nums text-stone-900">
+                        <span className="text-xs font-black tabular-nums text-stone-900 dark:text-slate-100">
                           {formatCurrency(item.spent, true)} / {formatCurrency(item.limit, true)}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleOpenEdit(item)}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 cursor-pointer ml-1"
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-slate-700/50 cursor-pointer ml-1"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
 
-                    <div className="w-full bg-stone-200/80 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-stone-200/80 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
                       <div
                         className={cn(
                           "h-full rounded-full transition-all duration-300",
-                          isOver ? "bg-rose-500" : pct >= 80 ? "bg-amber-500" : "bg-[#1A1A1A]"
+                          isOver ? "bg-rose-500" : pct >= 80 ? "bg-amber-500" : "bg-[#1A1A1A] dark:bg-slate-100"
                         )}
                         style={{ width: `${Math.min(pct, 100)}%` }}
                       />
@@ -666,14 +666,14 @@ export function BudgetClient({
       {/* ── Dialog Form Tambah / Edit Limit Budget ── */}
       <AnimatePresence>
         {dialogOpen && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setDialogOpen(false)} />
+          <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[70]" onClick={() => setDialogOpen(false)} />
             <motion.div
               initial={{ opacity: 0, y: "100%" }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 240 }}
-              className="relative w-full max-w-md rounded-t-[28px] sm:rounded-3xl border border-black/[0.04] bg-white p-5 sm:p-6 shadow-2xl z-10 max-h-[90vh] overflow-y-auto pb-8 sm:pb-6"
+              className="relative w-full max-w-md rounded-t-[32px] sm:rounded-3xl border border-black/[0.04] dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-2xl z-[80] max-h-[90vh] overflow-y-auto pb-10 sm:pb-6 text-stone-900 dark:text-slate-100"
             >
               {isSuccess ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
@@ -681,28 +681,28 @@ export function BudgetClient({
                     <CheckCircle2 className="h-7 w-7 text-emerald-800" />
                   </div>
                   <div className="space-y-0.5">
-                    <p className="font-bold text-base text-[#18181B]">Anggaran Berhasil Disimpan!</p>
-                    <p className="text-xs text-stone-500">Limit baru berhasil diperbarui dalam sistem.</p>
+                    <p className="font-bold text-base text-[#18181B] dark:text-slate-100">Anggaran Berhasil Disimpan!</p>
+                    <p className="text-xs text-stone-500 dark:text-slate-400">Limit baru berhasil diperbarui dalam sistem.</p>
                   </div>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
+                  <div className="flex items-center gap-3 pb-3 border-b border-stone-100 dark:border-slate-800">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#FAD170] text-amber-900 shadow-xs">
                       <Target className="h-4 w-4 stroke-[2.5]" />
                     </div>
                     <div>
-                      <h2 className="text-sm sm:text-base font-bold text-[#18181B]">
+                      <h2 className="text-sm sm:text-base font-bold text-[#18181B] dark:text-slate-100">
                         {editingBudget ? "Edit Batas Anggaran" : "Atur Anggaran Kategori"}
                       </h2>
-                      <p className="text-xs text-stone-500 mt-0.5">
+                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
                         Tentukan batas limit bulanan untuk kategori pengeluaran.
                       </p>
                     </div>
                   </div>
 
                   {errorMsg && (
-                    <div className="flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-500/20 px-3 py-2.5 text-xs text-rose-600 font-medium">
+                    <div className="flex items-center gap-2 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-500/20 px-3 py-2.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
                       <AlertTriangle className="h-4 w-4 shrink-0" />
                       {errorMsg}
                     </div>
@@ -710,12 +710,12 @@ export function BudgetClient({
 
                   {/* Kategori */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-stone-500">Kategori Pengeluaran</Label>
+                    <Label className="text-xs font-semibold text-stone-500 dark:text-slate-400">Kategori Pengeluaran</Label>
                     {editingBudget ? (
                       <Input
                         disabled
                         value={availableCategories.bySlug[editingBudget.category]?.name || editingBudget.category}
-                        className="bg-surface-muted/60 rounded-2xl h-10 text-sm font-semibold text-[#18181B]"
+                        className="bg-surface-muted/60 dark:bg-slate-800 rounded-2xl h-10 text-sm font-semibold text-[#18181B] dark:text-slate-100 border-stone-200 dark:border-slate-700"
                       />
                     ) : (
                       <Controller
@@ -723,10 +723,10 @@ export function BudgetClient({
                         control={control}
                         render={({ field }) => (
                           <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger className="rounded-2xl h-10 text-xs sm:text-sm cursor-pointer bg-surface-muted/60 border-stone-200">
+                            <SelectTrigger className="rounded-2xl h-10 text-xs sm:text-sm cursor-pointer bg-surface-muted/60 dark:bg-slate-800 border-stone-200 dark:border-slate-700 text-[#18181B] dark:text-slate-100">
                               <SelectValue placeholder="Pilih kategori..." />
                             </SelectTrigger>
-                            <SelectContent className="rounded-2xl">
+                            <SelectContent className="rounded-2xl dark:border-slate-800 dark:bg-slate-900 z-[90] max-h-[260px]">
                               {availableCategories.expense.map((cat) => (
                                 <SelectItem key={`${cat.type}-${cat.slug}`} value={cat.slug} className="rounded-xl">
                                   <span className="flex items-center gap-2 text-xs sm:text-sm">
@@ -747,9 +747,9 @@ export function BudgetClient({
 
                   {/* Limit */}
                   <div className="space-y-1.5">
-                    <Label htmlFor="limit" className="text-xs font-semibold text-stone-500">Batas Limit Bulanan</Label>
-                    <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
-                      <span className="pl-3 text-sm font-bold text-stone-400">
+                    <Label htmlFor="limit" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Batas Limit Bulanan</Label>
+                    <div className="relative flex items-center rounded-2xl bg-surface-muted/60 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 p-1 focus-within:ring-2 focus-within:ring-black/10 dark:focus-within:ring-white/20 focus-within:bg-white dark:focus-within:bg-slate-850 transition-all">
+                      <span className="pl-3 text-sm font-bold text-stone-400 dark:text-slate-500">
                         Rp
                       </span>
                       <Input
@@ -758,7 +758,7 @@ export function BudgetClient({
                         placeholder="0"
                         value={rawLimit ? Number(rawLimit).toLocaleString("id-ID") : ""}
                         onChange={handleLimitChange}
-                        className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-base h-9 text-[#18181B] tabular-nums bg-transparent pr-2"
+                        className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-base h-9 text-[#18181B] dark:text-slate-100 tabular-nums bg-transparent pr-2"
                       />
                     </div>
                     {errors.limit && (
@@ -767,12 +767,12 @@ export function BudgetClient({
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2.5 pt-2">
+                  <div className="flex gap-2.5 pt-2 pb-2">
                     <Button
                       type="button"
                       variant="ghost"
                       onClick={() => setDialogOpen(false)}
-                      className="flex-1 rounded-full h-11 text-xs font-bold cursor-pointer bg-stone-100 hover:bg-stone-200 text-stone-700"
+                      className="flex-1 rounded-full h-11 text-xs font-bold cursor-pointer bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 text-stone-700 dark:text-slate-300"
                     >
                       Batal
                     </Button>

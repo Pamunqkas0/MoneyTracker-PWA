@@ -15,16 +15,16 @@ export function ThemeSettingsCard() {
 
   if (!mounted) {
     return (
-      <div className="bg-white rounded-3xl p-5 md:p-6 border border-black/[0.03] shadow-xs flex flex-col gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 md:p-6 border border-black/[0.03] dark:border-slate-800 shadow-xs flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl bg-[#DAEFEA] flex items-center justify-center text-teal-900 shadow-2xs shrink-0">
+          <div className="w-9 h-9 rounded-2xl bg-[#DAEFEA] dark:bg-teal-950/60 flex items-center justify-center text-teal-900 dark:text-teal-300 shadow-2xs shrink-0">
             <Palette className="h-5 w-5 stroke-[2.2]" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-[#18181B]">Tampilan (Tema)</h3>
+            <h3 className="text-sm sm:text-base font-bold text-[#18181B] dark:text-slate-100">Tampilan (Tema)</h3>
           </div>
         </div>
-        <div className="h-14 bg-surface-muted/60 animate-pulse rounded-2xl" />
+        <div className="h-14 bg-surface-muted/60 dark:bg-slate-800/60 animate-pulse rounded-2xl" />
       </div>
     );
   }
@@ -48,14 +48,14 @@ export function ThemeSettingsCard() {
   ];
 
   return (
-    <div className="bg-white rounded-3xl p-5 md:p-6 border border-black/[0.03] shadow-xs flex flex-col gap-4">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 md:p-6 border border-black/[0.03] dark:border-slate-800 shadow-xs flex flex-col gap-4 transition-colors">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-2xl bg-[#DAEFEA] flex items-center justify-center text-teal-900 shadow-2xs shrink-0">
+        <div className="w-9 h-9 rounded-2xl bg-[#DAEFEA] dark:bg-teal-950/60 flex items-center justify-center text-teal-900 dark:text-teal-300 shadow-2xs shrink-0">
           <Palette className="h-5 w-5 stroke-[2.2]" />
         </div>
         <div>
-          <h3 className="text-sm sm:text-base font-bold text-[#18181B]">Tampilan (Tema)</h3>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <h3 className="text-sm sm:text-base font-bold text-[#18181B] dark:text-slate-100">Tampilan (Tema)</h3>
+          <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
             Sesuaikan mode terang atau gelap sesuai kenyamanan Anda
           </p>
         </div>
@@ -73,11 +73,11 @@ export function ThemeSettingsCard() {
               className={cn(
                 "flex flex-col items-center justify-center gap-1.5 py-3.5 px-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer",
                 isActive
-                  ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-xs scale-[1.02]"
-                  : "bg-surface-muted/60 hover:bg-stone-100 text-stone-600 border-stone-200/80 hover:border-stone-300"
+                  ? "bg-[#1A1A1A] text-white border-[#1A1A1A] dark:bg-white dark:text-slate-900 dark:border-white shadow-xs scale-[1.02]"
+                  : "bg-surface-muted/60 dark:bg-slate-800/80 hover:bg-stone-100 dark:hover:bg-slate-700/80 text-stone-600 dark:text-slate-300 border-stone-200/80 dark:border-slate-700/80"
               )}
             >
-              <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#D8F5A2]" : "text-stone-500")} />
+              <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#D8F5A2] dark:text-[#E85024]" : "text-stone-500 dark:text-slate-400")} />
               <span>{item.label}</span>
             </button>
           );
@@ -86,4 +86,3 @@ export function ThemeSettingsCard() {
     </div>
   );
 }
-

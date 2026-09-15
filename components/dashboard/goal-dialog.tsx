@@ -128,17 +128,17 @@ export function GoalDialog({ goal, open, onOpenChange }: GoalDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showHandle className="p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white border border-black/[0.04] shadow-2xl max-w-md w-full mx-auto">
-        <DialogHeader className="p-6 pb-4 border-b border-stone-100 text-left">
+      <DialogContent showHandle className="p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl max-w-md w-full mx-auto text-stone-900 dark:text-slate-100">
+        <DialogHeader className="p-6 pb-4 border-b border-stone-100 dark:border-slate-800 text-left">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D8F5A2] text-stone-900 shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D8F5A2] dark:bg-emerald-950/80 text-stone-900 shadow-xs">
               <AnimatedEmoji emoji={formData.emoji || "🎯"} size={22} />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-[#18181B]">
+              <DialogTitle className="text-lg font-bold text-[#18181B] dark:text-slate-100">
                 {goal ? "Edit Target Tabungan" : "Tambah Target Baru"}
               </DialogTitle>
-              <DialogDescription className="text-xs text-stone-500 mt-0.5">
+              <DialogDescription className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
                 {goal ? "Perbarui jumlah uang terkumpul atau target." : "Buat target finansial baru Anda."}
               </DialogDescription>
             </div>
@@ -151,32 +151,32 @@ export function GoalDialog({ goal, open, onOpenChange }: GoalDialogProps) {
             {/* Emoji and Name Row */}
             <div className="flex gap-2.5">
               <div className="space-y-1.5 w-[76px] shrink-0">
-                <Label htmlFor="emoji" className="text-xs font-semibold text-stone-500">Emoji</Label>
+                <Label htmlFor="emoji" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Emoji</Label>
                 <Input
                   id="emoji"
                   value={formData.emoji}
                   onChange={(e) => setFormData(prev => ({ ...prev, emoji: e.target.value }))}
-                  className="h-11 text-xl text-center rounded-2xl bg-surface-muted/60 border-stone-200/50 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
+                  className="h-11 text-xl text-center rounded-2xl bg-surface-muted/60 dark:bg-slate-800 border-stone-200/50 dark:border-slate-700 text-stone-900 dark:text-slate-100 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/20 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all font-medium"
                   maxLength={2}
                 />
               </div>
               <div className="space-y-1.5 flex-1 min-w-0">
-                <Label htmlFor="name" className="text-xs font-semibold text-stone-500">Nama Target</Label>
+                <Label htmlFor="name" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Nama Target</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="Mis: Dana Darurat, Beli Laptop"
-                  className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
+                  className="h-11 text-sm rounded-2xl bg-surface-muted/60 dark:bg-slate-800 border-stone-200/50 dark:border-slate-700 px-4 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/20 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all font-medium text-stone-900 dark:text-slate-100"
                 />
               </div>
             </div>
 
             {/* Target Amount */}
             <div className="space-y-1.5">
-              <Label htmlFor="target_amount" className="text-xs font-semibold text-stone-500">Target Nominal</Label>
-              <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200/50 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
-                <span className="pl-3 text-sm font-bold text-stone-400">
+              <Label htmlFor="target_amount" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Target Nominal</Label>
+              <div className="relative flex items-center rounded-2xl bg-surface-muted/60 dark:bg-slate-800 border border-stone-200/50 dark:border-slate-700 p-1 focus-within:ring-2 focus-within:ring-black/10 dark:focus-within:ring-white/20 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all">
+                <span className="pl-3 text-sm font-bold text-stone-400 dark:text-slate-500">
                   Rp
                 </span>
                 <Input
@@ -185,16 +185,16 @@ export function GoalDialog({ goal, open, onOpenChange }: GoalDialogProps) {
                   value={formatRupiah(formData.target_amount)}
                   onChange={(e) => handleAmountChange("target_amount", e.target.value)}
                   placeholder="0"
-                  className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-2xl h-10 text-[#18181B] tabular-nums bg-transparent pr-2"
+                  className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-2xl h-10 text-[#18181B] dark:text-slate-100 tabular-nums bg-transparent pr-2"
                 />
               </div>
             </div>
 
             {/* Current Amount */}
             <div className="space-y-1.5">
-              <Label htmlFor="current_amount" className="text-xs font-semibold text-stone-500">Uang Terkumpul</Label>
-              <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200/50 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
-                <span className="pl-3 text-sm font-bold text-stone-400">
+              <Label htmlFor="current_amount" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Uang Terkumpul</Label>
+              <div className="relative flex items-center rounded-2xl bg-surface-muted/60 dark:bg-slate-800 border border-stone-200/50 dark:border-slate-700 p-1 focus-within:ring-2 focus-within:ring-black/10 dark:focus-within:ring-white/20 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all">
+                <span className="pl-3 text-sm font-bold text-stone-400 dark:text-slate-500">
                   Rp
                 </span>
                 <Input
@@ -203,20 +203,20 @@ export function GoalDialog({ goal, open, onOpenChange }: GoalDialogProps) {
                   value={formatRupiah(formData.current_amount)}
                   onChange={(e) => handleAmountChange("current_amount", e.target.value)}
                   placeholder="0"
-                  className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] tabular-nums bg-transparent pr-2"
+                  className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] dark:text-slate-100 tabular-nums bg-transparent pr-2"
                 />
               </div>
             </div>
 
             {/* Target Date */}
             <div className="space-y-1.5">
-              <Label htmlFor="target_date" className="text-xs font-semibold text-stone-500">Tenggat Target</Label>
+              <Label htmlFor="target_date" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Tenggat Target</Label>
               <Input
                 id="target_date"
                 type="date"
                 value={formData.target_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, target_date: e.target.value }))}
-                className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
+                className="h-11 text-sm rounded-2xl bg-surface-muted/60 dark:bg-slate-800 border-stone-200/50 dark:border-slate-700 px-4 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/20 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all font-medium text-stone-900 dark:text-slate-100"
               />
             </div>
 
@@ -228,7 +228,7 @@ export function GoalDialog({ goal, open, onOpenChange }: GoalDialogProps) {
               <Button 
                 type="button" 
                 variant="ghost" 
-                className="w-full sm:w-auto h-12 rounded-full font-semibold bg-rose-50 text-rose-600 hover:bg-rose-100 cursor-pointer text-sm" 
+                className="w-full sm:w-auto h-12 rounded-full font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 cursor-pointer text-sm" 
                 onClick={handleDelete}
                 disabled={loading || deleting}
               >
