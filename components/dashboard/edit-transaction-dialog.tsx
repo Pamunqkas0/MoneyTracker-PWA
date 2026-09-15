@@ -161,17 +161,17 @@ export function EditTransactionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent showHandle className="p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white border border-black/[0.04] shadow-2xl max-w-lg w-full mx-auto">
-        <DialogHeader className="p-6 pb-4 border-b border-stone-100">
+      <DialogContent showHandle className="p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl max-w-lg w-full mx-auto">
+        <DialogHeader className="p-6 pb-4 border-b border-stone-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FDD5C1] text-[#E85024] shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FDD5C1] dark:bg-[#E85024]/20 text-[#E85024] dark:text-[#FDD5C1] shadow-xs">
               <PencilLine className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-[#18181B]">
+              <DialogTitle className="text-lg font-bold text-[#18181B] dark:text-slate-100">
                 Edit Transaksi
               </DialogTitle>
-              <DialogDescription className="text-xs text-stone-500 mt-0.5">
+              <DialogDescription className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
                 Perbarui detail transaksi tanpa menghilangkan sinkron saldo rekening.
               </DialogDescription>
             </div>
@@ -180,20 +180,20 @@ export function EditTransactionDialog({
 
         {isSuccess ? (
           <div className="flex flex-col items-center justify-center gap-3 px-6 pb-8 pt-6 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#D8F5A2] text-stone-900 shadow-sm">
-              <CheckCircle2 className="h-7 w-7 text-stone-800" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#D8F5A2] dark:bg-emerald-950/60 text-stone-900 dark:text-emerald-300 shadow-sm border border-emerald-500/20">
+              <CheckCircle2 className="h-7 w-7 text-stone-800 dark:text-emerald-300" />
             </div>
             <div>
-              <p className="font-bold text-[#18181B] text-base">Transaksi Berhasil Diperbarui</p>
-              <p className="mt-1 text-xs text-stone-500">
-                Nilai terbaru <span className="font-bold text-[#18181B]">{formatCurrency(Number(rawAmount || 0), true)}</span> sudah tersimpan.
+              <p className="font-bold text-[#18181B] dark:text-slate-100 text-base">Transaksi Berhasil Diperbarui</p>
+              <p className="mt-1 text-xs text-stone-500 dark:text-slate-400">
+                Nilai terbaru <span className="font-bold text-[#18181B] dark:text-slate-100">{formatCurrency(Number(rawAmount || 0), true)}</span> sudah tersimpan.
               </p>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 px-6 pb-6 pt-3">
             {errorMsg && (
-              <div className="flex items-center gap-2 rounded-2xl border border-rose-500/20 bg-rose-50 px-3.5 py-2.5 text-xs text-rose-600 font-medium">
+              <div className="flex items-center gap-2 rounded-2xl border border-rose-500/20 bg-rose-50 dark:bg-rose-950/30 px-3.5 py-2.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {errorMsg}
               </div>
@@ -203,15 +203,15 @@ export function EditTransactionDialog({
               name="type"
               control={control}
               render={({ field }) => (
-                <div className="grid grid-cols-2 gap-1.5 rounded-full bg-surface-muted/80 p-1 border border-black/[0.03]">
+                <div className="grid grid-cols-2 gap-1.5 rounded-full bg-surface-muted/80 dark:bg-slate-800/90 p-1 border border-black/[0.03] dark:border-slate-700/60">
                   <button
                     type="button"
                     onClick={() => field.onChange("expense")}
                     className={cn(
                       "rounded-full py-2 text-xs font-semibold transition-all cursor-pointer",
                       field.value === "expense"
-                        ? "bg-[#1A1A1A] text-white shadow-xs"
-                        : "text-stone-500 hover:text-stone-800"
+                        ? "bg-[#1A1A1A] dark:bg-slate-700 text-white shadow-xs"
+                        : "text-stone-500 dark:text-slate-400 hover:text-stone-800 dark:hover:text-slate-200"
                     )}
                   >
                     Pengeluaran
@@ -223,7 +223,7 @@ export function EditTransactionDialog({
                       "rounded-full py-2 text-xs font-semibold transition-all cursor-pointer",
                       field.value === "income"
                         ? "bg-[#E85024] text-white shadow-xs"
-                        : "text-stone-500 hover:text-stone-800"
+                        : "text-stone-500 dark:text-slate-400 hover:text-stone-800 dark:hover:text-slate-200"
                     )}
                   >
                     Pemasukan
@@ -234,23 +234,23 @@ export function EditTransactionDialog({
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-name" className="text-xs font-semibold text-stone-500">Nama Transaksi</Label>
+                <Label htmlFor="edit-name" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Nama Transaksi</Label>
                 <Input
                   id="edit-name"
                   {...register("name")}
                   placeholder="Contoh: Belanja Mingguan"
-                  className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
+                  className="h-11 text-sm rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border-stone-200/50 dark:border-slate-700 px-4 text-[#18181B] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all font-medium"
                 />
                 {errors.name && <p className="text-[11px] text-[#E85024] font-medium">{errors.name.message}</p>}
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="edit-date" className="text-xs font-semibold text-stone-500">Tanggal</Label>
+                <Label htmlFor="edit-date" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Tanggal</Label>
                 <Input
                   id="edit-date"
                   type="date"
                   {...register("date")}
-                  className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
+                  className="h-11 text-sm rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border-stone-200/50 dark:border-slate-700 px-4 text-[#18181B] dark:text-slate-100 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all font-medium"
                 />
                 {errors.date && <p className="text-[11px] text-[#E85024] font-medium">{errors.date.message}</p>}
               </div>
@@ -258,32 +258,32 @@ export function EditTransactionDialog({
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-amount" className="text-xs font-semibold text-stone-500">Nominal</Label>
-                <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200/50 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
-                  <span className="pl-3 text-sm font-bold text-stone-400">Rp</span>
+                <Label htmlFor="edit-amount" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Nominal</Label>
+                <div className="relative flex items-center rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border border-stone-200/50 dark:border-slate-700 p-1 focus-within:ring-2 focus-within:ring-black/10 dark:focus-within:ring-white/10 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all">
+                  <span className="pl-3 text-sm font-bold text-stone-400 dark:text-slate-500">Rp</span>
                   <Input
                     id="edit-amount"
                     inputMode="numeric"
                     value={rawAmount ? Number(rawAmount).toLocaleString("id-ID") : ""}
                     onChange={handleAmountChange}
                     placeholder="0"
-                    className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] tabular-nums bg-transparent pr-2"
+                    className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] dark:text-slate-100 tabular-nums bg-transparent pr-2 placeholder:text-stone-400 dark:placeholder:text-slate-500"
                   />
                 </div>
                 {errors.amount && <p className="text-[11px] text-[#E85024] font-medium">{errors.amount.message}</p>}
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-stone-500">Rekening</Label>
+                <Label className="text-xs font-semibold text-stone-500 dark:text-slate-400">Rekening</Label>
                 <Controller
                   name="bank_account_id"
                   control={control}
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full h-11 rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 font-medium text-sm">
+                      <SelectTrigger className="w-full h-11 rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border-stone-200/50 dark:border-slate-700 px-4 font-medium text-sm text-[#18181B] dark:text-slate-100">
                         <SelectValue placeholder="Pilih rekening" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-2xl border-stone-200">
+                      <SelectContent className="rounded-2xl border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-[#18181B] dark:text-slate-100">
                         {bankAccounts.map((account) => (
                           <SelectItem key={account.id} value={account.id} className="rounded-xl">
                             {account.name}
@@ -298,16 +298,16 @@ export function EditTransactionDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-stone-500">Kategori</Label>
+              <Label className="text-xs font-semibold text-stone-500 dark:text-slate-400">Kategori</Label>
               <Controller
                 name="category"
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-full h-11 rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 font-medium text-sm">
+                    <SelectTrigger className="w-full h-11 rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border-stone-200/50 dark:border-slate-700 px-4 font-medium text-sm text-[#18181B] dark:text-slate-100">
                       <SelectValue placeholder="Pilih kategori" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-stone-200">
+                    <SelectContent className="rounded-2xl border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-[#18181B] dark:text-slate-100">
                       {defaultCategories.map((category) => {
                         return (
                           <SelectItem key={`${category.type}-${category.slug}`} value={category.slug} className="rounded-xl">
@@ -326,13 +326,13 @@ export function EditTransactionDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="edit-notes" className="text-xs font-semibold text-stone-500">Catatan <span className="opacity-50 font-normal">(opsional)</span></Label>
+              <Label htmlFor="edit-notes" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Catatan <span className="opacity-50 font-normal">(opsional)</span></Label>
               <Textarea
                 id="edit-notes"
                 {...register("notes")}
                 rows={2}
                 placeholder="Catatan singkat…"
-                className="rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 py-2.5 text-sm resize-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
+                className="rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border-stone-200/50 dark:border-slate-700 px-4 py-2.5 text-sm resize-none focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all font-medium text-[#18181B] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-500"
               />
               {errors.notes && <p className="text-[11px] text-[#E85024] font-medium">{errors.notes.message}</p>}
             </div>
@@ -341,7 +341,7 @@ export function EditTransactionDialog({
               <Button
                 type="button"
                 variant="ghost"
-                className="flex-1 h-12 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold cursor-pointer text-sm"
+                className="flex-1 h-12 rounded-full bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 text-stone-700 dark:text-slate-200 font-semibold cursor-pointer text-sm"
                 onClick={() => handleDialogChange(false)}
               >
                 Batal

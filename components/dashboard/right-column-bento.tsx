@@ -127,24 +127,24 @@ export function RightColumnBento({
       : defaultChartData;
 
   return (
-    <div className="w-full rounded-[32px] bg-white border border-black/[0.03] shadow-xs p-5 md:p-6 flex flex-col justify-between gap-5 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+    <div className="w-full rounded-[32px] bg-white dark:bg-slate-800/90 border border-black/[0.03] dark:border-slate-700/60 shadow-xs p-5 md:p-6 flex flex-col justify-between gap-5 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
       {/* ═════════ 1. HEADER & CRYPTO ASSET TICKER BAR ═════════ */}
       <div className="flex flex-col gap-3">
         {/* Header */}
         <div className="flex items-center justify-between px-0.5">
-          <h2 className="text-base md:text-lg font-bold text-[#18181B] tracking-tight">
+          <h2 className="text-base md:text-lg font-bold text-[#18181B] dark:text-slate-100 tracking-tight">
             Marketing
           </h2>
           <button
             title="Filter pasar"
-            className="w-8 h-8 rounded-full bg-surface-muted/60 border border-black/[0.02] flex items-center justify-center text-stone-600 hover:text-stone-900 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-surface-muted/60 dark:bg-slate-700/60 border border-black/[0.02] dark:border-slate-700/40 flex items-center justify-center text-stone-600 dark:text-slate-300 hover:text-stone-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             <FilterIcon className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* Asset Ticker Icons (Horizontal Row) */}
-        <div className="p-2.5 rounded-2xl bg-surface-muted/40 border border-black/[0.02] flex items-center justify-between gap-1 overflow-x-auto scrollbar-none">
+        <div className="p-2.5 rounded-2xl bg-surface-muted/40 dark:bg-slate-900/60 border border-black/[0.02] dark:border-slate-700/40 flex items-center justify-between gap-1 overflow-x-auto scrollbar-none">
           {cryptoAssets.map((asset) => {
             const isSelected = selectedAsset === asset.id;
             return (
@@ -153,8 +153,8 @@ export function RightColumnBento({
                 onClick={() => setSelectedAsset(asset.id)}
                 className={`flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-2xl transition-all duration-150 cursor-pointer ${
                   isSelected
-                    ? "bg-white shadow-xs scale-105"
-                    : "opacity-70 hover:opacity-100 hover:bg-white/50"
+                    ? "bg-white dark:bg-slate-800 shadow-xs scale-105"
+                    : "opacity-70 hover:opacity-100 hover:bg-white/50 dark:hover:bg-slate-800/50"
                 }`}
               >
                 <div
@@ -162,7 +162,7 @@ export function RightColumnBento({
                 >
                   {asset.icon}
                 </div>
-                <span className="text-[10px] font-semibold text-stone-600 truncate max-w-[50px]">
+                <span className="text-[10px] font-semibold text-stone-600 dark:text-slate-300 truncate max-w-[50px]">
                   {asset.name}
                 </span>
               </button>
@@ -173,17 +173,17 @@ export function RightColumnBento({
 
       {/* ═════════ 2. MARKET PRICE & TIMEFRAME SWITCHER ═════════ */}
       <div className="flex flex-col gap-2">
-        <span className="text-xs font-semibold text-stone-400">Market Price</span>
+        <span className="text-xs font-semibold text-stone-400 dark:text-slate-500">Market Price</span>
 
         <div className="flex items-center justify-between flex-wrap gap-2">
           {/* Main Price */}
           <div className="flex items-center gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-[#18181B] tracking-tight tabular-nums">
+            <span className="text-2xl sm:text-3xl font-black text-[#18181B] dark:text-slate-100 tracking-tight tabular-nums">
               {currentAsset.price}
             </span>
 
             {/* Gain Badge */}
-            <span className="px-2.5 py-0.5 rounded-full bg-[#D8F5A2]/70 text-emerald-800 text-xs font-extrabold flex items-center gap-0.5 shadow-2xs">
+            <span className="px-2.5 py-0.5 rounded-full bg-[#D8F5A2]/70 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold flex items-center gap-0.5 shadow-2xs">
               {currentAsset.gain}
             </span>
           </div>
@@ -191,14 +191,14 @@ export function RightColumnBento({
           {/* Plus action button */}
           <button
             title="Tambah watchlist"
-            className="w-8 h-8 rounded-full bg-surface-muted/80 hover:bg-stone-200 text-stone-700 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-surface-muted/80 dark:bg-slate-700/80 hover:bg-stone-200 dark:hover:bg-slate-600 text-stone-700 dark:text-slate-200 flex items-center justify-center transition-colors cursor-pointer"
           >
             <PlusIcon className="w-4 h-4 stroke-[2.2]" />
           </button>
         </div>
 
         {/* Time Selector Bar */}
-        <div className="rounded-full bg-surface-muted/70 p-1 flex items-center justify-between text-xs my-2 border border-black/[0.02]">
+        <div className="rounded-full bg-surface-muted/70 dark:bg-slate-900/60 p-1 flex items-center justify-between text-xs my-2 border border-black/[0.02] dark:border-slate-700/40">
           {timeframes.map((tf) => {
             const isActive = selectedTimeframe === tf;
             return (
@@ -207,8 +207,8 @@ export function RightColumnBento({
                 onClick={() => setSelectedTimeframe(tf)}
                 className={`py-1 px-3 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer ${
                   isActive
-                    ? "bg-[#1A1A1A] text-white shadow-xs font-bold"
-                    : "text-stone-500 hover:text-stone-900"
+                    ? "bg-[#1A1A1A] dark:bg-white text-white dark:text-slate-950 shadow-xs font-bold"
+                    : "text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white"
                 }`}
               >
                 {tf}
@@ -235,7 +235,7 @@ export function RightColumnBento({
                   content={({ active, payload }) => {
                     if (!active || !payload?.length) return null;
                     return (
-                      <div className="rounded-xl border border-black/[0.06] bg-[#1A1A1A] text-white px-3 py-1.5 text-xs shadow-lg font-mono font-bold">
+                      <div className="rounded-xl border border-black/[0.06] dark:border-slate-700 bg-[#1A1A1A] dark:bg-slate-900 text-white px-3 py-1.5 text-xs shadow-lg font-mono font-bold">
                         ${Number(payload[0].value).toLocaleString()}
                       </div>
                     );
@@ -257,7 +257,7 @@ export function RightColumnBento({
         </div>
 
         {/* X-Axis Date Indicators below chart */}
-        <div className="flex items-center justify-between text-[11px] font-bold text-stone-400 px-2 pt-1 border-t border-stone-100">
+        <div className="flex items-center justify-between text-[11px] font-bold text-stone-400 dark:text-slate-500 px-2 pt-1 border-t border-stone-100 dark:border-slate-700/60">
           <span>1</span>
           <span>7</span>
           <span>14</span>
@@ -268,21 +268,21 @@ export function RightColumnBento({
       </div>
 
       {/* ═════════ 4. BUDGET & SPENDING BREAKDOWN (3 Metrik Bawah) ═════════ */}
-      <div className="grid grid-cols-3 gap-2 items-center pt-2 border-t border-stone-100">
+      <div className="grid grid-cols-3 gap-2 items-center pt-2 border-t border-stone-100 dark:border-slate-700/60">
         <div>
-          <span className="text-[10px] font-bold text-stone-400 uppercase tracking-tight block">
+          <span className="text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-tight block">
             Total Spent
           </span>
-          <span className="text-sm sm:text-base font-black text-stone-900 tabular-nums">
+          <span className="text-sm sm:text-base font-black text-stone-900 dark:text-slate-100 tabular-nums">
             ${totalSpent.toLocaleString("en-US")}
           </span>
         </div>
 
         <div>
-          <span className="text-[10px] font-bold text-stone-400 uppercase tracking-tight block">
+          <span className="text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-tight block">
             Budget
           </span>
-          <span className="text-sm sm:text-base font-black text-stone-900 tabular-nums">
+          <span className="text-sm sm:text-base font-black text-stone-900 dark:text-slate-100 tabular-nums">
             ${budget.toLocaleString("en-US")}
           </span>
         </div>
@@ -298,27 +298,27 @@ export function RightColumnBento({
       {/* ═════════ 5. TEAM MEMBERS / SHARED ACCOUNTS SECTION ═════════ */}
       <div className="flex flex-col gap-2 pt-1">
         <div className="flex items-center justify-between px-0.5">
-          <h3 className="text-xs font-bold text-stone-800 tracking-tight">Team Members</h3>
+          <h3 className="text-xs font-bold text-stone-800 dark:text-slate-100 tracking-tight">Team Members</h3>
           <button className="text-[11px] font-bold text-brand-orange hover:underline cursor-pointer">
             See all
           </button>
         </div>
 
-        <div className="p-3 rounded-2xl bg-surface-muted/40 border border-black/[0.03] flex items-center justify-between gap-2 shadow-2xs">
+        <div className="p-3 rounded-2xl bg-surface-muted/40 dark:bg-slate-900/60 border border-black/[0.03] dark:border-slate-700/40 flex items-center justify-between gap-2 shadow-2xs">
           {/* Stacked Avatars & Text */}
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="flex -space-x-2 overflow-hidden shrink-0">
-              <div className="w-7 h-7 rounded-full bg-[#FAD170] border-2 border-white flex items-center justify-center text-xs font-bold shadow-xs">
+              <div className="w-7 h-7 rounded-full bg-[#FAD170] border-2 border-white dark:border-slate-800 flex items-center justify-center text-xs font-bold shadow-xs">
                 🧔
               </div>
-              <div className="w-7 h-7 rounded-full bg-[#D8F5A2] border-2 border-white flex items-center justify-center text-xs font-bold shadow-xs">
+              <div className="w-7 h-7 rounded-full bg-[#D8F5A2] border-2 border-white dark:border-slate-800 flex items-center justify-center text-xs font-bold shadow-xs">
                 👩
               </div>
-              <div className="w-7 h-7 rounded-full bg-[#FDD5C1] border-2 border-white flex items-center justify-center text-xs font-bold shadow-xs">
+              <div className="w-7 h-7 rounded-full bg-[#FDD5C1] border-2 border-white dark:border-slate-800 flex items-center justify-center text-xs font-bold shadow-xs">
                 👨
               </div>
             </div>
-            <span className="text-xs font-semibold text-stone-700 truncate">
+            <span className="text-xs font-semibold text-stone-700 dark:text-slate-300 truncate">
               You & 2 members
             </span>
           </div>

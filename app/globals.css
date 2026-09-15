@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-background: var(--background);
@@ -9,12 +9,12 @@
   --font-mono: var(--font-geist-mono);
 
   /* SavOr Theme Colors */
-  --color-bg-warm: #F7F4EE;
-  --color-warm: #F7F4EE;
-  --color-surface-card: #FFFFFF;
-  --color-surface-muted: #F2EFEB;
+  --color-bg-warm: var(--bg-warm);
+  --color-warm: var(--bg-warm);
+  --color-surface-card: var(--surface-card);
+  --color-surface-muted: var(--surface-muted);
   --color-brand-orange: #E85024;
-  --color-brand-dark: #1A1A1A;
+  --color-brand-dark: var(--brand-dark);
   --color-pastel-yellow: #FAD170;
   --color-pastel-green: #D8F5A2;
   --color-pastel-peach: #FDD5C1;
@@ -71,12 +71,17 @@
 }
 
 .dark {
+  --bg-warm: #0b0f1a;
+  --surface-card: #111827;
+  --surface-muted: #1e2433;
+  --brand-dark: #f1f5f9;
+
   --background: #0b0f1a;
   --foreground: #f1f5f9;
 
   --card: #111827;
   --card-foreground: #f1f5f9;
-  --card-border: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.08);
 
   --muted: #1e2433;
   --muted-foreground: #94a3b8;
@@ -119,7 +124,7 @@ html {
 
 /* Cegah iOS zoom saat focus input (iOS akan zoom jika font-size < 16px) */
 input, textarea, select {
-  font-size: 16px !important;
+  font-size: 16px;
 }
 
 body {

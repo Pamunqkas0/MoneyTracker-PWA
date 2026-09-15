@@ -19,7 +19,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/30 backdrop-blur-xs",
+      "fixed inset-0 z-[70] bg-black/40 backdrop-blur-xs",
       "data-[state=open]:[animation:overlay-show_0.2s_ease-out]",
       "data-[state=closed]:[animation:overlay-hide_0.15s_ease-in]",
       className
@@ -46,18 +46,18 @@ const DialogContent = React.forwardRef<
       ref={ref}
       className={cn(
         /* shared */
-        "fixed z-50 bg-white text-[#18181B] shadow-2xl outline-none border border-black/[0.04]",
+        "fixed z-[80] bg-white text-[#18181B] shadow-2xl outline-none border border-black/[0.04]",
         "overflow-y-auto scrollbar-thin",
         /* ── mobile: bottom sheet ── */
         "bottom-0 left-0 right-0 rounded-t-[32px] max-h-[92svh]",
         "data-[state=open]:[animation:sheet-slide-up_0.35s_cubic-bezier(0.32,0.72,0,1)]",
         "data-[state=closed]:[animation:sheet-slide-down_0.25s_cubic-bezier(0.32,0.72,0,1)]",
-        /* ── desktop: centred modal ── */
-        "md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto",
-        "md:-translate-x-1/2 md:-translate-y-1/2",
-        "md:rounded-[32px] md:max-h-[88vh] md:w-full md:max-w-lg md:p-2",
-        "md:data-[state=open]:[animation:dialog-zoom-in_0.2s_ease-out]",
-        "md:data-[state=closed]:[animation:dialog-zoom-out_0.15s_ease-in]",
+        /* ── desktop & tablet: centred modal ── */
+        "sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:right-auto",
+        "sm:-translate-x-1/2 sm:-translate-y-1/2",
+        "sm:rounded-[32px] sm:max-h-[88vh] sm:w-full sm:max-w-lg",
+        "sm:data-[state=open]:[animation:dialog-zoom-in_0.2s_ease-out]",
+        "sm:data-[state=closed]:[animation:dialog-zoom-out_0.15s_ease-in]",
         className
       )}
       {...props}

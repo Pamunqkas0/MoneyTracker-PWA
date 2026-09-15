@@ -189,15 +189,15 @@ function EditBalanceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showHandle className="max-w-md p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white border border-black/[0.04] shadow-2xl w-full mx-auto">
-        <DialogHeader className="p-6 pb-4 border-b border-stone-100">
+      <DialogContent showHandle className="max-w-md p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl w-full mx-auto">
+        <DialogHeader className="p-6 pb-4 border-b border-stone-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FAD170] text-stone-900 shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FAD170] dark:bg-amber-500/20 text-stone-900 dark:text-amber-300 shadow-xs">
               <PencilLine className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-[#18181B]">Ubah Nominal Saldo</DialogTitle>
-              <DialogDescription className="text-xs text-stone-500 mt-0.5">
+              <DialogTitle className="text-lg font-bold text-[#18181B] dark:text-slate-100">Ubah Nominal Saldo</DialogTitle>
+              <DialogDescription className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
                 Revisi saldo aktual untuk rekening atau dompet yang dipilih.
               </DialogDescription>
             </div>
@@ -206,35 +206,35 @@ function EditBalanceDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6 pt-3">
           {account && (
-            <div className="rounded-2xl border border-stone-200/60 bg-surface-muted/50 p-3.5">
-              <p className="text-xs font-bold text-[#18181B]">{account.name}</p>
-              <p className="mt-0.5 text-[11px] text-stone-500 font-medium">{account.bank_name}</p>
-              <p className="mt-2 text-xs text-stone-600 font-medium">
-                Saldo saat ini: <span className="font-bold text-[#18181B] tabular-nums">{formatCurrency(account.balance)}</span>
+            <div className="rounded-2xl border border-stone-200/60 dark:border-slate-700/60 bg-surface-muted/50 dark:bg-slate-800/60 p-3.5">
+              <p className="text-xs font-bold text-[#18181B] dark:text-slate-100">{account.name}</p>
+              <p className="mt-0.5 text-[11px] text-stone-500 dark:text-slate-400 font-medium">{account.bank_name}</p>
+              <p className="mt-2 text-xs text-stone-600 dark:text-slate-300 font-medium">
+                Saldo saat ini: <span className="font-bold text-[#18181B] dark:text-slate-100 tabular-nums">{formatCurrency(account.balance)}</span>
               </p>
             </div>
           )}
 
           {errorMsg && (
-            <div className="flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-500/20 px-3.5 py-2.5 text-xs text-rose-600 font-medium">
+            <div className="flex items-center gap-2 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-500/20 px-3.5 py-2.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
               <AlertCircle className="h-4 w-4 shrink-0" />
               {errorMsg}
             </div>
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="edit-balance" className="text-xs font-semibold text-stone-500">
+            <Label htmlFor="edit-balance" className="text-xs font-semibold text-stone-500 dark:text-slate-400">
               Nominal Saldo Terbaru
             </Label>
-            <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200/50 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
-              <span className="pl-3 text-sm font-bold text-stone-400">Rp</span>
+            <div className="relative flex items-center rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border border-stone-200/50 dark:border-slate-700 p-1 focus-within:ring-2 focus-within:ring-black/10 dark:focus-within:ring-white/10 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all">
+              <span className="pl-3 text-sm font-bold text-stone-400 dark:text-slate-500">Rp</span>
               <Input
                 id="edit-balance"
                 inputMode="numeric"
                 placeholder="0"
                 value={rawBalance ? Number(rawBalance).toLocaleString("id-ID") : ""}
                 onChange={(e) => setRawBalance(e.target.value.replace(/\D/g, ""))}
-                className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] tabular-nums bg-transparent pr-2"
+                className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] dark:text-slate-100 tabular-nums bg-transparent pr-2 placeholder:text-stone-400 dark:placeholder:text-slate-500"
               />
             </div>
           </div>
@@ -243,7 +243,7 @@ function EditBalanceDialog({
             <Button
               type="button"
               variant="ghost"
-              className="flex-1 h-12 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold cursor-pointer text-sm"
+              className="flex-1 h-12 rounded-full bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 text-stone-700 dark:text-slate-200 font-semibold cursor-pointer text-sm"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
@@ -350,15 +350,15 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent showHandle className="max-w-lg p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white border border-black/[0.04] shadow-2xl w-full mx-auto">
-        <DialogHeader className="p-6 pb-4 border-b border-stone-100">
+      <DialogContent showHandle className="max-w-lg p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl w-full mx-auto">
+        <DialogHeader className="p-6 pb-4 border-b border-stone-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E0E6FD] text-[#3B4CCA] shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E0E6FD] dark:bg-indigo-500/20 text-[#3B4CCA] dark:text-indigo-300 shadow-xs">
               <Landmark className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-[#18181B]">Tambah Rekening</DialogTitle>
-              <DialogDescription className="text-xs text-stone-500 mt-0.5">
+              <DialogTitle className="text-lg font-bold text-[#18181B] dark:text-slate-100">Tambah Rekening</DialogTitle>
+              <DialogDescription className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
                 Tambahkan bank atau e-wallet kamu secara instan
               </DialogDescription>
             </div>
@@ -374,12 +374,12 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center py-10 gap-3"
               >
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F5A2] text-stone-900 shadow-sm">
-                  <CheckCircle2 className="h-8 w-8 text-stone-800" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F5A2] dark:bg-emerald-950/60 text-stone-900 dark:text-emerald-300 shadow-sm border border-emerald-500/20">
+                  <CheckCircle2 className="h-8 w-8 text-stone-800 dark:text-emerald-300" />
                 </div>
                 <div className="text-center">
-                  <p className="font-bold text-lg text-[#18181B]">Rekening Ditambahkan!</p>
-                  <p className="text-xs text-stone-500 mt-1">Rekening baru berhasil disimpan ke sistem.</p>
+                  <p className="font-bold text-lg text-[#18181B] dark:text-slate-100">Rekening Ditambahkan!</p>
+                  <p className="text-xs text-stone-500 dark:text-slate-400 mt-1">Rekening baru berhasil disimpan ke sistem.</p>
                 </div>
               </motion.div>
             ) : (
@@ -391,7 +391,7 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
                 animate={{ opacity: 1 }}
               >
                 {errorMsg && (
-                  <div className="flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-500/20 px-3.5 py-2.5 text-xs text-rose-600 font-medium">
+                  <div className="flex items-center gap-2 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-500/20 px-3.5 py-2.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
                     <AlertCircle className="h-4 w-4 shrink-0" />
                     {errorMsg}
                   </div>
@@ -402,10 +402,10 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
                   name="presetId"
                   control={control}
                   render={({ field }) => (
-                    <div className="space-y-3 bg-surface-muted/40 border border-stone-200/60 p-3.5 rounded-3xl">
+                    <div className="space-y-3 bg-surface-muted/40 dark:bg-slate-800/40 border border-stone-200/60 dark:border-slate-700/60 p-3.5 rounded-3xl">
                       {/* Banks */}
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">🏦 Bank</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">🏦 Bank</p>
                         <div className="grid grid-cols-3 xs:grid-cols-4 gap-2">
                           {bankPresets.map((p) => (
                             <PresetButton key={p.id} preset={p} selected={field.value === p.id} onSelect={() => field.onChange(p.id)} />
@@ -414,7 +414,7 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
                       </div>
                       {/* E-wallets */}
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">💳 E-Wallet</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">💳 E-Wallet</p>
                         <div className="grid grid-cols-3 xs:grid-cols-4 gap-2">
                           {ewalletPresets.map((p) => (
                             <PresetButton key={p.id} preset={p} selected={field.value === p.id} onSelect={() => field.onChange(p.id)} />
@@ -423,7 +423,7 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
                       </div>
                       {/* Cash */}
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">💵 Lainnya</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">💵 Lainnya</p>
                         <div className="grid grid-cols-3 xs:grid-cols-4 gap-2">
                           {cashPresets.map((p) => (
                             <PresetButton key={p.id} preset={p} selected={field.value === p.id} onSelect={() => field.onChange(p.id)} />
@@ -439,8 +439,8 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
 
                 {/* Nickname */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="acc-nick" className="text-xs font-semibold text-stone-500">Nama Panggilan Rekening</Label>
-                  <Input id="acc-nick" placeholder="Mis. BCA Tabungan, GoPay Utama…" className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium" {...register("nickname")} />
+                  <Label htmlFor="acc-nick" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Nama Panggilan Rekening</Label>
+                  <Input id="acc-nick" placeholder="Mis. BCA Tabungan, GoPay Utama…" className="h-11 text-sm rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border-stone-200/50 dark:border-slate-700 px-4 text-[#18181B] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all font-medium" {...register("nickname")} />
                   {errors.nickname && (
                     <p className="text-[11px] text-[#E85024] font-medium">{errors.nickname.message}</p>
                   )}
@@ -449,23 +449,23 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
                 {/* Responsive Input Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="acc-num" className="text-xs font-semibold text-stone-500">
-                      No. Rekening <span className="text-stone-400 font-normal">(opsional)</span>
+                    <Label htmlFor="acc-num" className="text-xs font-semibold text-stone-500 dark:text-slate-400">
+                      No. Rekening <span className="text-stone-400 dark:text-slate-500 font-normal">(opsional)</span>
                     </Label>
-                    <Input id="acc-num" placeholder="4 digit terakhir" maxLength={25} className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium" {...register("accountNumber")} />
+                    <Input id="acc-num" placeholder="4 digit terakhir" maxLength={25} className="h-11 text-sm rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border-stone-200/50 dark:border-slate-700 px-4 text-[#18181B] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all font-medium" {...register("accountNumber")} />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="acc-bal" className="text-xs font-semibold text-stone-500">Saldo Awal</Label>
-                    <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200/50 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
-                      <span className="pl-3 text-sm font-bold text-stone-400">Rp</span>
+                    <Label htmlFor="acc-bal" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Saldo Awal</Label>
+                    <div className="relative flex items-center rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border border-stone-200/50 dark:border-slate-700 p-1 focus-within:ring-2 focus-within:ring-black/10 dark:focus-within:ring-white/10 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all">
+                      <span className="pl-3 text-sm font-bold text-stone-400 dark:text-slate-500">Rp</span>
                       <Input
                         id="acc-bal"
                         inputMode="numeric"
                         placeholder="0"
                         value={rawBalance ? Number(rawBalance).toLocaleString("id-ID") : ""}
                         onChange={handleBalanceChange}
-                        className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] tabular-nums bg-transparent pr-2"
+                        className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] dark:text-slate-100 tabular-nums bg-transparent pr-2 placeholder:text-stone-400 dark:placeholder:text-slate-500"
                       />
                     </div>
                     {errors.initialBalance && (
@@ -508,18 +508,18 @@ function PresetButton({ preset, selected, onSelect }: { preset: BankPreset; sele
       className={cn(
         "flex flex-col items-center justify-center gap-1.5 rounded-2xl border p-2 text-center transition-all duration-150 select-none cursor-pointer min-h-[64px]",
         selected
-          ? "border-[#1A1A1A] bg-[#1A1A1A] text-white font-bold shadow-xs"
-          : "border-stone-200/60 bg-white hover:bg-stone-50 text-stone-700"
+          ? "border-[#1A1A1A] bg-[#1A1A1A] dark:border-slate-600 dark:bg-slate-700 text-white font-bold shadow-xs"
+          : "border-stone-200/60 dark:border-slate-800 bg-white dark:bg-slate-800/70 hover:bg-stone-50 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300"
       )}
     >
       {isImgLogo ? (
-        <div className={cn("h-5 flex items-center justify-center rounded-md p-0.5 w-9", selected ? "bg-white/95" : "")}>
+        <div className={cn("h-5 flex items-center justify-center rounded-md p-0.5 w-9", selected ? "bg-white/95" : "bg-white/90 dark:bg-slate-900/90")}>
           <img src={preset.logo} alt={preset.name} className="h-full w-auto object-contain max-w-[38px]" />
         </div>
       ) : (
         <span className="text-base sm:text-lg leading-none">{preset.logo}</span>
       )}
-      <span className={cn("text-[9px] font-semibold leading-tight tracking-tight truncate max-w-full", selected ? "text-white" : "text-[#18181B]")}>
+      <span className={cn("text-[9px] font-semibold leading-tight tracking-tight truncate max-w-full", selected ? "text-white" : "text-[#18181B] dark:text-slate-200")}>
         {preset.name}
       </span>
     </button>

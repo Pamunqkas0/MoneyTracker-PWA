@@ -207,8 +207,8 @@ export function LeftColumnBento({
               className={cn(
                 "rounded-2xl px-3.5 py-2 flex items-center gap-2 shrink-0 shadow-xs cursor-pointer transition-all duration-200 select-none",
                 isActive
-                  ? "bg-[#1A1A1A] text-white scale-[1.02]"
-                  : "bg-white text-[#18181B] border border-black/[0.04] hover:bg-stone-50"
+                  ? "bg-[#1A1A1A] dark:bg-white text-white dark:text-slate-950 scale-[1.02]"
+                  : "bg-white dark:bg-slate-800/90 text-[#18181B] dark:text-slate-100 border border-black/[0.04] dark:border-slate-700/60 hover:bg-stone-50 dark:hover:bg-slate-800"
               )}
             >
               {item.flag}
@@ -216,7 +216,7 @@ export function LeftColumnBento({
                 <span
                   className={cn(
                     "text-[10px] font-bold tracking-tight",
-                    isActive ? "text-stone-300" : "text-stone-500"
+                    isActive ? "text-stone-300 dark:text-slate-600" : "text-stone-500 dark:text-slate-400"
                   )}
                 >
                   {item.name}
@@ -224,7 +224,7 @@ export function LeftColumnBento({
                 <span
                   className={cn(
                     "text-xs font-black tabular-nums",
-                    isActive ? "text-white" : "text-stone-900"
+                    isActive ? "text-white dark:text-slate-950" : "text-stone-900 dark:text-slate-100"
                   )}
                 >
                   {item.balanceDisplay}
@@ -238,7 +238,7 @@ export function LeftColumnBento({
         <button
           type="button"
           onClick={handleOpenAddAccount}
-          className="rounded-2xl px-3 py-2 bg-white text-stone-600 border border-dashed border-stone-300 hover:border-black/30 hover:bg-stone-50 flex items-center gap-1.5 shrink-0 shadow-2xs transition-all cursor-pointer"
+          className="rounded-2xl px-3 py-2 bg-white dark:bg-slate-800/90 text-stone-600 dark:text-slate-300 border border-dashed border-stone-300 dark:border-slate-700 hover:border-black/30 dark:hover:border-slate-500 hover:bg-stone-50 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0 shadow-2xs transition-all cursor-pointer"
           title="Tambah Rekening Baru"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -247,7 +247,7 @@ export function LeftColumnBento({
       </div>
 
       {/* ═════════ 2. HERO BALANCE CARD (Pastel Kuning Full Width) ═════════ */}
-      <div className="w-full relative rounded-[28px] sm:rounded-3xl bg-[#FAD170] text-[#18181B] p-5 sm:p-6 flex flex-col justify-between overflow-hidden shadow-sm border border-black/[0.03] min-h-[190px]">
+      <div className="w-full relative rounded-[28px] sm:rounded-3xl bg-[#FAD170] text-[#18181B] p-5 sm:p-6 flex flex-col justify-between overflow-hidden shadow-sm border border-black/[0.03] dark:border-amber-400/20 min-h-[190px]">
         {/* Decorative Windmill / Geometric Watermark di sudut kanan bawah */}
         <div className="absolute right-0 bottom-0 pointer-events-none opacity-40 translate-x-4 translate-y-4">
           <svg width="170" height="170" viewBox="0 0 200 200" fill="none">
@@ -302,10 +302,10 @@ export function LeftColumnBento({
 
       {/* ═════════ 3. SLIDE PAGINATION DOTS (Di Bawah Kartu Kuning) ═════════ */}
       <div className="flex items-center justify-center gap-1.5 my-1">
-        <span className="w-6 h-1 rounded-full bg-[#1A1A1A]" />
-        <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
-        <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
-        <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+        <span className="w-6 h-1 rounded-full bg-[#1A1A1A] dark:bg-slate-100" />
+        <span className="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-slate-700" />
+        <span className="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-slate-700" />
+        <span className="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-slate-700" />
       </div>
 
       {/* ═════════ 4. QUICK ACTION 4-GRID BUTTONS (Transfer, Receive, Convert, Bills) ═════════ */}
@@ -321,12 +321,12 @@ export function LeftColumnBento({
             <button
               key={item.label}
               onClick={() => handleAction(item.id)}
-              className="bg-white rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 border border-black/[0.03] shadow-xs hover:bg-stone-50 active:scale-95 transition-all text-stone-800 cursor-pointer group"
+              className="bg-white dark:bg-slate-800/90 rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 border border-black/[0.03] dark:border-slate-700/60 shadow-xs hover:bg-stone-50 dark:hover:bg-slate-800 active:scale-95 transition-all text-stone-800 dark:text-slate-200 cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-stone-700 group-hover:bg-[#1A1A1A] group-hover:text-white transition-colors">
+              <div className="w-8 h-8 rounded-full bg-surface-muted dark:bg-slate-700/80 flex items-center justify-center text-stone-700 dark:text-slate-200 group-hover:bg-[#1A1A1A] dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-slate-900 transition-colors">
                 <Icon className="w-4 h-4 stroke-[2]" />
               </div>
-              <span className="text-[11px] font-semibold leading-none text-stone-700 group-hover:text-stone-900">
+              <span className="text-[11px] font-semibold leading-none text-stone-700 dark:text-slate-300 group-hover:text-stone-900 dark:group-hover:text-white">
                 {item.label}
               </span>
             </button>
@@ -338,7 +338,7 @@ export function LeftColumnBento({
       <div className="flex flex-col gap-2.5 mt-1">
         {/* Header Baris: Wallet status vs See all */}
         <div className="flex items-center justify-between px-1">
-          <h2 className="text-sm font-bold text-[#18181B] tracking-tight">Wallet status</h2>
+          <h2 className="text-sm font-bold text-[#18181B] dark:text-slate-100 tracking-tight">Wallet status</h2>
           <button
             type="button"
             onClick={handleOpenAddAccount}
