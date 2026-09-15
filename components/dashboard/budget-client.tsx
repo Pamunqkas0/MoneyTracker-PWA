@@ -15,6 +15,15 @@ import {
   Calendar,
   TrendingDown,
   ArrowUpDown,
+  ArrowUp,
+  ArrowUpRight,
+  Menu,
+  User,
+  Car,
+  Home,
+  Briefcase,
+  Sparkles,
+  PiggyBank,
 } from "lucide-react";
 import { AnimatedEmoji } from "@/components/ui/animated-emoji";
 import Link from "next/link";
@@ -35,8 +44,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { CATEGORY_META } from "@/lib/mock-data";
 import { cn, formatCurrency } from "@/lib/utils";
-import { upsertBudgetItem } from "@/app/actions";
-import type { BudgetItemRow } from "@/lib/supabase/types";
+import { upsertBudgetItem, updateSavingsGoal } from "@/app/actions";
+import type { BudgetItemRow, SavingsGoalRow } from "@/lib/supabase/types";
 import type { Category } from "@/lib/types";
 import type { AvailableTransactionCategories } from "@/lib/supabase/queries";
 
@@ -67,6 +76,7 @@ const YEARS = [2024, 2025, 2026, 2027];
 interface BudgetClientProps {
   initialBudgets: BudgetItemRow[];
   availableCategories: AvailableTransactionCategories;
+  savingsGoals?: SavingsGoalRow[];
   currentMonth: number;
   currentYear: number;
 }
@@ -74,6 +84,7 @@ interface BudgetClientProps {
 export function BudgetClient({
   initialBudgets,
   availableCategories,
+  savingsGoals: initialSavingsGoals = [],
   currentMonth: initialMonth,
   currentYear: initialYear,
 }: BudgetClientProps) {
@@ -81,6 +92,11 @@ export function BudgetClient({
   const [currentMonth, setCurrentMonth] = useState(initialMonth);
   const [currentYear, setCurrentYear] = useState(initialYear);
   const [budgets, setBudgets] = useState<BudgetItemRow[]>(initialBudgets);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoalRow[]>(initialSavingsGoals);
+  const [selectedTimeframe, setSelectedTimeframe] = useState<"24h" | "7d" | "30d">("24h");
+  const [activeGoalIndex, setActiveGoalIndex] = useState(1);
+  const [topUpSuccessMsg, setTopUpSuccessMsg] = useState<string | null>(null);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<BudgetItemRow | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,7 +109,94 @@ export function BudgetClient({
     setCurrentMonth(initialMonth);
     setCurrentYear(initialYear);
     setBudgets(initialBudgets);
-  }, [initialMonth, initialYear, initialBudgets]);
+    if (initialSavingsGoals && initialSavingsGoals.length > 0) {
+      setSavingsGoals(initialSavingsGoals);
+    }
+  }, [initialMonth, initialYear, initialBudgets, initialSavingsGoals]);
+
+  // Default demo goals jika belum ada data di database
+  const displayGoals = useMemo(() => {
+    if (savingsGoals && savingsGoals.length > 0) {
+      return savingsGoals.map((g, idx) => ({
+        id: g.id,
+        name: g.name,
+        current_amount: g.current_amount,
+        target_amount: g.target_amount,
+        color: idx === 0 ? "bg-[#D8F5A2]" : idx === 1 ? "bg-[#FDD5C1]" : "bg-[#FAD170]",
+        barColor: idx === 0 ? "bg-emerald-500" : idx === 1 ? "bg-[#E85024]" : "bg-amber-400",
+        icon: idx === 0 ? Car : idx === 1 ? Home : Briefcase,
+      }));
+    }
+
+    return [
+      {
+        id: "goal-1",
+        name: "Electric Car",
+        current_amount: 1200,
+        target_amount: 45000,
+        color: "bg-[#D8F5A2]",
+        barColor: "bg-emerald-500",
+        icon: Car,
+      },
+      {
+        id: "goal-2",
+        name: "My House",
+        current_amount: 4000,
+        target_amount: 120000,
+        color: "bg-[#FDD5C1]",
+        barColor: "bg-[#E85024]",
+        icon: Home,
+      },
+      {
+        id: "goal-3",
+        name: "Business Expansion",
+        current_amount: 850,
+        target_amount: 25000,
+        color: "bg-[#FAD170]",
+        barColor: "bg-amber-400",
+        icon: Briefcase,
+      },
+    ];
+  }, [savingsGoals]);
+
+  const activeGoal = displayGoals[activeGoalIndex] || displayGoals[0];
+
+  // Total savings calculation
+  const totalSavings = useMemo(() => {
+    const sum = displayGoals.reduce((acc, g) => acc + g.current_amount, 0);
+    return sum > 0 ? sum : 4113.89;
+  }, [displayGoals]);
+
+  // Handle Quick Top Up
+  const handleTopUp = async (amount: number) => {
+    if (activeGoal) {
+      const newAmount = activeGoal.current_amount + amount;
+      
+      // Update local state for immediate feedback
+      setSavingsGoals((prev) =>
+        prev.map((g) =>
+          g.id === activeGoal.id ? { ...g, current_amount: newAmount } : g
+        )
+      );
+
+      setTopUpSuccessMsg(`Berhasil top up $${amount} ke ${activeGoal.name}!`);
+      setTimeout(() => setTopUpSuccessMsg(null), 2500);
+
+      try {
+        if (!activeGoal.id.startsWith("goal-")) {
+          await updateSavingsGoal(activeGoal.id, {
+            name: activeGoal.name,
+            target_amount: activeGoal.target_amount,
+            current_amount: newAmount,
+            target_date: new Date().toISOString(),
+            emoji: "💰",
+          });
+        }
+      } catch (err) {
+        console.error("Top up error:", err);
+      }
+    }
+  };
 
   // Fungsi untuk update query params URL saat dropdown diganti
   const handlePeriodChange = (month: number, year: number) => {
@@ -114,7 +217,7 @@ export function BudgetClient({
     defaultValues: { limit: 0 },
   });
 
-  // Kalkulasi total
+  // Kalkulasi total budget
   const totals = useMemo(() => {
     const totalLimit = initialBudgets.reduce((sum, b) => sum + b.limit, 0);
     const totalSpent = initialBudgets.reduce((sum, b) => sum + b.spent, 0);
@@ -170,244 +273,397 @@ export function BudgetClient({
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pb-32">
-      {/* ── JUMBO PREMIUM HEADER ─────────────────────────────── */}
-      <div className="w-full bg-gradient-to-b from-[var(--muted)]/50 to-transparent border-b border-[var(--card-border)]/40 px-4 pt-5 pb-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-screen-xl flex flex-col gap-5">
-          {/* Header Row: Title + Add */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Link
-                href="/dashboard"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--card-border)] bg-[var(--card)] hover:bg-[var(--muted)] text-[var(--foreground)] transition-all active:scale-95"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-              <div className="min-w-0">
-                <h1 className="text-sm font-bold text-[var(--foreground)] sm:text-lg truncate">
-                  Anggaran Bulanan
-                </h1>
-                <p className="text-[11px] text-[var(--muted-foreground)] truncate hidden xs:block">
-                  Kendalikan pengeluaran bulanan Anda per kategori
-                </p>
-              </div>
-            </div>
+    <div className="min-h-screen bg-[#F7F4EE] text-[#18181B] p-3 sm:p-5 md:p-6 lg:p-8 pb-36 flex justify-center items-start selection:bg-brand-orange/20">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="w-full max-w-xl md:max-w-2xl lg:max-w-3xl rounded-[32px] sm:rounded-[36px] bg-white/95 backdrop-blur-sm border border-black/[0.04] p-5 sm:p-7 md:p-8 shadow-xs flex flex-col gap-6"
+      >
+        {/* ── 1. TOP HEADER MOBILE (☰ vs Hello, Fred vs 👤) ── */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/dashboard"
+            className="w-11 h-11 rounded-2xl bg-white border border-black/[0.06] shadow-xs flex items-center justify-center text-stone-800 hover:bg-stone-50 active:scale-95 transition-all cursor-pointer"
+            aria-label="Kembali ke Dashboard"
+          >
+            <Menu className="w-5 h-5 stroke-[2.2]" />
+          </Link>
 
-            <Button onClick={handleOpenAdd} size="sm" className="gap-1 rounded-xl text-xs h-9 shrink-0 shadow-sm cursor-pointer">
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Atur Budget</span>
-            </Button>
+          <div className="flex flex-col items-center text-center">
+            <h1 className="text-sm sm:text-base font-bold text-[#18181B] leading-tight">
+              Hello, Fred
+            </h1>
+            <span className="text-xs text-stone-400 font-medium leading-tight">
+              @freddoe12
+            </span>
           </div>
 
-          {/* Periode Selector */}
-          <div className="flex flex-wrap items-center gap-2 sm:w-auto w-full">
-            {/* Selector Bulan */}
-            <div className="flex-1 sm:flex-initial min-w-[110px]">
+          <Link
+            href="/dashboard/profile"
+            className="w-11 h-11 rounded-2xl bg-white border border-black/[0.06] shadow-xs flex items-center justify-center text-stone-700 hover:bg-stone-50 active:scale-95 transition-all cursor-pointer"
+            aria-label="Profil Pengguna"
+          >
+            <User className="w-5 h-5 stroke-[2.2]" />
+          </Link>
+        </div>
+
+        {/* ── 2. SAVINGS TITLE & TIMEFRAME SELECTOR ── */}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl sm:text-2xl font-black text-[#18181B] tracking-tight">
+              Savings
+            </h2>
+
+            {/* Timeframe selector pill */}
+            <div className="flex items-center bg-surface-muted/80 p-1 rounded-full border border-black/[0.03] text-xs font-medium">
+              {(["24h", "7d", "30d"] as const).map((tf) => (
+                <button
+                  key={tf}
+                  type="button"
+                  onClick={() => setSelectedTimeframe(tf)}
+                  className={cn(
+                    "px-3 py-1 rounded-full transition-all cursor-pointer font-bold",
+                    selectedTimeframe === tf
+                      ? "bg-[#E85024] text-white shadow-xs"
+                      : "text-stone-500 hover:text-stone-900"
+                  )}
+                >
+                  {tf}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Big Amount */}
+          <div className="my-1">
+            <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#18181B] tracking-tight tabular-nums block">
+              $ {totalSavings.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+
+          {/* Gain subtext */}
+          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
+            <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>$3,0043.99 (0,34%)</span>
+          </div>
+        </div>
+
+        {/* ── 3. MULTI-GOAL AVATARS ROW & BARCODE SPECTRUM PROGRESS BAR ── */}
+        <div className="flex flex-col gap-3 pt-2">
+          {/* Goal Avatars Row */}
+          <div className="flex items-center justify-between px-1">
+            {displayGoals.map((goal, idx) => {
+              const GoalIcon = goal.icon;
+              const isActive = activeGoalIndex === idx;
+
+              return (
+                <button
+                  key={goal.id}
+                  type="button"
+                  onClick={() => setActiveGoalIndex(idx)}
+                  className="flex items-center gap-2.5 transition-transform active:scale-95 cursor-pointer text-left select-none"
+                >
+                  {/* Squircle Avatar */}
+                  <div
+                    className={cn(
+                      "w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shadow-xs transition-all",
+                      goal.color,
+                      isActive ? "ring-2 ring-black/20 scale-105" : "opacity-85 hover:opacity-100"
+                    )}
+                  >
+                    <GoalIcon className="w-5 h-5 sm:w-6 sm:h-6 text-stone-900" />
+                  </div>
+
+                  {/* Active Goal Label Info */}
+                  {isActive && (
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-[#18181B] leading-tight">
+                        {goal.name}
+                      </span>
+                      <span className="text-[11px] font-semibold text-stone-500 tabular-nums">
+                        {goal.current_amount.toLocaleString("en-US")} / {goal.target_amount.toLocaleString("en-US")}
+                      </span>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Barcode Spectrum Chart with Soft Glow */}
+          <div className="relative pt-2 pb-1">
+            {/* Glow background */}
+            <div className="absolute inset-0 blur-xl opacity-35 bg-gradient-to-r from-[#D8F5A2] via-[#FDD5C1] to-[#FAD170] pointer-events-none" />
+
+            {/* Vertical Tick Barcode Grid */}
+            <div className="relative flex items-center justify-between gap-[2px] w-full overflow-hidden px-1">
+              {Array.from({ length: 54 }).map((_, i) => {
+                // Segmentasi warna barcode: Hijau (0-16), Coral (17-38), Kuning (39-53)
+                let barColor = "bg-[#D8F5A2]";
+                let barHeight = "h-11";
+
+                if (i >= 17 && i <= 38) {
+                  barColor = "bg-[#FDD5C1]";
+                  barHeight = "h-13";
+                } else if (i > 38) {
+                  barColor = "bg-[#FAD170]";
+                  barHeight = "h-10";
+                }
+
+                // Wave pattern height variation
+                const isTick = i % 2 === 0;
+
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      "w-[2.5px] sm:w-[3px] rounded-full transition-all duration-300",
+                      barColor,
+                      isTick ? barHeight : "h-9"
+                    )}
+                    style={{
+                      opacity: 0.7 + ((i % 5) * 0.06),
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* ── 4. TEAM MEMBERS SECTION ── */}
+        <div className="flex flex-col gap-2 pt-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-[#18181B] tracking-tight">
+              Team Members
+            </h3>
+            <button
+              type="button"
+              className="text-xs font-bold text-[#E85024] hover:underline cursor-pointer"
+            >
+              See all
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* Stacked Circular Avatars */}
+              <div className="flex items-center -space-x-2.5">
+                <div className="w-9 h-9 rounded-full border-2 border-white overflow-hidden shadow-xs bg-amber-100 flex items-center justify-center">
+                  <img
+                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80"
+                    alt="Member 1"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="w-9 h-9 rounded-full border-2 border-white overflow-hidden shadow-xs bg-stone-800 flex items-center justify-center">
+                  <img
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+                    alt="Member 2"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="w-9 h-9 rounded-full border-2 border-white overflow-hidden shadow-xs bg-rose-100 flex items-center justify-center">
+                  <img
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+                    alt="Member 3"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+
+              <span className="text-xs font-semibold text-stone-700">
+                You & 2 members
+              </span>
+            </div>
+
+            {/* Circular Orange Plus Button */}
+            <button
+              type="button"
+              onClick={handleOpenAdd}
+              className="w-10 h-10 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white flex items-center justify-center shadow-sm active:scale-95 transition-all cursor-pointer"
+              title="Tambah Anggota / Goal"
+            >
+              <Plus className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          </div>
+        </div>
+
+        {/* ── 5. WIDGET "TOP UP NOW" (Koin Emas $50, $100, $150, $250) ── */}
+        <div className="rounded-3xl border border-stone-200/60 bg-surface-muted/30 p-4 sm:p-5 flex flex-col gap-3.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-2xs">
+                <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-[#18181B]">
+                Top up now
+              </span>
+            </div>
+
+            {topUpSuccessMsg && (
+              <motion.span
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full"
+              >
+                {topUpSuccessMsg}
+              </motion.span>
+            )}
+          </div>
+
+          {/* 4 Gold Coin Buttons Grid */}
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            {[50, 100, 150, 250].map((val) => (
+              <button
+                key={val}
+                type="button"
+                onClick={() => handleTopUp(val)}
+                className="bg-white rounded-2xl p-3 sm:p-3.5 border border-stone-200/70 shadow-xs flex flex-col items-center justify-center gap-1.5 hover:scale-105 hover:border-amber-400 hover:shadow-md active:scale-95 transition-all cursor-pointer group"
+              >
+                {/* Shiny Gold Coin Emblem */}
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-200 flex items-center justify-center shadow-xs border border-amber-300 group-hover:rotate-12 transition-transform">
+                  <span className="text-xs font-black text-amber-900 leading-none">
+                    🪙
+                  </span>
+                </div>
+                <span className="text-xs font-bold text-stone-800 tabular-nums">
+                  ${val}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── 6. MONTHLY BUDGET BREAKDOWN SECTION (Preserved) ── */}
+        <div className="flex flex-col gap-4 pt-2 border-t border-stone-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-[#18181B]">
+                Batas Pengeluaran Bulanan
+              </h3>
+              <p className="text-xs text-stone-500 font-medium">
+                Kontrol limit pengeluaran per kategori
+              </p>
+            </div>
+
+            {/* Periode Selector */}
+            <div className="flex items-center gap-2">
               <Select
                 value={String(currentMonth)}
                 onValueChange={(val) => handlePeriodChange(Number(val), currentYear)}
               >
-                <SelectTrigger className="w-full rounded-xl border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-xs font-semibold text-[var(--foreground)] outline-none transition-all duration-150 hover:bg-[var(--muted)] focus:ring-2 focus:ring-emerald-500/30 h-9">
-                  <Calendar className="h-3.5 w-3.5 mr-1.5 opacity-60" />
+                <SelectTrigger className="w-28 rounded-2xl bg-surface-muted/60 border-stone-200 text-xs font-bold h-9">
+                  <Calendar className="h-3.5 w-3.5 mr-1 text-stone-400" />
                   <SelectValue placeholder="Bulan" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-[var(--card-border)] bg-[var(--card)] shadow-xl max-h-[240px]">
+                <SelectContent className="rounded-2xl">
                   {MONTHS.map((m) => (
-                    <SelectItem
-                      key={m.value}
-                      value={String(m.value)}
-                      className="text-xs font-medium rounded-lg cursor-pointer"
-                    >
+                    <SelectItem key={m.value} value={String(m.value)} className="text-xs font-medium">
                       {m.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
 
-            {/* Selector Tahun */}
-            <div className="flex-1 sm:flex-initial min-w-[80px]">
               <Select
                 value={String(currentYear)}
                 onValueChange={(val) => handlePeriodChange(currentMonth, Number(val))}
               >
-                <SelectTrigger className="w-full rounded-xl border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-xs font-semibold text-[var(--foreground)] outline-none transition-all duration-150 hover:bg-[var(--muted)] focus:ring-2 focus:ring-emerald-500/30 h-9">
+                <SelectTrigger className="w-24 rounded-2xl bg-surface-muted/60 border-stone-200 text-xs font-bold h-9">
                   <SelectValue placeholder="Tahun" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-[var(--card-border)] bg-[var(--card)] shadow-xl">
+                <SelectContent className="rounded-2xl">
                   {YEARS.map((y) => (
-                    <SelectItem
-                      key={y}
-                      value={String(y)}
-                      className="text-xs font-medium rounded-lg cursor-pointer"
-                    >
+                    <SelectItem key={y} value={String(y)} className="text-xs font-medium">
                       {y}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
+              <Button
+                onClick={handleOpenAdd}
+                className="h-9 px-3.5 rounded-full bg-[#1A1A1A] hover:bg-black text-white text-xs font-bold shadow-xs cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                <span>Limit</span>
+              </Button>
             </div>
           </div>
 
-          {/* Summary Box  */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-3 bg-[var(--card)] border border-[var(--card-border)]/50 p-1.5 sm:p-3.5 rounded-2xl shadow-sm/5 relative overflow-hidden">
-            {/* Limit */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 py-2 px-1 border-r border-[var(--card-border)]/30 group/stat hover:bg-[var(--muted)]/30 rounded-xl transition-colors duration-150 min-w-0">
-              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 shrink-0">
-                <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </div>
-              <div className="text-center sm:text-left min-w-0 w-full sm:w-auto">
-                <p className="text-[9px] sm:text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider leading-none">Limit</p>
-                <p className="text-[11px] sm:text-base font-bold text-blue-500 mt-1 sm:mt-1.5 tabular-nums truncate">
-                  {formatCurrency(totals.totalLimit, true)}
-                </p>
-              </div>
-            </div>
-
-            {/* Terpakai */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 py-2 px-1 border-r border-[var(--card-border)]/30 group/stat hover:bg-[var(--muted)]/30 rounded-xl transition-colors duration-150 min-w-0">
-              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-rose-500/10 text-rose-500 shrink-0">
-                <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </div>
-              <div className="text-center sm:text-left min-w-0 w-full sm:w-auto">
-                <p className="text-[9px] sm:text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider leading-none">Terpakai</p>
-                <p className="text-[11px] sm:text-base font-bold text-rose-500 mt-1 sm:mt-1.5 tabular-nums truncate">
-                  {formatCurrency(totals.totalSpent, true)}
-                </p>
-              </div>
-            </div>
-
-            {/* Sisa */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 py-2 px-1 group/stat hover:bg-[var(--muted)]/30 rounded-xl transition-colors duration-150 min-w-0">
-              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 shrink-0">
-                <ArrowUpDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </div>
-              <div className="text-center sm:text-left min-w-0 w-full sm:w-auto">
-                <p className="text-[9px] sm:text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider leading-none">Sisa</p>
-                <p className="text-[11px] sm:text-base font-bold text-emerald-500 mt-1 sm:mt-1.5 tabular-nums truncate block w-full sm:w-auto">
-                  {formatCurrency(totals.remaining, true)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <main className="mx-auto max-w-screen-xl px-4 py-4 sm:px-6 lg:px-8 space-y-4">
-        {/* List Anggaran */}
-        <Card className="overflow-hidden shadow-sm border-[var(--card-border)]">
-          <CardContent className="p-0">
+          {/* Budget Items List */}
+          <div className="space-y-2.5">
             {initialBudgets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 gap-3 text-[var(--muted-foreground)] text-center px-4 bg-[var(--card)]">
-                <Target className="h-10 w-10 opacity-20" />
-                <div>
-                  <p className="font-semibold text-sm sm:text-base text-[var(--foreground)]">
-                    Belum Ada Anggaran
-                  </p>
-                  <p className="text-[11px] mt-1 opacity-80 max-w-[260px] mx-auto">
-                    Buat anggaran bulanan pertama Anda untuk membatasi pengeluaran.
-                  </p>
-                  <Button onClick={handleOpenAdd} className="mt-4 gap-1 rounded-xl text-xs h-9 cursor-pointer" size="sm">
-                    <Plus className="h-4 w-4" />
-                    Atur Sekarang
-                  </Button>
-                </div>
+              <div className="flex flex-col items-center justify-center py-10 rounded-3xl bg-surface-muted/30 border border-stone-200/50 text-center px-4">
+                <Target className="h-8 w-8 text-stone-300 mb-2" />
+                <p className="text-xs font-bold text-[#18181B]">Belum Ada Anggaran</p>
+                <p className="text-[11px] text-stone-500 mt-0.5">Buat limit pengeluaran bulanan pertama Anda.</p>
+                <Button
+                  onClick={handleOpenAdd}
+                  className="mt-3 h-8 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white text-xs font-bold"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  Atur Limit
+                </Button>
               </div>
             ) : (
-              <div className="divide-y divide-[var(--card-border)]/35">
-                {initialBudgets.map((item, i) => {
-                  const pct = Math.min(Math.round((item.spent / item.limit) * 100), 999);
-                  const isOver = pct >= 100;
-                  const isWarning = pct >= 80 && pct < 100;
-                  const categoryMeta = availableCategories.bySlug[item.category];
-                  const fallbackMeta = CATEGORY_META[item.category as Category];
-                  const metaEmoji = categoryMeta?.emoji || fallbackMeta?.emoji || "📝";
-                  const metaLabel = categoryMeta?.name || fallbackMeta?.label || item.category;
+              initialBudgets.map((item) => {
+                const pct = Math.min(Math.round((item.spent / item.limit) * 100), 999);
+                const isOver = pct >= 100;
+                const categoryMeta = availableCategories.bySlug[item.category];
+                const fallbackMeta = CATEGORY_META[item.category as Category];
+                const metaEmoji = categoryMeta?.emoji || fallbackMeta?.emoji || "📝";
+                const metaLabel = categoryMeta?.name || fallbackMeta?.label || item.category;
 
-                  // Rombak ke utility class untuk kecocokan penuh dengan Shadcn Progress
-                  const progressBgClass = isOver
-                    ? "bg-rose-500"
-                    : isWarning
-                      ? "bg-amber-500"
-                      : "bg-emerald-500 dark:bg-emerald-600";
-
-                  const pctColorClass = isOver
-                    ? "text-rose-500 font-bold"
-                    : isWarning
-                      ? "text-amber-500 font-semibold"
-                      : "text-[var(--muted-foreground)] font-medium";
-
-                  return (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, delay: i * 0.03 }}
-                      className="p-4 flex flex-col gap-2.5 hover:bg-[var(--muted)]/30 transition-colors"
-                    >
-                      {/* Row 1: Header/Label & Edit */}
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--muted)] border border-[var(--card-border)]/10 text-base shadow-sm">
-                            <AnimatedEmoji emoji={metaEmoji} size={20} />
-                          </div>
-                          <span className="text-xs sm:text-sm font-semibold text-[var(--foreground)] truncate">
-                            {metaLabel}
+                return (
+                  <div
+                    key={item.id}
+                    className="p-3.5 rounded-2xl bg-surface-muted/40 hover:bg-surface-muted/70 transition-colors border border-stone-200/50 flex flex-col gap-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base leading-none">{metaEmoji}</span>
+                        <span className="text-xs font-bold text-[#18181B]">{metaLabel}</span>
+                        {isOver && (
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">
+                            Overlimit
                           </span>
-                          {(isOver || isWarning) && (
-                            <span className={cn(
-                              "flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide shrink-0",
-                              isOver ? "bg-rose-500/10 text-rose-500 animate-pulse" : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                            )}>
-                              {isOver ? "Overlimit" : "Warning"}
-                            </span>
-                          )}
-                        </div>
-
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs font-black tabular-nums text-stone-900">
+                          {formatCurrency(item.spent, true)} / {formatCurrency(item.limit, true)}
+                        </span>
+                        <button
+                          type="button"
                           onClick={() => handleOpenEdit(item)}
-                          className="text-[var(--muted-foreground)] hover:text-emerald-500 hover:bg-emerald-500/10 rounded-xl h-8 w-8 cursor-pointer shrink-0"
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 cursor-pointer ml-1"
                         >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </Button>
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
+                    </div>
 
-                      {/* Row 2: Progress bar + Info Split bawah (Mobile-friendly layout) */}
-                      <div className="space-y-2">
-                        <Progress
-                          value={Math.min(pct, 100)}
-                          className={cn(
-                            "h-2 rounded-full bg-[var(--muted)] border border-[var(--card-border)]/10",
-                            // Perbaikan: Mengincar elemen indikator di dalam Progress menggunakan [&>div]
-                            isOver
-                              ? "[&>div]:bg-rose-500"
-                              : isWarning
-                                ? "[&>div]:bg-amber-500"
-                                : "[&>div]:bg-emerald-500 dark:[&>div]:bg-emerald-600"
-                          )}
-                        />
-                        <div className="flex justify-between items-center text-[10px] sm:text-xs font-medium text-[var(--muted-foreground)] tabular-nums">
-                          <span className="truncate max-w-[80%]">
-                            {formatCurrency(item.spent, true)} <span className="opacity-40">/</span> {formatCurrency(item.limit, true)}
-                          </span>
-                          <span className={cn("shrink-0 pl-1", pctColorClass)}>
-                            {pct}%
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                    <div className="w-full bg-stone-200/80 rounded-full h-2 overflow-hidden">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all duration-300",
+                          isOver ? "bg-rose-500" : pct >= 80 ? "bg-amber-500" : "bg-[#1A1A1A]"
+                        )}
+                        style={{ width: `${Math.min(pct, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
             )}
-          </CardContent>
-        </Card>
-      </main>
+          </div>
+        </div>
+      </motion.div>
 
-      {/* Dialog Form (Mobile-responsive drawer look-alike) */}
+      {/* ── Dialog Form Tambah / Edit Limit Budget ── */}
       <AnimatePresence>
         {dialogOpen && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -417,39 +673,36 @@ export function BudgetClient({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 240 }}
-              className="relative w-full max-w-md rounded-t-[1.75rem] sm:rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-5 sm:p-6 shadow-2xl z-10 max-h-[90vh] overflow-y-auto pb-8 sm:pb-6"
+              className="relative w-full max-w-md rounded-t-[28px] sm:rounded-3xl border border-black/[0.04] bg-white p-5 sm:p-6 shadow-2xl z-10 max-h-[90vh] overflow-y-auto pb-8 sm:pb-6"
             >
-              {/* Swipe/Pull Handle bar decor khusus mobile */}
-              <div className="h-1 w-12 bg-[var(--card-border)]/60 rounded-full mx-auto mb-3 sm:hidden" onClick={() => setDialogOpen(false)} />
-
               {isSuccess ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10">
-                    <CheckCircle2 className="h-7 w-7 text-emerald-500" />
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#D8F5A2]">
+                    <CheckCircle2 className="h-7 w-7 text-emerald-800" />
                   </div>
                   <div className="space-y-0.5">
-                    <p className="font-bold text-base text-[var(--foreground)]">Anggaran Berhasil Disimpan!</p>
-                    <p className="text-xs text-[var(--muted-foreground)]">Limit baru berhasil diperbarui dalam sistem.</p>
+                    <p className="font-bold text-base text-[#18181B]">Anggaran Berhasil Disimpan!</p>
+                    <p className="text-xs text-stone-500">Limit baru berhasil diperbarui dalam sistem.</p>
                   </div>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="flex items-center gap-3 pb-3 border-b border-[var(--card-border)]/40">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
-                      <Target className="h-4 w-4" />
+                  <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#FAD170] text-amber-900 shadow-xs">
+                      <Target className="h-4 w-4 stroke-[2.5]" />
                     </div>
-                    <div className="min-w-0">
-                      <h2 className="text-sm sm:text-base font-bold text-[var(--foreground)] truncate">
+                    <div>
+                      <h2 className="text-sm sm:text-base font-bold text-[#18181B]">
                         {editingBudget ? "Edit Batas Anggaran" : "Atur Anggaran Kategori"}
                       </h2>
-                      <p className="text-[11px] sm:text-xs text-[var(--muted-foreground)] truncate mt-0.5 opacity-80">
-                        {editingBudget ? `Sesuaikan limit anggaran untuk ${availableCategories.bySlug[editingBudget.category]?.name || editingBudget.category}` : "Pilih kategori dan tentukan batas limit bulanan"}
+                      <p className="text-xs text-stone-500 mt-0.5">
+                        Tentukan batas limit bulanan untuk kategori pengeluaran.
                       </p>
                     </div>
                   </div>
 
                   {errorMsg && (
-                    <div className="flex items-center gap-2 rounded-xl bg-rose-500/10 border border-rose-500/20 px-3 py-2.5 text-xs text-rose-600">
+                    <div className="flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-500/20 px-3 py-2.5 text-xs text-rose-600 font-medium">
                       <AlertTriangle className="h-4 w-4 shrink-0" />
                       {errorMsg}
                     </div>
@@ -457,12 +710,12 @@ export function BudgetClient({
 
                   {/* Kategori */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-[var(--muted-foreground)]">Kategori Pengeluaran</Label>
+                    <Label className="text-xs font-semibold text-stone-500">Kategori Pengeluaran</Label>
                     {editingBudget ? (
                       <Input
                         disabled
                         value={availableCategories.bySlug[editingBudget.category]?.name || editingBudget.category}
-                        className="bg-[var(--muted)]/50 rounded-xl h-10 text-sm font-semibold text-[var(--foreground)]"
+                        className="bg-surface-muted/60 rounded-2xl h-10 text-sm font-semibold text-[#18181B]"
                       />
                     ) : (
                       <Controller
@@ -470,12 +723,12 @@ export function BudgetClient({
                         control={control}
                         render={({ field }) => (
                           <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger className="rounded-xl h-10 text-xs sm:text-sm cursor-pointer">
+                            <SelectTrigger className="rounded-2xl h-10 text-xs sm:text-sm cursor-pointer bg-surface-muted/60 border-stone-200">
                               <SelectValue placeholder="Pilih kategori..." />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="rounded-2xl">
                               {availableCategories.expense.map((cat) => (
-                                <SelectItem key={`${cat.type}-${cat.slug}`} value={cat.slug}>
+                                <SelectItem key={`${cat.type}-${cat.slug}`} value={cat.slug} className="rounded-xl">
                                   <span className="flex items-center gap-2 text-xs sm:text-sm">
                                     <AnimatedEmoji emoji={cat.emoji} size={16} />
                                     <span>{cat.name}</span>
@@ -494,9 +747,9 @@ export function BudgetClient({
 
                   {/* Limit */}
                   <div className="space-y-1.5">
-                    <Label htmlFor="limit" className="text-xs font-semibold text-[var(--muted-foreground)]">Batas Limit Bulanan</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--muted-foreground)]">
+                    <Label htmlFor="limit" className="text-xs font-semibold text-stone-500">Batas Limit Bulanan</Label>
+                    <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
+                      <span className="pl-3 text-sm font-bold text-stone-400">
                         Rp
                       </span>
                       <Input
@@ -505,7 +758,7 @@ export function BudgetClient({
                         placeholder="0"
                         value={rawLimit ? Number(rawLimit).toLocaleString("id-ID") : ""}
                         onChange={handleLimitChange}
-                        className="pl-9 pr-3 text-right font-bold text-sm sm:text-base h-10 rounded-xl tabular-nums focus-visible:ring-1 focus-visible:ring-[var(--ring)]"
+                        className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-base h-9 text-[#18181B] tabular-nums bg-transparent pr-2"
                       />
                     </div>
                     {errors.limit && (
@@ -513,20 +766,20 @@ export function BudgetClient({
                     )}
                   </div>
 
-                  {/* Action Button */}
+                  {/* Action Buttons */}
                   <div className="flex gap-2.5 pt-2">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
                       onClick={() => setDialogOpen(false)}
-                      className="flex-1 rounded-xl h-10 text-xs font-bold cursor-pointer"
+                      className="flex-1 rounded-full h-11 text-xs font-bold cursor-pointer bg-stone-100 hover:bg-stone-200 text-stone-700"
                     >
                       Batal
                     </Button>
                     <Button
                       type="submit"
                       disabled={isLoading}
-                      className="flex-1 rounded-xl h-10 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 cursor-pointer"
+                      className="flex-1 rounded-full h-11 text-xs font-bold text-white bg-[#E85024] hover:bg-[#d44319] cursor-pointer shadow-sm"
                     >
                       {isLoading ? (
                         <div className="flex items-center gap-1.5 justify-center">
@@ -547,3 +800,4 @@ export function BudgetClient({
     </div>
   );
 }
+

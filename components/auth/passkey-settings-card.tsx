@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface PasskeyListItem {
   id: string;
@@ -106,42 +107,46 @@ export function PasskeySettingsCard() {
   };
 
   return (
-    <Card className="shadow-sm border-[var(--card-border)]">
-      <CardHeader className="p-4 sm:p-6 pb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 shrink-0">
-            <Fingerprint className="h-4 w-4" />
-          </div>
-          <div>
-            <CardTitle className="text-sm sm:text-base font-semibold">Face ID / Passkey</CardTitle>
-            <CardDescription className="text-[11px] sm:text-xs mt-0.5">
-              Jadikan Face ID sebagai opsi login utama tanpa menghapus login password.
-            </CardDescription>
-          </div>
+    <div className="bg-white rounded-3xl p-5 md:p-6 border border-black/[0.03] shadow-xs flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-2xl bg-[#D8F5A2] flex items-center justify-center text-emerald-900 shadow-2xs shrink-0">
+          <Fingerprint className="h-5 w-5 stroke-[2.2]" />
         </div>
-      </CardHeader>
+        <div>
+          <h3 className="text-sm sm:text-base font-bold text-[#18181B]">Face ID / Passkey</h3>
+          <p className="text-xs text-stone-500 mt-0.5">
+            Jadikan Face ID sebagai opsi login utama tanpa menghapus login password
+          </p>
+        </div>
+      </div>
 
-      <CardContent className="p-4 sm:p-6 pt-0 space-y-3.5">
-        <div className="flex items-center justify-between rounded-xl bg-[var(--muted)]/40 p-3 border border-[var(--card-border)]/30">
-          <span className="text-xs font-semibold text-[var(--foreground)]">Status perangkat</span>
-          <Badge variant={isSupported ? "default" : "warning"}>
+      <div className="space-y-3.5 pt-1">
+        <div className="flex items-center justify-between rounded-2xl bg-surface-muted/50 p-3.5">
+          <span className="text-xs font-semibold text-stone-700">Status perangkat</span>
+          <span
+            className={cn(
+              "text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider",
+              isSupported ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+            )}
+          >
             {isSupported ? "Siap digunakan" : "Belum didukung"}
-          </Badge>
+          </span>
         </div>
 
         {!isSupported && (
-          <p className="text-[11px] text-[var(--muted-foreground)]">
-            Passkey butuh browser yang mendukung WebAuthn dan koneksi aman HTTPS atau `localhost`.
+          <p className="text-xs text-stone-400">
+            Passkey butuh browser yang mendukung WebAuthn dan koneksi aman HTTPS atau localhost.
           </p>
         )}
 
         {message && (
           <div
-            className={
+            className={cn(
+              "rounded-2xl border px-3.5 py-2.5 text-xs font-medium",
               message.type === "success"
-                ? "rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700"
-                : "rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-600"
-            }
+                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                : "border-rose-200 bg-rose-50 text-rose-700"
+            )}
           >
             {message.text}
           </div>
@@ -151,67 +156,74 @@ export function PasskeySettingsCard() {
           type="button"
           onClick={handleRegisterPasskey}
           disabled={!isSupported || registering}
-          className="w-full h-10 text-xs font-semibold"
+          className="w-full h-11 rounded-full bg-[#1A1A1A] hover:bg-stone-800 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer"
         >
-          {registering ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
-          Aktifkan Face ID
+          {registering ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+              <span>Mendaftarkan Face ID...</span>
+            </>
+          ) : (
+            <>
+              <ShieldCheck className="h-4 w-4 mr-1.5" />
+              <span>Aktifkan Face ID / Passkey Baru</span>
+            </>
+          )}
         </Button>
 
-        <div className="space-y-2">
+        <div className="space-y-2 pt-2 border-t border-black/[0.03]">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-[var(--foreground)]">Passkey terdaftar</p>
-            <Badge variant="secondary">{loading ? "..." : `${passkeys.length} aktif`}</Badge>
+            <p className="text-xs font-bold text-[#18181B]">Passkey Terdaftar</p>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
+              {loading ? "..." : `${passkeys.length} aktif`}
+            </span>
           </div>
 
           {loading ? (
-            <div className="rounded-xl border border-[var(--card-border)]/30 p-3 text-xs text-[var(--muted-foreground)]">
+            <div className="rounded-2xl border border-black/[0.03] bg-surface-muted/30 p-3.5 text-xs text-stone-400 text-center">
               Memuat daftar passkey...
             </div>
           ) : passkeys.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[var(--card-border)]/40 p-3 text-xs text-[var(--muted-foreground)]">
-              Belum ada passkey. Password tetap menjadi fallback login Anda.
+            <div className="rounded-2xl border border-dashed border-stone-200 p-4 text-xs text-stone-400 text-center">
+              Belum ada passkey. Password tetap menjadi opsi login utama Anda.
             </div>
           ) : (
             <div className="space-y-2">
               {passkeys.map((passkey, index) => (
                 <div
                   key={passkey.id}
-                  className="flex items-center gap-3 rounded-xl border border-[var(--card-border)]/30 bg-[var(--muted)]/20 p-3"
+                  className="flex items-center gap-3 rounded-2xl border border-black/[0.03] bg-surface-muted/40 p-3 hover:bg-surface-muted/60 transition-all"
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--card)] text-emerald-500">
-                    <KeyRound className="h-4 w-4" />
+                  <div className="w-8 h-8 rounded-xl bg-white shadow-2xs flex items-center justify-center text-stone-800 shrink-0">
+                    <KeyRound className="h-4 w-4 text-[#E85024]" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-semibold text-[var(--foreground)]">
+                    <p className="truncate text-xs font-bold text-[#18181B]">
                       {passkey.friendly_name || `Face ID ${index + 1}`}
                     </p>
-                    <p className="text-[10px] text-[var(--muted-foreground)]">
-                      Dibuat {formatDateTime(passkey.created_at)}
-                    </p>
-                    <p className="text-[10px] text-[var(--muted-foreground)]">
-                      Dipakai terakhir {formatDateTime(passkey.last_used_at)}
+                    <p className="text-[10px] text-stone-400 mt-0.5">
+                      Dibuat {formatDateTime(passkey.created_at)} &bull; Terakhir {formatDateTime(passkey.last_used_at)}
                     </p>
                   </div>
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon-sm"
                     disabled={removingId === passkey.id}
                     onClick={() => void handleDeletePasskey(passkey.id)}
-                    className="shrink-0 text-rose-500 hover:text-rose-500 hover:bg-rose-500/10"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer shrink-0"
+                    title="Hapus Passkey"
                   >
                     {removingId === passkey.id ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
                       <Trash2 className="h-3.5 w-3.5" />
                     )}
-                  </Button>
+                  </button>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
