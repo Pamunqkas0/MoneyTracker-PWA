@@ -3,8 +3,7 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Sun, Moon, Laptop, Palette } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function ThemeSettingsCard() {
   const { theme, setTheme } = useTheme();
@@ -16,81 +15,75 @@ export function ThemeSettingsCard() {
 
   if (!mounted) {
     return (
-      <Card className="shadow-sm border-[var(--card-border)]">
-        <CardHeader className="p-4 sm:p-6 pb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 shrink-0">
-              <Palette className="h-4 w-4" />
-            </div>
-            <div>
-              <CardTitle className="text-sm sm:text-base font-semibold">Tampilan (Tema)</CardTitle>
-            </div>
+      <div className="bg-white rounded-3xl p-5 md:p-6 border border-black/[0.03] shadow-xs flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-2xl bg-[#DAEFEA] flex items-center justify-center text-teal-900 shadow-2xs shrink-0">
+            <Palette className="h-5 w-5 stroke-[2.2]" />
           </div>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6 pt-0 space-y-3">
-          <div className="h-10 bg-[var(--muted)] animate-pulse rounded-xl" />
-        </CardContent>
-      </Card>
+          <div>
+            <h3 className="text-sm sm:text-base font-bold text-[#18181B]">Tampilan (Tema)</h3>
+          </div>
+        </div>
+        <div className="h-14 bg-surface-muted/60 animate-pulse rounded-2xl" />
+      </div>
     );
   }
 
-  return (
-    <Card className="shadow-sm border-[var(--card-border)]">
-      <CardHeader className="p-4 sm:p-6 pb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 shrink-0">
-            <Palette className="h-4 w-4" />
-          </div>
-          <div>
-            <CardTitle className="text-sm sm:text-base font-semibold">Tampilan (Tema)</CardTitle>
-            <CardDescription className="text-[11px] sm:text-xs mt-0.5">
-              Sesuaikan mode terang atau gelap sesuai kenyamanan Anda
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4 sm:p-6 pt-0">
-        <div className="grid grid-cols-3 gap-2">
-          <Button
-            variant="outline"
-            className={`flex flex-col gap-1.5 h-auto py-3 rounded-xl border ${
-              theme === "light"
-                ? "border-emerald-500 bg-emerald-500/10 text-emerald-700"
-                : "border-[var(--card-border)] text-[var(--muted-foreground)]"
-            }`}
-            onClick={() => setTheme("light")}
-          >
-            <Sun className="h-4 w-4 mb-1" />
-            <span className="text-xs font-semibold">Terang</span>
-          </Button>
-          
-          <Button
-            variant="outline"
-            className={`flex flex-col gap-1.5 h-auto py-3 rounded-xl border ${
-              theme === "dark"
-                ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
-                : "border-[var(--card-border)] text-[var(--muted-foreground)]"
-            }`}
-            onClick={() => setTheme("dark")}
-          >
-            <Moon className="h-4 w-4 mb-1" />
-            <span className="text-xs font-semibold">Gelap</span>
-          </Button>
+  const themes = [
+    {
+      id: "light",
+      label: "Terang",
+      icon: Sun,
+    },
+    {
+      id: "dark",
+      label: "Gelap",
+      icon: Moon,
+    },
+    {
+      id: "system",
+      label: "Sistem",
+      icon: Laptop,
+    },
+  ];
 
-          <Button
-            variant="outline"
-            className={`flex flex-col gap-1.5 h-auto py-3 rounded-xl border ${
-              theme === "system"
-                ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                : "border-[var(--card-border)] text-[var(--muted-foreground)]"
-            }`}
-            onClick={() => setTheme("system")}
-          >
-            <Laptop className="h-4 w-4 mb-1" />
-            <span className="text-xs font-semibold">Sistem</span>
-          </Button>
+  return (
+    <div className="bg-white rounded-3xl p-5 md:p-6 border border-black/[0.03] shadow-xs flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-2xl bg-[#DAEFEA] flex items-center justify-center text-teal-900 shadow-2xs shrink-0">
+          <Palette className="h-5 w-5 stroke-[2.2]" />
         </div>
-      </CardContent>
-    </Card>
+        <div>
+          <h3 className="text-sm sm:text-base font-bold text-[#18181B]">Tampilan (Tema)</h3>
+          <p className="text-xs text-stone-500 mt-0.5">
+            Sesuaikan mode terang atau gelap sesuai kenyamanan Anda
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2.5 pt-1">
+        {themes.map((item) => {
+          const Icon = item.icon;
+          const isActive = theme === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTheme(item.id)}
+              className={cn(
+                "flex flex-col items-center justify-center gap-1.5 py-3.5 px-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer",
+                isActive
+                  ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-xs scale-[1.02]"
+                  : "bg-surface-muted/60 hover:bg-stone-100 text-stone-600 border-stone-200/80 hover:border-stone-300"
+              )}
+            >
+              <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#D8F5A2]" : "text-stone-500")} />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
+

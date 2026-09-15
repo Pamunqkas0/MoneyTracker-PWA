@@ -110,119 +110,121 @@ export function CategorySettingsCard({ categories }: CategorySettingsCardProps) 
 
   return (
     <>
-      <Card className="shadow-sm border-[var(--card-border)]">
-        <CardHeader className="p-4 sm:p-6 pb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 shrink-0">
-              <Tags className="h-4 w-4" />
-            </div>
-            <div>
-              <CardTitle className="text-sm sm:text-base font-semibold">Kelola Kategori</CardTitle>
-              <CardDescription className="text-[11px] sm:text-xs mt-0.5">
-                Edit atau hapus kategori kustom Anda
-              </CardDescription>
-            </div>
+      <div className="bg-white rounded-3xl p-5 md:p-6 border border-black/[0.03] shadow-xs flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-2xl bg-[#FAD170] flex items-center justify-center text-amber-900 shadow-2xs shrink-0">
+            <Tags className="h-5 w-5 stroke-[2.2]" />
           </div>
-        </CardHeader>
-        <CardContent className="p-0 px-4 sm:px-6 divide-y divide-[var(--card-border)]/30 pb-2">
+          <div>
+            <h3 className="text-sm sm:text-base font-bold text-[#18181B]">Kelola Kategori Kustom</h3>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Edit atau hapus kategori kustom tambahan Anda
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-1 space-y-3">
           {successMsg && (
-            <div className="my-3 rounded-xl bg-emerald-500/10 p-3 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold text-center">
+            <div className="rounded-2xl bg-emerald-50 border border-emerald-200/60 p-3 text-emerald-800 text-xs font-bold text-center">
               {successMsg}
             </div>
           )}
-          
+
           {userCategories.length === 0 ? (
-            <div className="text-center py-6 text-[var(--muted-foreground)]">
-              <Tags className="h-8 w-8 mx-auto mb-2 opacity-20" />
-              <p className="text-xs font-medium">Belum ada kategori kustom</p>
+            <div className="text-center py-6 text-stone-400 bg-surface-muted/30 rounded-2xl border border-dashed border-stone-200 p-4">
+              <Tags className="h-7 w-7 mx-auto mb-1.5 opacity-30 text-stone-600" />
+              <p className="text-xs font-medium">Belum ada kategori kustom tambahan</p>
             </div>
           ) : (
-            <div className="flex flex-col max-h-[220px] overflow-y-auto custom-scrollbar pr-1 -mr-1">
+            <div className="flex flex-col gap-2 max-h-[260px] overflow-y-auto pr-1">
               {userCategories.map((category) => (
-                <div 
-                  key={category.id} 
-                  className="flex items-center justify-between py-2"
+                <div
+                  key={category.id}
+                  className="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-surface-muted/40 hover:bg-surface-muted/70 transition-all border border-black/[0.02]"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div 
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm border border-[var(--card-border)]/50 bg-[var(--muted)]/20"
-                    >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white shadow-2xs">
                       <AnimatedEmoji emoji={category.emoji} size={20} />
                     </div>
-                    <div>
-                      <h4 className="text-[11px] font-semibold text-[var(--foreground)] leading-none mb-1">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-bold text-[#18181B] truncate leading-tight">
                         {category.name}
                       </h4>
-                      <Badge 
-                        variant="outline" 
-                        className="text-[8px] py-0 px-1.5 border-transparent bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
+                      <span
+                        className={cn(
+                          "text-[9px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5 uppercase tracking-wider",
+                          category.type === "income"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-[#FDD5C1] text-rose-800"
+                        )}
                       >
                         {category.type === "income" ? "Pemasukan" : "Pengeluaran"}
-                      </Badge>
+                      </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-[var(--muted-foreground)] hover:text-emerald-500 hover:bg-emerald-500/10 rounded-lg"
+                    <button
+                      type="button"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-900 hover:bg-stone-200/60 transition-all cursor-pointer"
                       onClick={() => handleEditClick(category)}
                       disabled={isLoading}
+                      title="Edit Kategori"
                     >
                       <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-[var(--muted-foreground)] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg"
+                    </button>
+                    <button
+                      type="button"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
                       onClick={() => handleDelete(category)}
                       disabled={isLoading}
+                      title="Hapus Kategori"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent showHandle className="p-0 overflow-hidden rounded-t-[1.75rem] sm:rounded-2xl transition-all duration-200 max-w-md">
-          <DialogHeader className="p-5 pb-3 border-b border-[var(--card-border)]/40 text-left">
+        <DialogContent showHandle className="p-0 overflow-hidden rounded-t-[32px] sm:rounded-[36px] transition-all duration-200 max-w-md bg-white border border-black/[0.04] shadow-2xl">
+          <DialogHeader className="p-6 pb-3 border-b border-black/[0.04] text-left">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
-                <Tags className="h-4 w-4" />
+              <div className="w-10 h-10 rounded-2xl bg-[#FAD170] flex items-center justify-center text-amber-900 shadow-2xs">
+                <Tags className="h-5 w-5 stroke-[2.2]" />
               </div>
               <div>
-                <DialogTitle className="text-sm sm:text-base font-bold">
+                <DialogTitle className="text-base font-bold text-[#18181B]">
                   Edit Kategori
                 </DialogTitle>
-                <DialogDescription className="text-[11px] sm:text-xs mt-0.5 opacity-80">
-                  Perbarui detail kategori Anda di sini.
+                <DialogDescription className="text-xs text-stone-500 mt-0.5">
+                  Perbarui nama dan emoji kategori kustom Anda
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
-          
-          <div className="px-5 pt-4 pb-0 overflow-y-auto max-h-[76vh] sm:max-h-[550px] custom-scrollbar">
-            <div className="space-y-4 pt-0.5 pb-2">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name" className="text-xs font-semibold text-[var(--muted-foreground)]">Nama Kategori</Label>
+
+          <div className="px-6 pt-4 pb-0 overflow-y-auto max-h-[70vh] sm:max-h-[500px]">
+            <div className="space-y-4 pb-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-name" className="text-xs font-bold text-stone-700">Nama Kategori</Label>
                 <Input
                   id="edit-name"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   placeholder="Mis. Makan Malam"
-                  className="rounded-xl h-11 text-sm bg-[var(--muted)]/40 border-[var(--card-border)]/60 focus:bg-[var(--background)] transition-colors"
+                  className="rounded-2xl h-11 text-xs font-bold bg-surface-muted/60 border-stone-200"
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-[var(--muted-foreground)]">Emoji</Label>
-                <div 
-                  className="grid grid-cols-6 gap-2 max-h-[160px] overflow-y-auto custom-scrollbar p-1"
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-stone-700">Pilih Emoji</Label>
+                <div
+                  className="grid grid-cols-6 gap-2 max-h-[160px] overflow-y-auto p-1 bg-surface-muted/40 rounded-2xl border border-black/[0.02]"
                   onScroll={handleEmojiScroll}
                 >
                   {EMOJI_OPTIONS.slice(0, visibleEmojiCount).map((emoji) => (
@@ -231,51 +233,42 @@ export function CategorySettingsCard({ categories }: CategorySettingsCardProps) 
                       type="button"
                       onClick={() => setEditEmoji(emoji)}
                       className={cn(
-                        "flex h-10 items-center justify-center rounded-lg border text-base transition-all",
+                        "flex h-10 items-center justify-center rounded-xl border text-base transition-all cursor-pointer",
                         editEmoji === emoji
-                          ? "border-emerald-500 bg-emerald-500/10"
-                          : "border-[var(--card-border)] bg-[var(--card)] hover:bg-[var(--muted)]"
+                          ? "border-[#E85024] bg-orange-50 shadow-2xs scale-105"
+                          : "border-black/[0.04] bg-white hover:bg-stone-50"
                       )}
                     >
-                      <AnimatedEmoji emoji={emoji} size={24} />
+                      <AnimatedEmoji emoji={emoji} size={22} />
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="space-y-2 hidden">
-                <Label htmlFor="edit-color" className="text-xs font-semibold text-[var(--muted-foreground)]">Warna (Hex)</Label>
-                <Input
-                  id="edit-color"
-                  type="color"
-                  value={editColor}
-                  onChange={(e) => setEditColor(e.target.value)}
-                  className="rounded-xl h-11"
-                />
-              </div>
+
               {errorMsg && (
-                <div className="text-rose-500 text-xs font-medium bg-rose-500/10 p-2.5 rounded-xl text-center border border-rose-500/20">
+                <div className="text-rose-700 text-xs font-bold bg-rose-50 p-3 rounded-2xl text-center border border-rose-200">
                   {errorMsg}
                 </div>
               )}
             </div>
           </div>
-          
-          <div className="sticky bottom-0 left-0 right-0 p-5 pt-4 bg-[var(--background)] border-t border-[var(--card-border)]/40 mt-auto z-10 flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsEditDialogOpen(false)} 
-              disabled={isLoading} 
-              className="w-full rounded-xl h-11 font-semibold text-xs border-[var(--card-border)] bg-[var(--card)] hover:bg-[var(--muted)]"
+
+          <div className="sticky bottom-0 left-0 right-0 p-6 pt-3 bg-white border-t border-black/[0.04] flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+              disabled={isLoading}
+              className="flex-1 rounded-full h-11 font-bold text-xs cursor-pointer"
             >
               Batal
             </Button>
-            <Button 
-              onClick={handleSaveEdit} 
-              disabled={isLoading} 
-              className="w-full rounded-xl h-11 font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+            <Button
+              onClick={handleSaveEdit}
+              disabled={isLoading}
+              className="flex-1 rounded-full h-11 font-bold text-xs bg-[#E85024] hover:bg-[#d44319] text-white shadow-xs cursor-pointer"
             >
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Simpan
+              {isLoading && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
+              Simpan Perubahan
             </Button>
           </div>
         </DialogContent>

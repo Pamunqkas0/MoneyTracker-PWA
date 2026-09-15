@@ -268,7 +268,7 @@ function EditBalanceDialog({
 }
 
 /* ── Add-account dialog ────────────────────────────────── */
-function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const [rawBalance, setRawBalance] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

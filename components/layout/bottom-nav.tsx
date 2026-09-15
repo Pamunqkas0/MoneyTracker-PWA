@@ -5,8 +5,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Home,
-  CreditCard,
-  PieChart,
+  PiggyBank,
+  Plus,
   BarChart3,
   LayoutGrid,
 } from "lucide-react";
@@ -27,16 +27,16 @@ const NAV_ITEMS: NavItem[] = [
     icon: Home,
   },
   {
-    id: "transactions",
-    label: "Activity",
-    href: "/dashboard/transactions",
-    icon: CreditCard,
+    id: "savings",
+    label: "Savings",
+    href: "/dashboard/budget",
+    icon: PiggyBank,
   },
   {
-    id: "budget",
-    label: "Budget",
-    href: "/dashboard/budget",
-    icon: PieChart,
+    id: "add",
+    label: "Add",
+    href: "#",
+    icon: Plus,
   },
   {
     id: "stats",
@@ -61,21 +61,37 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
 
   const getIsActive = (item: NavItem) => {
     if (item.id === "home") return pathname === "/dashboard";
-    if (item.id === "transactions") return pathname.startsWith("/dashboard/transactions");
-    if (item.id === "budget") return pathname.startsWith("/dashboard/budget");
+    if (item.id === "savings") return pathname.startsWith("/dashboard/budget");
+    if (item.id === "add") return false;
+    if (item.id === "stats") return pathname.startsWith("/dashboard/transactions");
     if (item.id === "profile") return pathname.startsWith("/dashboard/profile");
     return false;
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex lg:hidden pointer-events-none">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex lg:hidden pointer-events-none w-full justify-center px-4">
       <nav
         aria-label="Mobile Floating Navigation"
-        className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-full p-1.5 shadow-2xl border border-black/[0.06] flex items-center justify-between gap-1 max-w-sm"
+        className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-full p-1.5 shadow-2xl border border-black/[0.06] flex items-center justify-between gap-1 max-w-sm w-full"
       >
         {NAV_ITEMS.map((item) => {
           const isActive = getIsActive(item);
           const Icon = item.icon;
+
+          if (item.id === "add") {
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={onAddClick}
+                className="relative flex items-center justify-center cursor-pointer transition-transform active:scale-90 select-none w-10 h-10 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white shadow-md mx-1 shrink-0"
+                aria-label="Tambah Transaksi"
+                title="Tambah Transaksi"
+              >
+                <Plus className="w-5 h-5 stroke-[2.8]" />
+              </button>
+            );
+          }
 
           return (
             <Link
@@ -105,4 +121,6 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
     </div>
   );
 }
+
+
 

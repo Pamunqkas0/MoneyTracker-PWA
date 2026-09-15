@@ -1,8 +1,8 @@
-import { getAvailableTransactionCategories, getBudgetItems } from "@/lib/supabase/queries";
+import { getAvailableTransactionCategories, getBudgetItems, getSavingsGoals } from "@/lib/supabase/queries";
 import { BudgetClient } from "@/components/dashboard/budget-client";
 
 export const metadata = {
-  title: "Anggaran Bulanan | MoneyTracker",
+  title: "Savings & Anggaran | MoneyTracker",
 };
 
 interface BudgetPageProps {
@@ -20,18 +20,21 @@ export default async function BudgetPage({ searchParams }: BudgetPageProps) {
   const selectedMonth = params.month ? parseInt(params.month, 10) : currentDate.getMonth();
   const selectedYear = params.year ? parseInt(params.year, 10) : currentDate.getFullYear();
 
-  // Ambil budget items dengan spent yang dihitung dari transaksi bulan tersebut
-  const [budgetItems, availableCategories] = await Promise.all([
+  // Ambil budget items, available categories, dan savings goals secara paralel
+  const [budgetItems, availableCategories, savingsGoals] = await Promise.all([
     getBudgetItems(selectedMonth, selectedYear),
     getAvailableTransactionCategories(),
+    getSavingsGoals(),
   ]);
 
   return (
     <BudgetClient
       initialBudgets={budgetItems}
       availableCategories={availableCategories}
+      savingsGoals={savingsGoals}
       currentMonth={selectedMonth}
       currentYear={selectedYear}
     />
   );
 }
+
