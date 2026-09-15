@@ -64,32 +64,30 @@ export function InstallPrompt() {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 50 }}
-        className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:w-96"
+        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 50, scale: 0.95 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="fixed bottom-20 left-4 right-4 z-50 md:bottom-6 md:left-auto md:right-6 md:w-96"
       >
-        <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-2xl shadow-xl p-4 flex gap-4 items-start relative overflow-hidden backdrop-blur-xl bg-opacity-90">
-          {/* Subtle gradient glow */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/5 to-transparent pointer-events-none" />
-
-          <div className="bg-emerald-500/10 text-emerald-500 p-2.5 rounded-xl shrink-0 mt-0.5">
-            <Download className="h-5 w-5" />
+        <div className="bg-white/95 border border-black/[0.06] rounded-[28px] shadow-2xl p-4 sm:p-5 flex gap-3.5 items-start relative overflow-hidden backdrop-blur-md">
+          <div className="bg-[#FDD5C1] text-[#E85024] p-3 rounded-2xl shrink-0 mt-0.5 shadow-2xs">
+            <Download className="h-5 w-5 stroke-[2.2]" />
           </div>
 
           <div className="flex-1 min-w-0 pr-6">
-            <h3 className="text-sm font-semibold text-[var(--foreground)]">
-              Pasang MoneyTracker
+            <h3 className="text-sm font-bold text-[#18181B]">
+              Pasang SavOr MoneyTracker
             </h3>
             {isIOS ? (
-              <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">
-                Tap <Share className="inline h-3.5 w-3.5 mx-0.5" /> lalu pilih{" "}
-                <strong className="text-[var(--foreground)] font-medium">Add to Home Screen</strong>{" "}
-                untuk akses offline & cepat.
+              <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                Tap <Share className="inline h-3.5 w-3.5 mx-0.5 text-stone-700" /> lalu pilih{" "}
+                <strong className="text-[#18181B] font-semibold">Add to Home Screen</strong>{" "}
+                untuk akses offline & instan.
               </p>
             ) : (
-              <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">
-                Pasang aplikasi ini di layar utama untuk akses lebih cepat dan dukungan offline.
+              <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                Pasang aplikasi di layar utama untuk akses instan dan offline tanpa hambatan.
               </p>
             )}
 
@@ -97,7 +95,7 @@ export function InstallPrompt() {
               <Button
                 onClick={handleInstall}
                 size="sm"
-                className="mt-3 w-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-none rounded-lg text-xs h-8"
+                className="mt-3 w-full bg-[#E85024] hover:bg-[#d44319] text-white font-bold rounded-full text-xs h-10 shadow-sm cursor-pointer transition-all active:scale-[0.98]"
               >
                 Pasang Sekarang
               </Button>
@@ -106,12 +104,14 @@ export function InstallPrompt() {
 
           <button
             onClick={handleDismiss}
-            className="absolute top-3 right-3 text-[var(--muted-foreground)] hover:text-[var(--foreground)] p-1 rounded-md transition-colors"
+            aria-label="Tutup"
+            className="absolute top-3.5 right-3.5 text-stone-400 hover:text-stone-700 p-1.5 rounded-full bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
       </motion.div>
     </AnimatePresence>
   );
 }
+

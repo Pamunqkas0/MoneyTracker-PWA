@@ -37,7 +37,7 @@ import { AnimatedEmoji } from "@/components/ui/animated-emoji";
 import fluentEmojisKeys from "@/lib/fluent-emojis-keys.json";
 
 const EMOJI_OPTIONS = fluentEmojisKeys as string[];
-const COLOR_OPTIONS = ["#10b981", "#6366f1", "#f59e0b", "#3b82f6", "#ec4899", "#14b8a6", "#8b5cf6", "#06b6d4", "#f97316", "#ef4444", "#84cc16", "#a855f7"];
+const COLOR_OPTIONS = ["#E85024", "#FAD170", "#D8F5A2", "#FDD5C1", "#E0E6FD", "#DAEFEA", "#10b981", "#6366f1", "#f59e0b", "#3b82f6", "#ec4899", "#8b5cf6"];
 
 function slugifyCategoryName(name: string) {
   return name
@@ -106,7 +106,7 @@ function StepIndicator({ total, current, onBack, showBack }: { total: number; cu
           <button
             type="button"
             onClick={onBack}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--card-border)]/60 bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all active:scale-90"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 transition-all active:scale-95 cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -119,10 +119,10 @@ function StepIndicator({ total, current, onBack, showBack }: { total: number; cu
             className={cn(
               "rounded-full transition-all duration-300",
               i === current
-                ? "w-5 h-1.5 bg-emerald-500"
+                ? "w-6 h-1.5 bg-[#E85024]"
                 : i < current
-                  ? "w-1.5 h-1.5 bg-emerald-500/40"
-                  : "w-1.5 h-1.5 bg-[var(--card-border)]"
+                  ? "w-1.5 h-1.5 bg-[#E85024]/40"
+                  : "w-1.5 h-1.5 bg-stone-200"
             )}
           />
         ))}
@@ -140,7 +140,7 @@ export function TransactionDialog({
   bankAccounts = [],
   availableCategories,
 }: TransactionDialogProps) {
-  const [step, setStep] = useState(0); // 0: Info Awal, 1: Detail Lengkap, 2: Sukses, 3: Form Kategori Kustom (Multi-step)
+  const [step, setStep] = useState(0); // 0: Info Awal, 1: Detail Lengkap, 2: Sukses, 3: Form Kategori Kustom
   const [isLoading, setLoading] = useState(false);
   const [rawAmount, setRawAmount] = useState("");
   const [categoryState, setCategoryState] = useState<AvailableTransactionCategories>(availableCategories);
@@ -148,7 +148,7 @@ export function TransactionDialog({
   // State manajemen pembuatan kategori kustom
   const [newCatName, setNewCatName] = useState("");
   const [newCatEmoji, setNewCatEmoji] = useState("🏷️");
-  const [newCatColor, setNewCatColor] = useState("#10b981");
+  const [newCatColor, setNewCatColor] = useState("#E85024");
 
   // Muat kategori kustom saat dialog dibuka
   useEffect(() => {
@@ -233,7 +233,7 @@ export function TransactionDialog({
     setValue("category", newCategory.slug, { shouldValidate: true });
     setNewCatName("");
     setNewCatEmoji("🏷️");
-    setNewCatColor("#10b981");
+    setNewCatColor("#E85024");
     setStep(1);
   };
 
@@ -334,25 +334,28 @@ export function TransactionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent showHandle className={cn("p-0 overflow-hidden rounded-t-[1.75rem] sm:rounded-2xl transition-all duration-200", step === 3 ? "max-w-md" : "max-w-md")}>
-        {/* Dynamic Header Header */}
-        <DialogHeader className="p-5 pb-3 border-b border-[var(--card-border)]/40">
+      <DialogContent showHandle className="p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white border border-black/[0.04] shadow-2xl max-w-md w-full mx-auto">
+        {/* Dynamic Header */}
+        <DialogHeader className="p-6 pb-4 border-b border-stone-100">
           <div className="flex items-center gap-3">
-            <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl", step === 3 ? "bg-violet-500/10 text-violet-500" : "bg-emerald-500/10 text-emerald-500")}>
-              {step === 3 ? <Sparkles className="h-4 w-4" /> : <Wallet className="h-4 w-4" />}
+            <div className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-2xl shadow-xs",
+              step === 3 ? "bg-[#E0E6FD] text-[#3B4CCA]" : "bg-[#FDD5C1] text-[#E85024]"
+            )}>
+              {step === 3 ? <Sparkles className="h-5 w-5" /> : <Wallet className="h-5 w-5" />}
             </div>
             <div>
-              <DialogTitle className="text-sm sm:text-base font-bold">
+              <DialogTitle className="text-lg font-bold text-[#18181B]">
                 {step === 3 ? "Buat Kategori Baru" : "Tambah Transaksi"}
               </DialogTitle>
-              <DialogDescription className="text-[11px] sm:text-xs mt-0.5 opacity-80">
+              <DialogDescription className="text-xs text-stone-500 mt-0.5">
                 {step === 3 ? "Sesuaikan nama, emoji, dan warna kategori" : step === 0 ? "Tentukan nominal rupiah & rekening" : "Lengkapi detail catatan transaksi"}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="px-5 pt-4 pb-0 overflow-y-auto max-h-[76vh] sm:max-h-[550px] custom-scrollbar">
+        <div className="px-6 pt-4 pb-6 overflow-y-auto max-h-[76vh] sm:max-h-[550px] custom-scrollbar">
           <AnimatePresence mode="wait">
 
             {/* ── STEP 2: SUCCESS VIEW ─────────────────────────── */}
@@ -362,32 +365,32 @@ export function TransactionDialog({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-12 gap-4 text-center"
+                className="flex flex-col items-center justify-center py-10 gap-4 text-center"
               >
-                <div className="relative flex h-14 w-14 items-center justify-center">
-                  <span className="absolute inset-0 rounded-full bg-emerald-500/10 animate-ping" />
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15">
-                    <CheckCircle2 className="h-7 w-7 text-emerald-500" />
+                <div className="relative flex h-16 w-16 items-center justify-center">
+                  <span className="absolute inset-0 rounded-full bg-[#D8F5A2]/60 animate-ping" />
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F5A2] text-stone-900 shadow-sm">
+                    <CheckCircle2 className="h-8 w-8 text-stone-800" />
                   </div>
                 </div>
-                <div className="space-y-1 px-2">
-                  <p className="text-base font-bold text-[var(--foreground)]">Transaksi Berhasil Disimpan!</p>
-                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                <div className="space-y-1.5 px-2">
+                  <p className="text-lg font-bold text-[#18181B]">Transaksi Berhasil Disimpan!</p>
+                  <p className="text-xs text-stone-500 leading-relaxed max-w-xs mx-auto">
                     Catatan {type === "income" ? "pemasukan" : type === "transfer" ? "transfer" : "pengeluaran"}{" "}
-                    <span className="font-bold text-[var(--foreground)] tabular-nums">
+                    <span className="font-bold text-[#18181B] tabular-nums">
                       {formatCurrency(Number(rawAmount))}
                     </span>{" "}
                     {type === "transfer" ? (
                       <>
                         berhasil dipindahkan dari{" "}
-                        <span className="font-bold text-[var(--foreground)]">{selectedBank?.name}</span>
+                        <span className="font-bold text-[#18181B]">{selectedBank?.name}</span>
                         {" "}ke{" "}
-                        <span className="font-bold text-[var(--foreground)]">{selectedTransferBank?.name}</span>
+                        <span className="font-bold text-[#18181B]">{selectedTransferBank?.name}</span>
                       </>
                     ) : (
                       <>
                         telah tercatat pada dompet{" "}
-                        <span className="font-bold text-[var(--foreground)]">{selectedBank?.name}</span>
+                        <span className="font-bold text-[#18181B]">{selectedBank?.name}</span>
                       </>
                     )}
                   </p>
@@ -403,7 +406,7 @@ export function TransactionDialog({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-4 pt-0.5"
+                className="space-y-5 pt-0.5"
               >
                 <StepIndicator total={2} current={0} onBack={() => { }} showBack={false} />
 
@@ -412,19 +415,37 @@ export function TransactionDialog({
                   name="type"
                   control={control}
                   render={({ field }) => (
-                    <div className="grid grid-cols-3 gap-2 rounded-[1.35rem] border border-[var(--card-border)]/25 bg-[var(--muted)]/50 p-2">
-                      <TypeButton active={field.value === "income"} onClick={() => field.onChange("income")} icon={<TrendingUp className="h-4 w-4" />} label={<><span className="block">Uang</span><span className="block">Masuk</span></>} activeClass="text-emerald-600 dark:text-emerald-400 bg-[var(--card)] border border-[var(--card-border)]/40 shadow-sm" />
-                      <TypeButton active={field.value === "expense"} onClick={() => field.onChange("expense")} icon={<TrendingDown className="h-4 w-4" />} label={<><span className="block">Uang</span><span className="block">Keluar</span></>} activeClass="text-rose-600 dark:text-rose-400 bg-[var(--card)] border border-[var(--card-border)]/40 shadow-sm" />
-                      <TypeButton active={field.value === "transfer"} onClick={() => field.onChange("transfer")} icon={<ArrowRightLeft className="h-4 w-4" />} label={<><span className="block">Pindah</span><span className="block">Dana</span></>} activeClass="text-teal-600 dark:text-teal-400 bg-[var(--card)] border border-[var(--card-border)]/40 shadow-sm" />
+                    <div className="grid grid-cols-3 gap-1.5 rounded-full bg-surface-muted/80 p-1 border border-black/[0.03]">
+                      <TypeButton
+                        active={field.value === "expense"}
+                        onClick={() => field.onChange("expense")}
+                        icon={<TrendingDown className="h-3.5 w-3.5" />}
+                        label="Pengeluaran"
+                        activeClass="bg-[#1A1A1A] text-white shadow-xs"
+                      />
+                      <TypeButton
+                        active={field.value === "income"}
+                        onClick={() => field.onChange("income")}
+                        icon={<TrendingUp className="h-3.5 w-3.5" />}
+                        label="Pemasukan"
+                        activeClass="bg-[#E85024] text-white shadow-xs"
+                      />
+                      <TypeButton
+                        active={field.value === "transfer"}
+                        onClick={() => field.onChange("transfer")}
+                        icon={<ArrowRightLeft className="h-3.5 w-3.5" />}
+                        label="Transfer"
+                        activeClass="bg-stone-700 text-white shadow-xs"
+                      />
                     </div>
                   )}
                 />
 
                 {/* Amount Input */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="d-amount" className="text-xs font-semibold text-[var(--muted-foreground)]">Nominal</Label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--muted-foreground)]">
+                  <Label htmlFor="d-amount" className="text-xs font-semibold text-stone-500">Nominal Transaksi</Label>
+                  <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200/50 p-2 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
+                    <span className="pl-3 text-sm font-bold text-stone-400">
                       Rp
                     </span>
                     <Input
@@ -433,18 +454,18 @@ export function TransactionDialog({
                       placeholder="0"
                       value={rawAmount ? Number(rawAmount).toLocaleString("id-ID") : ""}
                       onChange={handleAmountChange}
-                      className="h-12 pl-10 pr-4 text-right font-bold text-lg rounded-xl border border-[var(--card-border)] focus-visible:ring-1 focus-visible:ring-[var(--ring)] tabular-nums"
+                      className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-2xl h-10 text-[#18181B] tabular-nums bg-transparent pr-2"
                     />
                   </div>
                   {errors.amount && (
-                    <p className="text-[11px] text-rose-500 font-medium">{errors.amount.message}</p>
-                    )}
+                    <p className="text-[11px] text-[#E85024] font-medium">{errors.amount.message}</p>
+                  )}
                 </div>
 
                 {/* Bank Grid View */}
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-[var(--muted-foreground)]">
-                    {type === "transfer" ? "Pilih Rekening Asal" : "Pilih Dompet / Rekening"}
+                  <Label className="text-xs font-semibold text-stone-500">
+                    {type === "transfer" ? "Pilih Rekening Asal" : "Pilih Rekening / Dompet"}
                   </Label>
                   <Controller
                     name="bankAccountId"
@@ -460,30 +481,25 @@ export function TransactionDialog({
                               type="button"
                               onClick={() => field.onChange(account.id)}
                               className={cn(
-                                "relative flex flex-col items-center justify-center gap-1 rounded-xl border p-2.5 text-center transition-all duration-150 select-none cursor-pointer min-h-[75px]",
+                                "relative flex flex-col items-center justify-center gap-1 rounded-2xl p-2.5 text-center transition-all duration-150 select-none cursor-pointer min-h-[76px] border",
                                 isSelected
-                                  ? "border-transparent shadow-sm text-white"
-                                  : "border-[var(--card-border)] bg-[var(--muted)]/30 hover:bg-[var(--muted)]/70 text-[var(--muted-foreground)]"
+                                  ? "border-[#1A1A1A] bg-[#1A1A1A] text-white shadow-sm"
+                                  : "border-stone-200/60 bg-surface-muted/40 hover:bg-surface-muted text-stone-700"
                               )}
-                              style={
-                                isSelected
-                                  ? { background: `linear-gradient(135deg, ${account.gradient[0]}, ${account.gradient[1]})` }
-                                  : {}
-                              }
                             >
                               {isImgLogo ? (
-                                <div className={cn("h-6 flex items-center justify-center rounded-md p-0.5 w-10 shrink-0", isSelected ? "bg-white/95 shadow-sm" : "bg-transparent")}>
+                                <div className={cn("h-6 flex items-center justify-center rounded-lg p-0.5 w-10 shrink-0", isSelected ? "bg-white/95 shadow-xs" : "bg-white border border-stone-200/50")}>
                                   <img src={account.logo} alt={account.name} className="max-h-full max-w-full object-contain" />
                                 </div>
                               ) : (
-                                <span className="text-lg sm:text-xl leading-none">{account.logo}</span>
+                                <span className="text-xl leading-none">{account.logo}</span>
                               )}
 
-                              <span className={cn("text-[10px] font-bold tracking-tight truncate w-full px-0.5", isSelected ? "text-white" : "text-[var(--foreground)]")}>
+                              <span className={cn("text-[10px] font-bold tracking-tight truncate w-full px-0.5", isSelected ? "text-white" : "text-[#18181B]")}>
                                 {account.name}
                               </span>
                               {isSelected && (
-                                <span className="text-[8px] text-white/85 font-medium tracking-wide tabular-nums truncate w-full">
+                                <span className="text-[8px] text-stone-300 font-medium tracking-wide tabular-nums truncate w-full">
                                   {formatCurrency(account.balance, true)}
                                 </span>
                               )}
@@ -494,13 +510,13 @@ export function TransactionDialog({
                     )}
                   />
                   {errors.bankAccountId && (
-                    <p className="text-[11px] text-rose-500 font-medium">{errors.bankAccountId.message}</p>
+                    <p className="text-[11px] text-[#E85024] font-medium">{errors.bankAccountId.message}</p>
                   )}
                 </div>
 
                 {type === "transfer" && (
                   <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-[var(--muted-foreground)]">Pilih Rekening Tujuan</Label>
+                    <Label className="text-xs font-semibold text-stone-500">Pilih Rekening Tujuan</Label>
                     <Controller
                       name="transferAccountId"
                       control={control}
@@ -517,27 +533,26 @@ export function TransactionDialog({
                                   type="button"
                                   onClick={() => field.onChange(account.id)}
                                   className={cn(
-                                    "relative flex items-center gap-2 rounded-2xl border px-3 py-3 text-left transition-all duration-150 select-none cursor-pointer min-h-[68px]",
+                                    "relative flex items-center gap-2 rounded-2xl border p-2.5 text-left transition-all duration-150 select-none cursor-pointer min-h-[64px]",
                                     isSelected
-                                      ? "border-teal-500 bg-teal-500/8 shadow-sm"
-                                      : "border-[var(--card-border)] bg-[var(--muted)]/25 hover:bg-[var(--muted)]/60"
+                                      ? "border-[#E85024] bg-[#FDD5C1]/30 shadow-xs"
+                                      : "border-stone-200/60 bg-surface-muted/40 hover:bg-surface-muted"
                                   )}
                                 >
                                   <div className={cn(
-                                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--card-border)]/20 overflow-hidden",
-                                    isSelected ? "bg-white shadow-sm" : "bg-[var(--card)]"
+                                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stone-200/60 overflow-hidden bg-white shadow-2xs"
                                   )}>
                                     {isImgLogo ? (
-                                      <img src={account.logo} alt={account.name} className="max-h-6 max-w-7 object-contain" />
+                                      <img src={account.logo} alt={account.name} className="max-h-5 max-w-6 object-contain" />
                                     ) : (
-                                      <span className="text-lg leading-none">{account.logo}</span>
+                                      <span className="text-base leading-none">{account.logo}</span>
                                     )}
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <p className={cn("truncate text-xs font-bold", isSelected ? "text-teal-700 dark:text-teal-300" : "text-[var(--foreground)]")}>
+                                    <p className={cn("truncate text-xs font-bold", isSelected ? "text-[#E85024]" : "text-[#18181B]")}>
                                       {account.name}
                                     </p>
-                                    <p className="mt-0.5 truncate text-[10px] text-[var(--muted-foreground)] tabular-nums">
+                                    <p className="mt-0.5 truncate text-[10px] text-stone-400 tabular-nums">
                                       {formatCurrency(account.balance, true)}
                                     </p>
                                   </div>
@@ -548,27 +563,26 @@ export function TransactionDialog({
                       )}
                     />
                     {errors.transferAccountId && (
-                      <p className="text-[11px] text-rose-500 font-medium">{errors.transferAccountId.message}</p>
+                      <p className="text-[11px] text-[#E85024] font-medium">{errors.transferAccountId.message}</p>
                     )}
                   </div>
                 )}
 
                 {/* Active Wallet Details Anchor banner */}
-                <div className="min-h-[50px]">
+                <div className="min-h-[46px]">
                   <AnimatePresence mode="wait">
                     {selectedBank && (
                       <motion.div
                         initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 4 }}
-                        className="flex items-center gap-3 rounded-xl p-2.5 border border-[var(--card-border)]/40 bg-[var(--muted)]/40"
+                        className="flex items-center gap-3 rounded-2xl p-2.5 border border-stone-200/60 bg-surface-muted/50"
                       >
                         <div
                           className={cn(
-                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm border border-[var(--card-border)]/10 overflow-hidden",
-                            isSelectedBankImgLogo ? "bg-white p-1 shadow-sm" : ""
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-sm border border-stone-200/60 overflow-hidden bg-white shadow-2xs",
+                            isSelectedBankImgLogo ? "p-1" : ""
                           )}
-                          style={!isSelectedBankImgLogo ? { background: `linear-gradient(135deg, ${selectedBank.gradient[0]}20, ${selectedBank.gradient[1]}10)` } : undefined}
                         >
                           {isSelectedBankImgLogo ? (
                             <img src={selectedBank.logo} alt={selectedBank.name} className="max-h-full max-w-full object-contain" />
@@ -577,9 +591,9 @@ export function TransactionDialog({
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-[var(--foreground)] truncate">{selectedBank.name}</p>
-                          <p className="text-[10px] text-[var(--muted-foreground)] font-medium mt-0.5 tabular-nums">
-                            {type === "transfer" ? "Saldo Rekening Asal" : "Sisa Saldo Saat Ini"}: {formatCurrency(selectedBank.balance, true)}
+                          <p className="text-xs font-bold text-[#18181B] truncate">{selectedBank.name}</p>
+                          <p className="text-[10px] text-stone-500 font-medium mt-0.5 tabular-nums">
+                            {type === "transfer" ? "Saldo Asal" : "Sisa Saldo"}: <span className="font-bold text-stone-700">{formatCurrency(selectedBank.balance, true)}</span>
                           </p>
                         </div>
                       </motion.div>
@@ -587,45 +601,12 @@ export function TransactionDialog({
                   </AnimatePresence>
                 </div>
 
-                {type === "transfer" && selectedTransferBank && (
-                  <div className="rounded-2xl border border-teal-500/15 bg-teal-500/5 p-2.5">
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className={cn(
-                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm border border-[var(--card-border)]/10 overflow-hidden",
-                          isSelectedTransferBankImgLogo ? "bg-white p-1 shadow-sm" : ""
-                        )}
-                        style={!isSelectedTransferBankImgLogo ? { background: `linear-gradient(135deg, ${selectedTransferBank.gradient[0]}20, ${selectedTransferBank.gradient[1]}10)` } : undefined}
-                      >
-                        {isSelectedTransferBankImgLogo ? (
-                          <img src={selectedTransferBank.logo} alt={selectedTransferBank.name} className="max-h-full max-w-full object-contain" />
-                        ) : (
-                          selectedTransferBank.logo
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-semibold text-[var(--foreground)]">{selectedTransferBank.name}</p>
-                        <p className="mt-0.5 text-[10px] font-medium text-[var(--muted-foreground)] tabular-nums">
-                          Saldo Rekening Tujuan: {formatCurrency(selectedTransferBank.balance, true)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-4 bg-background border-t border-[var(--card-border)]/60 shadow-[0_-12px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_-12px_24px_-4px_rgba(0,0,0,0.2)] z-10 mt-4">
+                <div className="pt-2">
                   <Button
                     type="button"
                     size="lg"
                     onClick={handleNextStep}
-                    className={cn(
-                      "w-full h-11 text-xs font-bold rounded-2xl gap-1.5 shadow-sm text-white cursor-pointer",
-                      type === "income"
-                        ? "bg-emerald-600 hover:bg-emerald-500"
-                        : type === "transfer"
-                          ? "bg-teal-600 hover:bg-teal-500"
-                          : "bg-rose-600 hover:bg-rose-500"
-                    )}
+                    className="w-full h-12 text-sm font-bold rounded-full gap-2 shadow-sm text-white cursor-pointer bg-[#E85024] hover:bg-[#d44319] transition-all active:scale-[0.99]"
                   >
                     <span>Lanjut Isi Detail</span>
                     <ArrowRight className="h-4 w-4" />
@@ -647,10 +628,10 @@ export function TransactionDialog({
               >
                 <StepIndicator total={2} current={1} onBack={() => setStep(0)} showBack={true} />
 
-                <div className="flex items-center gap-3 rounded-xl border border-[var(--card-border)]/50 bg-[var(--muted)]/30 p-2.5">
+                <div className="flex items-center gap-3 rounded-2xl border border-stone-200/60 bg-surface-muted/50 p-3">
                   <div className={cn(
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-sm overflow-hidden",
-                    isSelectedBankImgLogo ? "bg-white p-1 shadow-sm" : "bg-[var(--card)]"
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stone-200/60 text-sm overflow-hidden bg-white shadow-2xs",
+                    isSelectedBankImgLogo ? "p-1" : ""
                   )}>
                     {isSelectedBankImgLogo ? (
                       <img src={selectedBank?.logo} alt={selectedBank?.name} className="max-h-full max-w-full object-contain" />
@@ -659,11 +640,11 @@ export function TransactionDialog({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-medium text-[var(--muted-foreground)]">
+                    <p className="text-[10px] font-medium text-stone-500">
                       {type === "income" ? "Rencana Masuk" : type === "transfer" ? "Rencana Transfer" : "Rencana Keluar"} &bull; {selectedBank?.name}
                       {type === "transfer" && selectedTransferBank ? ` -> ${selectedTransferBank.name}` : ""}
                     </p>
-                    <p className="text-sm font-bold text-[var(--foreground)] tabular-nums mt-0.5">
+                    <p className="text-base font-black text-[#18181B] tabular-nums mt-0.5">
                       {formatCurrency(Number(rawAmount))}
                     </p>
                   </div>
@@ -671,27 +652,27 @@ export function TransactionDialog({
 
                 {/* Input Name */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="d-name" className="text-xs font-semibold text-[var(--muted-foreground)]">Nama Transaksi</Label>
+                  <Label htmlFor="d-name" className="text-xs font-semibold text-stone-500">Nama Transaksi</Label>
                   <Input
                     id="d-name"
                     placeholder="Mis. Belanja Mingguan, Makan Siang, Gaji…"
-                    className="h-10 text-sm rounded-xl"
+                    className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
                     {...register("name")}
                   />
-                  {errors.name && <p className="text-[11px] text-rose-500 font-medium">{errors.name.message}</p>}
+                  {errors.name && <p className="text-[11px] text-[#E85024] font-medium">{errors.name.message}</p>}
                 </div>
 
                 {/* Category Grid Selection */}
                 {type !== "transfer" && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold text-[var(--muted-foreground)]">Pilih Kategori</Label>
+                    <Label className="text-xs font-semibold text-stone-500">Pilih Kategori</Label>
                     <button
                       type="button"
                       onClick={() => setStep(3)}
-                      className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition-colors cursor-pointer"
+                      className="flex items-center gap-1 text-xs font-bold text-[#E85024] hover:underline cursor-pointer"
                     >
-                      <PlusCircle className="h-3 w-3" />
+                      <PlusCircle className="h-3.5 w-3.5" />
                       <span>Custom</span>
                     </button>
                   </div>
@@ -699,7 +680,7 @@ export function TransactionDialog({
                     name="category"
                     control={control}
                     render={({ field }) => (
-                      <div className="space-y-2 max-h-[120px] overflow-y-auto pr-0.5 custom-scrollbar">
+                      <div className="space-y-2 max-h-[130px] overflow-y-auto pr-0.5 custom-scrollbar">
                         {/* Default Categories */}
                         <div className="grid grid-cols-3 gap-2">
                           {categoryDefaults.map((cat) => {
@@ -710,14 +691,14 @@ export function TransactionDialog({
                                 type="button"
                                 onClick={() => field.onChange(cat.slug)}
                                 className={cn(
-                                  "flex flex-col items-center justify-center gap-1 rounded-xl border py-2 px-1 text-center transition-all duration-150 select-none cursor-pointer min-h-[56px]",
+                                  "flex flex-col items-center justify-center gap-1 rounded-2xl border py-2.5 px-1.5 text-center transition-all duration-150 select-none cursor-pointer min-h-[58px]",
                                   isSelected
-                                    ? "border-emerald-500 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm"
-                                    : "border-[var(--card-border)] bg-[var(--muted)]/40 text-[var(--muted-foreground)] hover:bg-[var(--muted)]/80"
+                                    ? "border-[#1A1A1A] bg-[#1A1A1A] text-white font-bold shadow-xs"
+                                    : "border-stone-200/60 bg-surface-muted/40 text-stone-700 hover:bg-surface-muted"
                                 )}
                               >
                                 <AnimatedEmoji emoji={cat.emoji} size={16} />
-                                <span className="text-[10px] leading-tight truncate w-full px-0.5">
+                                <span className={cn("text-[10px] leading-tight truncate w-full px-0.5", isSelected ? "text-white" : "text-[#18181B]")}>
                                   {cat.name}
                                 </span>
                               </button>
@@ -727,37 +708,30 @@ export function TransactionDialog({
                       </div>
                     )}
                   />
-                  {errors.category && <p className="text-[11px] text-rose-500 font-medium">{errors.category.message}</p>}
+                  {errors.category && <p className="text-[11px] text-[#E85024] font-medium">{errors.category.message}</p>}
                 </div>
                 )}
 
                 {/* Responsive Date + Notes Row */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="d-date" className="text-xs font-semibold text-[var(--muted-foreground)]">Tanggal</Label>
-                    <Input id="d-date" type="date" className="h-10 text-sm rounded-xl" {...register("date")} />
-                    {errors.date && <p className="text-[11px] text-rose-500 font-medium">{errors.date.message}</p>}
+                    <Label htmlFor="d-date" className="text-xs font-semibold text-stone-500">Tanggal</Label>
+                    <Input id="d-date" type="date" className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium" {...register("date")} />
+                    {errors.date && <p className="text-[11px] text-[#E85024] font-medium">{errors.date.message}</p>}
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="d-notes" className="text-xs font-semibold text-[var(--muted-foreground)]">Catatan <span className="opacity-50 font-normal">(opsional)</span></Label>
-                    <Textarea id="d-notes" placeholder="Tulis deskripsi singkat…" rows={1} className="h-10 min-h-[40px] text-sm rounded-xl resize-none py-2" {...register("notes")} />
+                    <Label htmlFor="d-notes" className="text-xs font-semibold text-stone-500">Catatan <span className="opacity-50 font-normal">(opsional)</span></Label>
+                    <Textarea id="d-notes" placeholder="Catatan singkat…" rows={1} className="h-11 min-h-[44px] text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 py-3 resize-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium" {...register("notes")} />
                   </div>
                 </div>
 
                 {/* Submit Action */}
-                <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-4 bg-background border-t border-[var(--card-border)]/60 shadow-[0_-12px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_-12px_24px_-4px_rgba(0,0,0,0.2)] z-10 mt-4">
+                <div className="pt-2">
                   <Button
                     type="submit"
                     size="lg"
                     disabled={isLoading}
-                    className={cn(
-                      "w-full h-11 text-xs font-bold rounded-2xl gap-1.5 text-white cursor-pointer shadow-sm transition-all",
-                      type === "income"
-                        ? "bg-emerald-600 hover:bg-emerald-500"
-                        : type === "transfer"
-                          ? "bg-teal-600 hover:bg-teal-500"
-                          : "bg-rose-600 hover:bg-rose-500"
-                    )}
+                    className="w-full h-12 text-sm font-bold rounded-full gap-2 text-white cursor-pointer shadow-sm transition-all active:scale-[0.99] bg-[#E85024] hover:bg-[#d44319]"
                   >
                     {isLoading ? (
                       <><Loader2 className="h-4 w-4 animate-spin" /> <span>Sedang Menyimpan…</span></>
@@ -779,49 +753,48 @@ export function TransactionDialog({
                 transition={{ duration: 0.2 }}
                 className="space-y-4 pt-0.5"
               >
-                {/* Tombol Back yang mengembalikan alur ke Detail Form (Step 1) */}
                 <StepIndicator total={1} current={0} onBack={() => setStep(1)} showBack={true} />
 
                 {/* Preview Tampilan */}
-                <div className="flex items-center justify-center py-1">
+                <div className="flex items-center justify-center py-2">
                   <div
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 py-2 px-5 min-w-[70px]"
+                    className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border-2 py-3 px-6 min-w-[90px] shadow-xs"
                     style={{ borderColor: newCatColor, backgroundColor: `${newCatColor}15` }}
                   >
-                    <AnimatedEmoji emoji={newCatEmoji} size={20} />
-                    <span className="text-[10px] font-bold" style={{ color: newCatColor }}>
-                      {newCatName || "Nama"}
+                    <AnimatedEmoji emoji={newCatEmoji} size={24} />
+                    <span className="text-xs font-bold" style={{ color: newCatColor }}>
+                      {newCatName || "Nama Kategori"}
                     </span>
                   </div>
                 </div>
 
                 {/* Category Name Input */}
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-semibold text-[var(--muted-foreground)]">Nama Kategori</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-stone-500">Nama Kategori</Label>
                   <Input
                     placeholder="Nama kategori..."
                     value={newCatName}
                     onChange={(e) => setNewCatName(e.target.value)}
-                    className="h-10 text-xs rounded-xl"
+                    className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
                     maxLength={20}
                     autoFocus
                   />
                 </div>
 
                 {/* Emoji Selection */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-semibold text-[var(--muted-foreground)]">Emoji</span>
-                  <div className="flex flex-wrap gap-1 p-1.5 rounded-lg border border-[var(--card-border)] bg-[var(--muted)]/30 max-h-[140px] overflow-y-auto custom-scrollbar">
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-stone-500">Pilih Emoji</span>
+                  <div className="flex flex-wrap gap-1.5 p-2 rounded-2xl border border-stone-200/60 bg-surface-muted/40 max-h-[130px] overflow-y-auto custom-scrollbar">
                     {EMOJI_OPTIONS.map((emoji, idx) => (
                       <button
                         key={`${emoji}-${idx}`}
                         type="button"
                         onClick={() => setNewCatEmoji(emoji)}
                         className={cn(
-                          "h-7 w-7 flex items-center justify-center rounded-md text-sm transition-all cursor-pointer",
+                          "h-8 w-8 flex items-center justify-center rounded-xl text-base transition-all cursor-pointer",
                           newCatEmoji === emoji
-                            ? "bg-[var(--card)] shadow-sm ring-2 ring-violet-500/50"
-                            : "hover:bg-[var(--muted)]/80"
+                            ? "bg-white shadow-xs ring-2 ring-[#E85024]"
+                            : "hover:bg-white/60"
                         )}
                       >
                         <AnimatedEmoji emoji={emoji} size={20} />
@@ -831,17 +804,17 @@ export function TransactionDialog({
                 </div>
 
                 {/* Color Selection */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-semibold text-[var(--muted-foreground)]">Warna</span>
-                  <div className="flex flex-wrap gap-2 p-1.5 rounded-lg border border-[var(--card-border)] bg-[var(--muted)]/30">
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-stone-500">Pilih Warna Aksen</span>
+                  <div className="flex flex-wrap gap-2 p-2 rounded-2xl border border-stone-200/60 bg-surface-muted/40">
                     {COLOR_OPTIONS.map((color) => (
                       <button
                         key={color}
                         type="button"
                         onClick={() => setNewCatColor(color)}
                         className={cn(
-                          "h-6 w-6 rounded-full transition-all cursor-pointer",
-                          newCatColor === color ? "ring-2 ring-offset-1 ring-offset-[var(--card)] scale-110" : "hover:scale-110"
+                          "h-7 w-7 rounded-full transition-all cursor-pointer shadow-xs",
+                          newCatColor === color ? "ring-2 ring-offset-2 ring-black scale-110" : "hover:scale-105"
                         )}
                         style={{ backgroundColor: color }}
                       />
@@ -850,15 +823,15 @@ export function TransactionDialog({
                 </div>
 
                 {/* Action Submit Kategori */}
-                <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-4 bg-background border-t border-[var(--card-border)]/60 shadow-[0_-12px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_-12px_24px_-4px_rgba(0,0,0,0.2)] z-10 mt-4">
+                <div className="pt-2">
                   <Button
                     type="button"
-                    size="sm"
+                    size="lg"
                     onClick={handleCreateCategory}
                     disabled={!newCatName.trim()}
-                    className="w-full h-10 text-xs font-bold rounded-xl bg-violet-600 hover:bg-violet-500 text-white cursor-pointer disabled:opacity-50 shadow-sm"
+                    className="w-full h-12 text-sm font-bold rounded-full bg-[#1A1A1A] hover:bg-black text-white cursor-pointer disabled:opacity-50 shadow-sm transition-all active:scale-[0.99]"
                   >
-                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                    <CheckCircle2 className="h-4 w-4 mr-1.5" />
                     Simpan Kategori
                   </Button>
                 </div>
@@ -880,12 +853,12 @@ function TypeButton({ active, onClick, icon, label, activeClass }: {
       type="button"
       onClick={onClick}
       className={cn(
-        "flex min-h-[68px] flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-3 text-[11px] sm:min-h-[56px] sm:flex-row sm:gap-2 sm:px-3 sm:text-sm font-semibold transition-all duration-150 select-none cursor-pointer",
-        active ? `${activeClass}` : "bg-transparent text-[var(--muted-foreground)] hover:bg-[var(--card)]/45 hover:text-[var(--foreground)]"
+        "flex h-9 items-center justify-center gap-1.5 rounded-full px-2 text-xs font-semibold transition-all duration-150 select-none cursor-pointer",
+        active ? activeClass : "text-stone-500 hover:text-stone-800"
       )}
     >
       <span className="shrink-0">{icon}</span>
-      <span className="text-center leading-[1.1]">{label}</span>
+      <span className="truncate">{label}</span>
     </button>
   );
 }

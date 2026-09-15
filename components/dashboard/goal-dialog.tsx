@@ -128,55 +128,55 @@ export function GoalDialog({ goal, open, onOpenChange }: GoalDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showHandle className="p-0 overflow-hidden rounded-t-[1.75rem] sm:rounded-2xl transition-all duration-200 max-w-md">
-        <DialogHeader className="p-5 pb-3 border-b border-[var(--card-border)]/40 text-left">
+      <DialogContent showHandle className="p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white border border-black/[0.04] shadow-2xl max-w-md w-full mx-auto">
+        <DialogHeader className="p-6 pb-4 border-b border-stone-100 text-left">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
-              <AnimatedEmoji emoji={formData.emoji || "🎯"} size={24} />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D8F5A2] text-stone-900 shadow-xs">
+              <AnimatedEmoji emoji={formData.emoji || "🎯"} size={22} />
             </div>
             <div>
-              <DialogTitle className="text-sm sm:text-base font-bold">
+              <DialogTitle className="text-lg font-bold text-[#18181B]">
                 {goal ? "Edit Target Tabungan" : "Tambah Target Baru"}
               </DialogTitle>
-              <DialogDescription className="text-[11px] sm:text-xs mt-0.5 opacity-80">
+              <DialogDescription className="text-xs text-stone-500 mt-0.5">
                 {goal ? "Perbarui jumlah uang terkumpul atau target." : "Buat target finansial baru Anda."}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="px-5 pt-4 pb-0 overflow-y-auto max-h-[76vh] sm:max-h-[550px] custom-scrollbar">
+        <form onSubmit={handleSubmit} className="px-6 pt-4 pb-6 overflow-y-auto max-h-[76vh] sm:max-h-[550px] custom-scrollbar">
           <div className="space-y-4 pt-0.5 pb-2">
             
             {/* Emoji and Name Row */}
-            <div className="flex gap-2">
-              <div className="space-y-1.5 w-[72px] shrink-0">
-                <Label htmlFor="emoji" className="text-xs font-semibold text-[var(--muted-foreground)]">Emoji</Label>
+            <div className="flex gap-2.5">
+              <div className="space-y-1.5 w-[76px] shrink-0">
+                <Label htmlFor="emoji" className="text-xs font-semibold text-stone-500">Emoji</Label>
                 <Input
                   id="emoji"
                   value={formData.emoji}
                   onChange={(e) => setFormData(prev => ({ ...prev, emoji: e.target.value }))}
-                  className="h-10 text-xl text-center rounded-xl"
+                  className="h-11 text-xl text-center rounded-2xl bg-surface-muted/60 border-stone-200/50 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
                   maxLength={2}
                 />
               </div>
               <div className="space-y-1.5 flex-1 min-w-0">
-                <Label htmlFor="name" className="text-xs font-semibold text-[var(--muted-foreground)]">Nama Target</Label>
+                <Label htmlFor="name" className="text-xs font-semibold text-stone-500">Nama Target</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="Mis: Dana Darurat, Beli Laptop"
-                  className="h-10 text-sm rounded-xl"
+                  className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
                 />
               </div>
             </div>
 
             {/* Target Amount */}
             <div className="space-y-1.5">
-              <Label htmlFor="target_amount" className="text-xs font-semibold text-[var(--muted-foreground)]">Target Nominal</Label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--muted-foreground)]">
+              <Label htmlFor="target_amount" className="text-xs font-semibold text-stone-500">Target Nominal</Label>
+              <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200/50 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
+                <span className="pl-3 text-sm font-bold text-stone-400">
                   Rp
                 </span>
                 <Input
@@ -184,17 +184,17 @@ export function GoalDialog({ goal, open, onOpenChange }: GoalDialogProps) {
                   inputMode="numeric"
                   value={formatRupiah(formData.target_amount)}
                   onChange={(e) => handleAmountChange("target_amount", e.target.value)}
-                  placeholder="5.000.000"
-                  className="h-12 pl-10 pr-4 text-right font-bold text-lg rounded-xl border border-[var(--card-border)] focus-visible:ring-1 focus-visible:ring-[var(--ring)] tabular-nums"
+                  placeholder="0"
+                  className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-2xl h-10 text-[#18181B] tabular-nums bg-transparent pr-2"
                 />
               </div>
             </div>
 
             {/* Current Amount */}
             <div className="space-y-1.5">
-              <Label htmlFor="current_amount" className="text-xs font-semibold text-[var(--muted-foreground)]">Uang Terkumpul</Label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--muted-foreground)]">
+              <Label htmlFor="current_amount" className="text-xs font-semibold text-stone-500">Uang Terkumpul</Label>
+              <div className="relative flex items-center rounded-2xl bg-surface-muted/60 border border-stone-200/50 p-1 focus-within:ring-2 focus-within:ring-black/10 focus-within:bg-white transition-all">
+                <span className="pl-3 text-sm font-bold text-stone-400">
                   Rp
                 </span>
                 <Input
@@ -202,44 +202,44 @@ export function GoalDialog({ goal, open, onOpenChange }: GoalDialogProps) {
                   inputMode="numeric"
                   value={formatRupiah(formData.current_amount)}
                   onChange={(e) => handleAmountChange("current_amount", e.target.value)}
-                  placeholder="1.000.000"
-                  className="h-12 pl-10 pr-4 text-right font-bold text-lg rounded-xl border border-[var(--card-border)] focus-visible:ring-1 focus-visible:ring-[var(--ring)] tabular-nums"
+                  placeholder="0"
+                  className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] tabular-nums bg-transparent pr-2"
                 />
               </div>
             </div>
 
             {/* Target Date */}
             <div className="space-y-1.5">
-              <Label htmlFor="target_date" className="text-xs font-semibold text-[var(--muted-foreground)]">Tenggat Target</Label>
+              <Label htmlFor="target_date" className="text-xs font-semibold text-stone-500">Tenggat Target</Label>
               <Input
                 id="target_date"
                 type="date"
                 value={formData.target_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, target_date: e.target.value }))}
-                className="h-10 text-sm rounded-xl"
+                className="h-11 text-sm rounded-2xl bg-surface-muted/60 border-stone-200/50 px-4 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:bg-white transition-all font-medium"
               />
             </div>
 
-            {error && <p className="text-[11px] font-medium text-rose-500 mt-2">{error}</p>}
+            {error && <p className="text-[11px] font-medium text-[#E85024] mt-2">{error}</p>}
           </div>
 
-          <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-4 bg-background border-t border-[var(--card-border)]/60 shadow-[0_-12px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_-12px_24px_-4px_rgba(0,0,0,0.2)] z-10 mt-4 flex flex-col sm:flex-row gap-2">
+          <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
             {goal && (
               <Button 
                 type="button" 
-                variant="destructive" 
-                className="w-full sm:w-auto h-11 rounded-2xl font-bold" 
+                variant="ghost" 
+                className="w-full sm:w-auto h-12 rounded-full font-semibold bg-rose-50 text-rose-600 hover:bg-rose-100 cursor-pointer text-sm" 
                 onClick={handleDelete}
                 disabled={loading || deleting}
               >
-                {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
                 Hapus
               </Button>
             )}
             <div className="flex-1 hidden sm:block" />
             <Button 
               type="submit" 
-              className="w-full sm:w-auto h-11 rounded-2xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white" 
+              className="w-full sm:w-auto h-12 rounded-full font-bold bg-[#E85024] hover:bg-[#d44319] text-white px-6 cursor-pointer shadow-sm text-sm transition-all active:scale-[0.99]" 
               disabled={loading || deleting}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -251,3 +251,4 @@ export function GoalDialog({ goal, open, onOpenChange }: GoalDialogProps) {
     </Dialog>
   );
 }
+

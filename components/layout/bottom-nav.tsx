@@ -4,141 +4,105 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard,
-  ClockArrowUp,
-  Plus,
-  Target,
-  UserCircle2,
+  Home,
+  CreditCard,
+  PieChart,
+  BarChart3,
+  LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
+  id: string;
   label: string;
   href: string;
-  icon: React.ReactNode;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: "Beranda",
+    id: "home",
+    label: "Home",
     href: "/dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
+    icon: Home,
   },
   {
-    label: "Riwayat",
+    id: "transactions",
+    label: "Activity",
     href: "/dashboard/transactions",
-    icon: <ClockArrowUp className="h-5 w-5" />,
+    icon: CreditCard,
   },
-];
-
-const NAV_ITEMS_RIGHT: NavItem[] = [
   {
-    label: "Anggaran",
+    id: "budget",
+    label: "Budget",
     href: "/dashboard/budget",
-    icon: <Target className="h-5 w-5" />,
+    icon: PieChart,
   },
   {
-    label: "Akun",
+    id: "stats",
+    label: "Stats",
+    href: "/dashboard/transactions",
+    icon: BarChart3,
+  },
+  {
+    id: "profile",
+    label: "More",
     href: "/dashboard/profile",
-    icon: <UserCircle2 className="h-5 w-5" />,
+    icon: LayoutGrid,
   },
 ];
 
 interface BottomNavProps {
-  onAddClick: () => void;
+  onAddClick?: () => void;
 }
 
 export function BottomNav({ onAddClick }: BottomNavProps) {
   const pathname = usePathname();
 
-  const handleAddClick = () => {
-    if (typeof window !== "undefined" && window.navigator?.vibrate) {
-      window.navigator.vibrate(50);
-    }
-    onAddClick();
+  const getIsActive = (item: NavItem) => {
+    if (item.id === "home") return pathname === "/dashboard";
+    if (item.id === "transactions") return pathname.startsWith("/dashboard/transactions");
+    if (item.id === "budget") return pathname.startsWith("/dashboard/budget");
+    if (item.id === "profile") return pathname.startsWith("/dashboard/profile");
+    return false;
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
-      {/* Glass bar */}
-      <div className="mx-3 mb-3 rounded-3xl border border-[var(--card-border)] bg-[var(--card)]/90 backdrop-blur-xl shadow-lg shadow-black/10">
-        <nav className="flex items-center h-16 px-2" aria-label="Main navigation">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex lg:hidden pointer-events-none">
+      <nav
+        aria-label="Mobile Floating Navigation"
+        className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-full p-1.5 shadow-2xl border border-black/[0.06] flex items-center justify-between gap-1 max-w-sm"
+      >
+        {NAV_ITEMS.map((item) => {
+          const isActive = getIsActive(item);
+          const Icon = item.icon;
 
-          {/* Left items */}
-          {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <NavTab key={item.href} item={item} isActive={isActive} />
-            );
-          })}
-
-          {/* FAB – center */}
-          <div className="flex flex-1 items-center justify-center">
-            <button
-              onClick={handleAddClick}
-              aria-label="Tambah transaksi"
-              className="group relative flex h-14 w-14 items-center justify-center"
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className="relative flex items-center justify-center cursor-pointer transition-transform active:scale-95 select-none"
+              aria-current={isActive ? "page" : undefined}
             >
-              {/* Glow ring */}
-              <span className="absolute inset-0 rounded-full bg-emerald-500/20 scale-0 group-hover:scale-100 group-active:scale-95 transition-transform duration-200" />
-              {/* Button body */}
-              <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-md shadow-emerald-500/30 transition-transform duration-150 group-active:scale-95">
-                <Plus className="h-6 w-6 text-white" strokeWidth={2.5} />
-              </span>
-            </button>
-          </div>
-
-          {/* Right items */}
-          {NAV_ITEMS_RIGHT.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <NavTab key={item.href} item={item} isActive={isActive} />
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* iOS home-bar safe area spacer */}
-      <div className="h-safe-b" style={{ height: "env(safe-area-inset-bottom, 0px)" }} />
+              {isActive ? (
+                <motion.div
+                  layoutId="savor-bottom-nav-active"
+                  className="bg-[#1A1A1A] text-white px-3.5 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-bold shadow-xs"
+                  transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                >
+                  <Icon className="w-3.5 h-3.5 text-[#FAD170] stroke-[2.2]" />
+                  <span className="text-white text-xs font-bold leading-none">{item.label}</span>
+                </motion.div>
+              ) : (
+                <div className="p-2.5 rounded-full text-stone-700 hover:text-stone-950 flex items-center justify-center transition-colors">
+                  <Icon className="w-4 h-4 stroke-[2]" />
+                </div>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }
 
-function NavTab({ item, isActive }: { item: NavItem; isActive: boolean }) {
-  return (
-    <Link
-      href={item.href}
-      className="flex flex-1 flex-col items-center justify-center gap-1 py-2 rounded-xl transition-colors group"
-      aria-current={isActive ? "page" : undefined}
-    >
-      <span
-        className={cn(
-          "relative flex items-center justify-center transition-colors duration-150",
-          isActive
-            ? "text-emerald-500"
-            : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]"
-        )}
-      >
-        {item.icon}
-        {/* Active dot */}
-        {isActive && (
-          <motion.span
-            layoutId="nav-active-dot"
-            className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-emerald-500"
-            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-          />
-        )}
-      </span>
-      <span
-        className={cn(
-          "text-[10px] font-medium leading-none transition-colors duration-150",
-          isActive
-            ? "text-emerald-500"
-            : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]"
-        )}
-      >
-        {item.label}
-      </span>
-    </Link>
-  );
-}
