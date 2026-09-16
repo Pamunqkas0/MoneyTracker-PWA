@@ -131,20 +131,22 @@ export function DashboardClient({
             />
           </motion.div>
 
-          {/* ═════════ KOLOM 2 (Tengah): Savings Statistics & Spend Rate (lg:col-span-4) ═════════ */}
+          {/* ═════════ KOLOM 2 (Tengah): Income, Outcome, Spend Rate & Tagihan Mendatang (lg:col-span-4) ═════════ */}
           <motion.div variants={columnVariants} className="lg:col-span-4 flex flex-col gap-5">
             <MiddleColumnBento
               summary={summary}
               savingsGoals={savingsGoals}
               categoryExpenses={categoryExpenses}
+              upcomingBills={upcomingBills}
             />
           </motion.div>
 
-          {/* ═════════ KOLOM 3 (Kanan): Market Chart & Team (lg:col-span-4) ═════════ */}
+          {/* ═════════ KOLOM 3 (Kanan): Market Chart & Real Budget (lg:col-span-4) ═════════ */}
           <motion.div variants={columnVariants} className="lg:col-span-4 flex flex-col gap-5">
             <RightColumnBento
               summary={summary}
               monthlyData={monthlyData}
+              budgetItems={budgetItems}
             />
           </motion.div>
         </motion.main>
