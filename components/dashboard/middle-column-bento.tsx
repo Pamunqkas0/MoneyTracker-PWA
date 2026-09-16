@@ -3,19 +3,22 @@
 import React, { useMemo } from "react";
 import { TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight, Share2, ReceiptText, ShoppingBag, PiggyBank, Receipt } from "lucide-react";
 import type { FinancialSummary, CategoryExpense } from "@/lib/types";
-import type { SavingsGoalRow } from "@/lib/supabase/types";
+import type { SavingsGoalRow, UpcomingBillRow } from "@/lib/supabase/types";
 import { formatCurrency } from "@/lib/utils";
+import { UpcomingBillsBento } from "@/components/dashboard/upcoming-bills-bento";
 
 interface MiddleColumnBentoProps {
   summary?: FinancialSummary;
   savingsGoals?: SavingsGoalRow[];
   categoryExpenses?: CategoryExpense[];
+  upcomingBills?: UpcomingBillRow[];
 }
 
 export function MiddleColumnBento({
   summary,
   savingsGoals = [],
   categoryExpenses = [],
+  upcomingBills = [],
 }: MiddleColumnBentoProps) {
   // ── 1. KALKULASI NOMINAL & PERSENTASE REAL ──
   const totalIncome = summary?.totalIncome ?? 0;
@@ -74,7 +77,7 @@ export function MiddleColumnBento({
           <div>
             <span className="text-xs sm:text-sm font-medium text-stone-600 dark:text-stone-400 block mb-1">Income</span>
             <p className="text-xl sm:text-2xl font-black tracking-tight text-black dark:text-white mb-2.5 truncate tabular-nums" title={String(totalIncome)}>
-              {totalIncome > 0 ? formatCurrency(totalIncome, true) : "$0"}
+              {totalIncome > 0 ? formatCurrency(totalIncome, true) : "Rp0"}
             </p>
 
             {/* Scale Ticks Dinamis */}
@@ -116,7 +119,7 @@ export function MiddleColumnBento({
           <div>
             <span className="text-xs sm:text-sm font-medium text-stone-600 dark:text-stone-400 block mb-1">Outcome</span>
             <p className="text-xl sm:text-2xl font-black tracking-tight text-black dark:text-white mb-2.5 truncate tabular-nums" title={String(totalExpenses)}>
-              {totalExpenses > 0 ? formatCurrency(totalExpenses, true) : "$0"}
+              {totalExpenses > 0 ? formatCurrency(totalExpenses, true) : "Rp0"}
             </p>
 
             {/* Scale Ticks Dinamis */}
@@ -208,6 +211,9 @@ export function MiddleColumnBento({
         </div>
 
       </div>
+
+      {/* ── BARIS 3: DEDICATED UPCOMING BILLS (TAGIHAN MENDATANG) BENTO CARD ── */}
+      <UpcomingBillsBento bills={upcomingBills} />
 
     </div>
   );

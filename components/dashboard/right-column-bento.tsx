@@ -1,169 +1,164 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 import {
-  AreaChart,
-  Area,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import {
-  SlidersHorizontal as FilterIcon,
-  Plus as PlusIcon,
   ArrowUpRight as ArrowUpRightIcon,
+  CandlestickChart,
+  AreaChart as AreaIcon,
 } from "lucide-react";
 import type { FinancialSummary, MonthlyData } from "@/lib/types";
+import type { BudgetItemRow } from "@/lib/supabase/types";
+import { formatCurrency } from "@/lib/utils";
+import { TradingViewStockChart } from "@/components/dashboard/tradingview-stock-chart";
 
 interface RightColumnBentoProps {
   summary: FinancialSummary;
-  monthlyData: MonthlyData[];
+  monthlyData?: MonthlyData[];
+  budgetItems?: BudgetItemRow[];
 }
 
 export function RightColumnBento({
   summary,
-  monthlyData = [],
+  budgetItems = [],
 }: RightColumnBentoProps) {
-  const [mounted, setMounted] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState<string>("bitcoin");
-  const [selectedTimeframe, setSelectedTimeframe] = useState<string>("1h");
+  const [selectedStock, setSelectedStock] = useState<string>("IDX:BBCA");
+  const [chartType, setChartType] = useState<"area" | "candlesticks">("area");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Perhitungan Budget & Pengeluaran Riil
+  const totalSpent = summary?.totalExpenses ?? 0;
+  const totalBudget =
+    budgetItems.length > 0
+      ? budgetItems.reduce((acc, item) => acc + item.limit, 0)
+      : (summary?.totalIncome ?? 0);
+  const remainingBudget = Math.max(0, totalBudget - totalSpent);
 
-  const totalSpent = summary?.totalExpenses ?? 2450;
-  const budget = 3000;
-  const netSavings = summary?.totalSavings && summary.totalSavings > 0 ? summary.totalSavings : 550;
-
-  // Asset Ticker List
-  const cryptoAssets = [
+  // Daftar Saham Unggulan Indonesia (IDX / BEI)
+  const idxStocks = [
     {
-      id: "bitcoin",
-      name: "Bitcoin",
-      symbol: "BTC",
-      price: "$ 124 131.89",
-      gain: "+12,3%",
-      iconBg: "bg-[#F7931A]",
-      textColor: "text-[#F7931A]",
-      icon: (
-        <span className="font-bold text-xs text-white">₿</span>
-      ),
+      id: "IDX:BBCA",
+      name: "BCA",
+      symbol: "BBCA",
+      fullName: "Bank Central Asia",
+      iconBg: "bg-[#003B70]",
+      badge: "BCA",
     },
     {
-      id: "ethereum",
-      name: "Ethereum",
-      symbol: "ETH",
-      price: "$ 3,420.50",
-      gain: "+8.4%",
-      iconBg: "bg-[#627EEA]",
-      textColor: "text-[#627EEA]",
-      icon: (
-        <span className="font-bold text-xs text-white">Ξ</span>
-      ),
+      id: "IDX:BBRI",
+      name: "BRI",
+      symbol: "BBRI",
+      fullName: "Bank Rakyat Indonesia",
+      iconBg: "bg-[#00529C]",
+      badge: "BRI",
     },
     {
-      id: "tether",
-      name: "Tether",
-      symbol: "USDT",
-      price: "$ 1.00",
-      gain: "+0.1%",
-      iconBg: "bg-[#26A17B]",
-      textColor: "text-[#26A17B]",
-      icon: (
-        <span className="font-bold text-xs text-white">₮</span>
-      ),
+      id: "IDX:BMRI",
+      name: "Mandiri",
+      symbol: "BMRI",
+      fullName: "Bank Mandiri",
+      iconBg: "bg-[#0A2972]",
+      badge: "BMRI",
     },
     {
-      id: "bnb",
-      name: "BNB",
-      symbol: "BNB",
-      price: "$ 590.25",
-      gain: "+4.2%",
-      iconBg: "bg-[#F3BA2F]",
-      textColor: "text-[#F3BA2F]",
-      icon: (
-        <span className="font-bold text-xs text-white">◇</span>
-      ),
+      id: "IDX:TLKM",
+      name: "Telkom",
+      symbol: "TLKM",
+      fullName: "Telkom Indonesia",
+      iconBg: "bg-[#EE1C25]",
+      badge: "TLKM",
     },
     {
-      id: "cardano",
-      name: "Cardano",
-      symbol: "ADA",
-      price: "$ 0.48",
-      gain: "+2.9%",
-      iconBg: "bg-[#0033AD]",
-      textColor: "text-[#0033AD]",
-      icon: (
-        <span className="font-bold text-xs text-white">₳</span>
-      ),
+      id: "IDX:ASII",
+      name: "Astra",
+      symbol: "ASII",
+      fullName: "Astra International",
+      iconBg: "bg-[#002D62]",
+      badge: "ASII",
+    },
+    {
+      id: "IDX:GOTO",
+      name: "GoTo",
+      symbol: "GOTO",
+      fullName: "GoTo Gojek Tokopedia",
+      iconBg: "bg-[#00AA13]",
+      badge: "GOTO",
+    },
+    {
+      id: "IDX:COMPOSITE",
+      name: "IHSG",
+      symbol: "IHSG",
+      fullName: "Composite Index",
+      iconBg: "bg-[#E85024]",
+      badge: "IDX",
     },
   ];
-
-  const currentAsset = cryptoAssets.find((a) => a.id === selectedAsset) || cryptoAssets[0];
-
-  // Timeframe pills
-  const timeframes = ["1h", "24h", "Week", "Month", "6 Month"];
-
-  // Default Chart Data Points for the warm coral wave line
-  const defaultChartData = [
-    { day: "1", val: 82000 },
-    { day: "4", val: 89000 },
-    { day: "7", val: 84000 },
-    { day: "10", val: 96000 },
-    { day: "14", val: 91000 },
-    { day: "18", val: 104000 },
-    { day: "21", val: 98000 },
-    { day: "25", val: 116000 },
-    { day: "28", val: 108000 },
-    { day: "31", val: 124131 },
-  ];
-
-  const chartData =
-    monthlyData && monthlyData.length > 0
-      ? monthlyData.map((m, idx) => ({
-          day: m.month ? m.month.slice(0, 3) : String(idx + 1),
-          val: m.income || m.expense || 50000 + idx * 6000,
-        }))
-      : defaultChartData;
 
   return (
-    <div className="w-full rounded-[32px] bg-white dark:bg-slate-800/90 border border-black/[0.03] dark:border-slate-700/60 shadow-xs p-5 md:p-6 flex flex-col justify-between gap-5 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-      {/* ═════════ 1. HEADER & CRYPTO ASSET TICKER BAR ═════════ */}
-      <div className="flex flex-col gap-3">
+    <div className="w-full rounded-[28px] sm:rounded-[32px] bg-white dark:bg-slate-800/90 border border-black/[0.03] dark:border-slate-700/60 shadow-xs p-4 sm:p-5 md:p-6 flex flex-col justify-between gap-3.5 sm:gap-4.5 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+      {/* ═════════ 1. HEADER & IDX STOCK SELECTOR ═════════ */}
+      <div className="flex flex-col gap-2.5 sm:gap-3">
         {/* Header */}
         <div className="flex items-center justify-between px-0.5">
-          <h2 className="text-base md:text-lg font-bold text-[#18181B] dark:text-slate-100 tracking-tight">
-            Marketing
-          </h2>
-          <button
-            title="Filter pasar"
-            className="w-8 h-8 rounded-full bg-surface-muted/60 dark:bg-slate-700/60 border border-black/[0.02] dark:border-slate-700/40 flex items-center justify-center text-stone-600 dark:text-slate-300 hover:text-stone-900 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            <FilterIcon className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <h2 className="text-sm sm:text-base md:text-lg font-bold text-[#18181B] dark:text-slate-100 tracking-tight">
+              Market Price (IDX)
+            </h2>
+            <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live
+            </span>
+          </div>
+
+          {/* Chart Type Toggle */}
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-surface-muted/60 dark:bg-slate-900/60 p-0.5 rounded-full border border-black/[0.03] dark:border-slate-700/40">
+            <button
+              onClick={() => setChartType("area")}
+              title="Area Chart"
+              className={`p-1 rounded-full transition-all cursor-pointer ${
+                chartType === "area"
+                  ? "bg-white dark:bg-slate-800 text-[#E85024] shadow-2xs"
+                  : "text-stone-400 hover:text-stone-700 dark:hover:text-slate-200"
+              }`}
+            >
+              <AreaIcon className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setChartType("candlesticks")}
+              title="Candlestick Chart"
+              className={`p-1 rounded-full transition-all cursor-pointer ${
+                chartType === "candlesticks"
+                  ? "bg-white dark:bg-slate-800 text-[#E85024] shadow-2xs"
+                  : "text-stone-400 hover:text-stone-700 dark:hover:text-slate-200"
+              }`}
+            >
+              <CandlestickChart className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
-        {/* Asset Ticker Icons (Horizontal Row) */}
-        <div className="p-2.5 rounded-2xl bg-surface-muted/40 dark:bg-slate-900/60 border border-black/[0.02] dark:border-slate-700/40 flex items-center justify-between gap-1 overflow-x-auto scrollbar-none">
-          {cryptoAssets.map((asset) => {
-            const isSelected = selectedAsset === asset.id;
+        {/* Stock Ticker Icons (Horizontal Scrollable Row) */}
+        <div className="p-1.5 sm:p-2 rounded-2xl bg-surface-muted/40 dark:bg-slate-900/60 border border-black/[0.02] dark:border-slate-700/40 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+          {idxStocks.map((stock) => {
+            const isSelected = selectedStock === stock.id;
             return (
               <button
-                key={asset.id}
-                onClick={() => setSelectedAsset(asset.id)}
-                className={`flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-2xl transition-all duration-150 cursor-pointer ${
+                key={stock.id}
+                onClick={() => setSelectedStock(stock.id)}
+                className={`flex flex-col items-center gap-1 p-1 sm:p-1.5 rounded-xl transition-all duration-150 cursor-pointer shrink-0 min-w-[46px] sm:min-w-[50px] ${
                   isSelected
                     ? "bg-white dark:bg-slate-800 shadow-xs scale-105"
-                    : "opacity-70 hover:opacity-100 hover:bg-white/50 dark:hover:bg-slate-800/50"
+                    : "opacity-65 hover:opacity-100 hover:bg-white/50 dark:hover:bg-slate-800/50"
                 }`}
               >
                 <div
-                  className={`w-9 h-9 rounded-full ${asset.iconBg} flex items-center justify-center shadow-2xs`}
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${stock.iconBg} flex items-center justify-center shadow-2xs`}
                 >
-                  {asset.icon}
+                  <span className="font-black text-[9px] sm:text-[10px] text-white tracking-tight">
+                    {stock.badge}
+                  </span>
                 </div>
-                <span className="text-[10px] font-semibold text-stone-600 dark:text-slate-300 truncate max-w-[50px]">
-                  {asset.name}
+                <span className="text-[9px] sm:text-[10px] font-semibold text-stone-600 dark:text-slate-300 truncate max-w-[48px]">
+                  {stock.name}
                 </span>
               </button>
             );
@@ -171,165 +166,44 @@ export function RightColumnBento({
         </div>
       </div>
 
-      {/* ═════════ 2. MARKET PRICE & TIMEFRAME SWITCHER ═════════ */}
-      <div className="flex flex-col gap-2">
-        <span className="text-xs font-semibold text-stone-400 dark:text-slate-500">Market Price</span>
-
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          {/* Main Price */}
-          <div className="flex items-center gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-[#18181B] dark:text-slate-100 tracking-tight tabular-nums">
-              {currentAsset.price}
-            </span>
-
-            {/* Gain Badge */}
-            <span className="px-2.5 py-0.5 rounded-full bg-[#D8F5A2]/70 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold flex items-center gap-0.5 shadow-2xs">
-              {currentAsset.gain}
-            </span>
-          </div>
-
-          {/* Plus action button */}
-          <button
-            title="Tambah watchlist"
-            className="w-8 h-8 rounded-full bg-surface-muted/80 dark:bg-slate-700/80 hover:bg-stone-200 dark:hover:bg-slate-600 text-stone-700 dark:text-slate-200 flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <PlusIcon className="w-4 h-4 stroke-[2.2]" />
-          </button>
-        </div>
-
-        {/* Time Selector Bar */}
-        <div className="rounded-full bg-surface-muted/70 dark:bg-slate-900/60 p-1 flex items-center justify-between text-xs my-2 border border-black/[0.02] dark:border-slate-700/40">
-          {timeframes.map((tf) => {
-            const isActive = selectedTimeframe === tf;
-            return (
-              <button
-                key={tf}
-                onClick={() => setSelectedTimeframe(tf)}
-                className={`py-1 px-3 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer ${
-                  isActive
-                    ? "bg-[#1A1A1A] dark:bg-white text-white dark:text-slate-950 shadow-xs font-bold"
-                    : "text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white"
-                }`}
-              >
-                {tf}
-              </button>
-            );
-          })}
-        </div>
+      {/* ═════════ 2. REALTIME TRADINGVIEW WIDGET ═════════ */}
+      <div className="w-full">
+        <TradingViewStockChart
+          symbol={selectedStock}
+          chartType={chartType}
+          height={240}
+        />
       </div>
 
-      {/* ═════════ 3. INTERACTIVE CORAL AREA / LINE CHART ═════════ */}
-      <div className="flex flex-col gap-1 w-full">
-        <div className="h-[140px] sm:h-[150px] w-full select-none">
-          {mounted && (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 8, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="savorCoralGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#E85024" stopOpacity={0.28} />
-                    <stop offset="60%" stopColor="#E85024" stopOpacity={0.08} />
-                    <stop offset="100%" stopColor="#E85024" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (!active || !payload?.length) return null;
-                    return (
-                      <div className="rounded-xl border border-black/[0.06] dark:border-slate-700 bg-[#1A1A1A] dark:bg-slate-900 text-white px-3 py-1.5 text-xs shadow-lg font-mono font-bold">
-                        ${Number(payload[0].value).toLocaleString()}
-                      </div>
-                    );
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="val"
-                  stroke="#E85024"
-                  strokeWidth={2.5}
-                  fill="url(#savorCoralGradient)"
-                  dot={false}
-                  activeDot={{ r: 4.5, fill: "#E85024", stroke: "#FFFFFF", strokeWidth: 2 }}
-                  animationDuration={800}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-
-        {/* X-Axis Date Indicators below chart */}
-        <div className="flex items-center justify-between text-[11px] font-bold text-stone-400 dark:text-slate-500 px-2 pt-1 border-t border-stone-100 dark:border-slate-700/60">
-          <span>1</span>
-          <span>7</span>
-          <span>14</span>
-          <span>21</span>
-          <span>28</span>
-          <span>31</span>
-        </div>
-      </div>
-
-      {/* ═════════ 4. BUDGET & SPENDING BREAKDOWN (3 Metrik Bawah) ═════════ */}
-      <div className="grid grid-cols-3 gap-2 items-center pt-2 border-t border-stone-100 dark:border-slate-700/60">
-        <div>
-          <span className="text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-tight block">
-            Total Spent
+      {/* ═════════ 3. BUDGET & SPENDING BREAKDOWN RIIL ═════════ */}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 items-center pt-2 border-t border-stone-100 dark:border-slate-700/60">
+        <div className="min-w-0">
+          <span className="text-[9px] sm:text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-tight block truncate">
+            Pengeluaran
           </span>
-          <span className="text-sm sm:text-base font-black text-stone-900 dark:text-slate-100 tabular-nums">
-            ${totalSpent.toLocaleString("en-US")}
+          <span className="text-xs sm:text-sm font-black text-stone-900 dark:text-slate-100 tabular-nums truncate block">
+            {formatCurrency(totalSpent, true)}
           </span>
         </div>
 
-        <div>
-          <span className="text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-tight block">
+        <div className="min-w-0">
+          <span className="text-[9px] sm:text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-tight block truncate">
             Budget
           </span>
-          <span className="text-sm sm:text-base font-black text-stone-900 dark:text-slate-100 tabular-nums">
-            ${budget.toLocaleString("en-US")}
+          <span className="text-xs sm:text-sm font-black text-stone-900 dark:text-slate-100 tabular-nums truncate block">
+            {totalBudget > 0 ? formatCurrency(totalBudget, true) : "Belum diatur"}
           </span>
         </div>
 
         <div className="flex justify-end">
-          <div className="px-3 py-1.5 rounded-full bg-[#5CB85C] text-white font-black text-xs flex items-center gap-1 shadow-xs tracking-tight">
-            <ArrowUpRightIcon className="w-3.5 h-3.5 stroke-[3]" />
-            <span>${netSavings.toLocaleString("en-US")}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ═════════ 5. TEAM MEMBERS / SHARED ACCOUNTS SECTION ═════════ */}
-      <div className="flex flex-col gap-2 pt-1">
-        <div className="flex items-center justify-between px-0.5">
-          <h3 className="text-xs font-bold text-stone-800 dark:text-slate-100 tracking-tight">Team Members</h3>
-          <button className="text-[11px] font-bold text-brand-orange hover:underline cursor-pointer">
-            See all
-          </button>
-        </div>
-
-        <div className="p-3 rounded-2xl bg-surface-muted/40 dark:bg-slate-900/60 border border-black/[0.03] dark:border-slate-700/40 flex items-center justify-between gap-2 shadow-2xs">
-          {/* Stacked Avatars & Text */}
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex -space-x-2 overflow-hidden shrink-0">
-              <div className="w-7 h-7 rounded-full bg-[#FAD170] border-2 border-white dark:border-slate-800 flex items-center justify-center text-xs font-bold shadow-xs">
-                🧔
-              </div>
-              <div className="w-7 h-7 rounded-full bg-[#D8F5A2] border-2 border-white dark:border-slate-800 flex items-center justify-center text-xs font-bold shadow-xs">
-                👩
-              </div>
-              <div className="w-7 h-7 rounded-full bg-[#FDD5C1] border-2 border-white dark:border-slate-800 flex items-center justify-center text-xs font-bold shadow-xs">
-                👨
-              </div>
-            </div>
-            <span className="text-xs font-semibold text-stone-700 dark:text-slate-300 truncate">
-              You & 2 members
-            </span>
-          </div>
-
-          {/* Add member button */}
-          <button
-            title="Tambah anggota tim"
-            className="w-7 h-7 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white flex items-center justify-center shadow-xs transition-colors cursor-pointer shrink-0"
+          <Link
+            href="/dashboard/budget"
+            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-[#5CB85C] hover:bg-[#4ea04e] text-white font-black text-[10px] sm:text-xs flex items-center gap-0.5 sm:gap-1 shadow-xs tracking-tight transition-colors"
+            title="Sisa Anggaran (Klik untuk ke Budget)"
           >
-            <PlusIcon className="w-3.5 h-3.5 stroke-[3]" />
-          </button>
+            <ArrowUpRightIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
+            <span>{formatCurrency(remainingBudget, true)}</span>
+          </Link>
         </div>
       </div>
     </div>
