@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { removeTransaction } from "@/app/actions";
+import { AppPagination } from "@/components/ui/app-pagination";
 import type { TransactionType } from "@/lib/types";
 import type { TransactionRow, BankAccountRow } from "@/lib/supabase/types";
 import type { AvailableTransactionCategories } from "@/lib/supabase/queries";
@@ -202,30 +203,15 @@ export function RecentTransactions({
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="mt-4 flex items-center justify-between border-t border-[var(--card-border)]/60 pt-3">
-                <p className="text-[10px] sm:text-[11px] font-medium text-[var(--muted-foreground)]">
-                  Total {filtered.length} riwayat &bull; Hal. {page} dari {totalPages}
-                </p>
-                <div className="flex gap-1">
-                  <Button 
-                    variant="ghost" 
-                    size="icon-sm" 
-                    onClick={() => setPage((p) => Math.max(1, p - 1))} 
-                    disabled={page === 1}
-                    className="h-7 w-7 rounded-lg border border-[var(--card-border)]/40 bg-[var(--card)] hover:bg-[var(--muted)]"
-                  >
-                    <ChevronLeft className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon-sm" 
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
-                    disabled={page === totalPages}
-                    className="h-7 w-7 rounded-lg border border-[var(--card-border)]/40 bg-[var(--card)] hover:bg-[var(--muted)]"
-                  >
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+              <div className="mt-4 border-t border-[var(--card-border)]/60 pt-3">
+                <AppPagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={(p) => setPage(p)}
+                  totalItems={filtered.length}
+                  pageSize={PAGE_SIZE}
+                  showSummary={true}
+                />
               </div>
             )}
           </div>

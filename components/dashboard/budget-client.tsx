@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { CATEGORY_META } from "@/lib/mock-data";
+import { AppTopHeader } from "@/components/dashboard/app-top-header";
 import { cn, formatCurrency } from "@/lib/utils";
 import { upsertBudgetItem, updateSavingsGoal } from "@/app/actions";
 import type { BudgetItemRow, SavingsGoalRow } from "@/lib/supabase/types";
@@ -280,33 +281,8 @@ export function BudgetClient({
         transition={{ duration: 0.35, ease: "easeOut" }}
         className="w-full max-w-xl md:max-w-2xl lg:max-w-3xl rounded-[32px] sm:rounded-[36px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-black/[0.04] dark:border-slate-800 p-5 sm:p-7 md:p-8 shadow-xs flex flex-col gap-6"
       >
-        {/* ── 1. TOP HEADER MOBILE (☰ vs Hello, Fred vs 👤) ── */}
-        <div className="flex items-center justify-between">
-          <Link
-            href="/dashboard"
-            className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-800 border border-black/[0.06] dark:border-slate-700 shadow-xs flex items-center justify-center text-stone-800 dark:text-slate-200 hover:bg-stone-50 dark:hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
-            aria-label="Kembali ke Dashboard"
-          >
-            <Menu className="w-5 h-5 stroke-[2.2]" />
-          </Link>
-
-          <div className="flex flex-col items-center text-center">
-            <h1 className="text-sm sm:text-base font-bold text-[#18181B] dark:text-slate-100 leading-tight">
-              Hello, Fred
-            </h1>
-            <span className="text-xs text-stone-400 dark:text-slate-400 font-medium leading-tight">
-              @freddoe12
-            </span>
-          </div>
-
-          <Link
-            href="/dashboard/profile"
-            className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-800 border border-black/[0.06] dark:border-slate-700 shadow-xs flex items-center justify-center text-stone-700 dark:text-slate-200 hover:bg-stone-50 dark:hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
-            aria-label="Profil Pengguna"
-          >
-            <User className="w-5 h-5 stroke-[2.2]" />
-          </Link>
-        </div>
+        {/* ── 1. TOP HEADER (☰ vs Hello, Fred vs 👤) ── */}
+        <AppTopHeader />
 
         {/* ── 2. SAVINGS TITLE & TIMEFRAME SELECTOR ── */}
         <div className="flex flex-col gap-1">
