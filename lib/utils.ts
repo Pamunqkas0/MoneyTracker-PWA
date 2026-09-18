@@ -12,13 +12,13 @@ export function formatCurrency(amount: number, compact = false): string {
   // string yang IDENTIK — mencegah React hydration mismatch.
   // Intl.NumberFormat("id-ID") menghasilkan spasi berbeda antar runtime.
   if (compact && amount >= 1_000_000_000) {
-    return "Rp" + (amount / 1_000_000_000).toFixed(1).replace(".", ",") + " M";
+    return (amount < 0 ? "-Rp " : "Rp ") + (Math.abs(amount) / 1_000_000_000).toFixed(1).replace(".", ",") + " M";
   }
   if (compact && amount >= 1_000_000) {
-    return "Rp" + (amount / 1_000_000).toFixed(1).replace(".", ",") + " jt";
+    return (amount < 0 ? "-Rp " : "Rp ") + (Math.abs(amount) / 1_000_000).toFixed(1).replace(".", ",") + " Jt";
   }
   if (compact && amount >= 1_000) {
-    return "Rp" + (amount / 1_000).toFixed(0) + " rb";
+    return (amount < 0 ? "-Rp " : "Rp ") + (Math.abs(amount) / 1_000).toFixed(0) + " Rb";
   }
   // Format penuh: pisahkan ribuan dengan titik, ganti koma desimal
   const parts = Math.abs(Math.round(amount)).toString().split("");
@@ -28,7 +28,7 @@ export function formatCurrency(amount: number, compact = false): string {
     thousands.push(d);
   });
   const formatted = thousands.reverse().join("");
-  return (amount < 0 ? "-Rp" : "Rp") + formatted;
+  return (amount < 0 ? "-Rp " : "Rp ") + formatted;
 }
 
 
