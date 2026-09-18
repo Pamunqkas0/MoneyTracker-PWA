@@ -19,6 +19,16 @@ declare const self: any;
 
 const runtimeCaching: RuntimeCaching[] = [
   {
+    matcher: ({ url }) =>
+      url.hostname.endsWith("tradingview.com") ||
+      url.hostname.endsWith("tradingview-widget.com"),
+    handler: new NetworkOnly({
+      fetchOptions: {
+        keepalive: false,
+      },
+    }),
+  },
+  {
     matcher: ({ url }) => url.hostname.endsWith(".supabase.co"),
     handler: new NetworkOnly({
       fetchOptions: {
