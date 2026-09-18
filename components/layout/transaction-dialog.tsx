@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,6 +17,9 @@ import {
   ArrowLeft,
   Sparkles,
   X,
+  Camera,
+  ScanLine,
+  AlertCircle,
 } from "lucide-react";
 import {
   Dialog,
@@ -29,6 +32,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { addTransaction, createCategory, createTransferTransaction } from "@/app/actions";
+import { scanReceiptAction } from "@/app/actions/receipt";
+import { compressAndConvertToBase64 } from "@/lib/image-utils";
 import { BANK_ACCOUNTS as MOCK_BANK_ACCOUNTS } from "@/lib/mock-data";
 import { cn, formatCurrency } from "@/lib/utils";
 import type { BankAccountRow } from "@/lib/supabase/types";
@@ -145,6 +150,13 @@ export function TransactionDialog({
   const [rawAmount, setRawAmount] = useState("");
   const [categoryState, setCategoryState] = useState<AvailableTransactionCategories>(availableCategories);
 
+  // State OCR & Scanner Struk AI
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isScanningReceipt, setIsScanningReceipt] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [receiptSuccessMsg, setReceiptSuccessMsg] = useState<string | null>(null);
+
   // State manajemen pembuatan kategori kustom
   const [newCatName, setNewCatName] = useState("");
   const [newCatEmoji, setNewCatEmoji] = useState("🏷️");
@@ -179,6 +191,87 @@ export function TransactionDialog({
   const selectedCategory = watch("category");
   const bankId = watch("bankAccountId");
   const transferBankId = watch("transferAccountId");
+
+  const displayBankAccounts =
+    bankAccounts.length > 0
+      ? bankAccounts.map((account) => ({
+        id: account.id,
+        name: account.name,
+        balance: account.balance,
+        logo: account.logo,
+        gradient: account.gradient,
+      }))
+      : MOCK_BANK_ACCOUNTS;
+
+  // Handler untuk pemindaian struk dengan AI Gemini Multimodal
+  const handleReceiptFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsScanningReceipt(true);
+      setScanError(null);
+      setReceiptSuccessMsg(null);
+
+      // Kompresi di sisi browser agar upload super cepat & hemat token
+      const { base64Data, mimeType, previewUrl } = await compressAndConvertToBase64(file);
+      setReceiptPreview(previewUrl);
+
+      const response = await scanReceiptAction(base64Data, mimeType);
+
+      if (!response.success) {
+        setScanError(response.error || "Gagal membaca struk belanja.");
+        setIsScanningReceipt(false);
+        return;
+      }
+
+      const receipt = response.data;
+
+      // Isi form secara otomatis
+      setValue("type", "expense");
+      setValue("amount", receipt.total_amount, { shouldValidate: true });
+      setRawAmount(String(receipt.total_amount));
+      setValue("name", receipt.merchant_name, { shouldValidate: true });
+      setValue("date", receipt.date, { shouldValidate: true });
+
+      // Kategorikan secara otomatis
+      const defaults = categoryState.expense;
+      const matchedCategory = defaults.find((c) => c.slug === receipt.category);
+      if (matchedCategory) {
+        setValue("category", matchedCategory.slug, { shouldValidate: true });
+      } else if (defaults.length > 0) {
+        setValue("category", "shopping", { shouldValidate: true });
+      }
+
+      if (receipt.items_summary) {
+        setValue("notes", receipt.items_summary);
+      }
+
+      // Jika belum ada rekening dipilih, pilih rekening pertama
+      if (!bankId && displayBankAccounts.length > 0) {
+        setValue("bankAccountId", displayBankAccounts[0].id, { shouldValidate: true });
+      }
+
+      setReceiptSuccessMsg(`Struk "${receipt.merchant_name}" terbaca: Rp ${receipt.total_amount.toLocaleString("id-ID")}`);
+
+      if (typeof window !== "undefined" && window.navigator?.vibrate) {
+        window.navigator.vibrate([30, 40, 30]);
+      }
+
+      // Beri sedikit jeda agar visual scanning tampak mulus, lalu langsung ke Step 1
+      setTimeout(() => {
+        setStep(1);
+      }, 700);
+    } catch (err) {
+      console.error("Receipt scan error:", err);
+      setScanError(err instanceof Error ? err.message : "Gagal memproses struk belanja.");
+    } finally {
+      setIsScanningReceipt(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   // Pisahkan kategori bawaan dan kustom berdasarkan tipe transaksi aktif
   const getAllCategories = () => {
@@ -310,21 +403,14 @@ export function TransactionDialog({
       reset({ type: defaultType, date: new Date().toISOString().split("T")[0], transferAccountId: "" });
       setRawAmount("");
       setNewCatName("");
+      setScanError(null);
+      setIsScanningReceipt(false);
+      setReceiptPreview(null);
+      setReceiptSuccessMsg(null);
       setStep(0);
     }
     onOpenChange(v);
   };
-
-  const displayBankAccounts =
-    bankAccounts.length > 0
-      ? bankAccounts.map((account) => ({
-        id: account.id,
-        name: account.name,
-        balance: account.balance,
-        logo: account.logo,
-        gradient: account.gradient,
-      }))
-      : MOCK_BANK_ACCOUNTS;
 
   const { defaults: categoryDefaults } = getAllCategories();
   const selectedBank = displayBankAccounts.find((b) => b.id === bankId);
@@ -451,6 +537,89 @@ export function TransactionDialog({
             >
               {/* Scrollable Content Body */}
               <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 sm:px-7 py-2 space-y-4 custom-scrollbar">
+                {/* 1. Quick Receipt Scanner Banner / Button */}
+                <div className="relative">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleReceiptFileChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isScanningReceipt}
+                    className="w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/5 dark:from-orange-500/20 dark:via-amber-500/15 dark:to-orange-500/10 border border-orange-500/20 hover:border-orange-500/40 text-stone-800 dark:text-slate-200 transition-all active:scale-[0.99] cursor-pointer group shadow-2xs"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#FF5C28] to-[#E85024] text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                        <Camera className="w-4 h-4" />
+                      </div>
+                      <div className="text-left min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-bold text-[#18181B] dark:text-slate-100">Scan Struk Belanja</span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#E85024]/15 text-[#E85024] dark:text-orange-300 font-extrabold flex items-center gap-0.5">
+                            <Sparkles className="w-2.5 h-2.5" /> AI
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-stone-500 dark:text-slate-400 truncate">
+                          Foto struk / nota, AI otomatis isi form
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-xs font-bold text-[#E85024] dark:text-orange-400 flex items-center gap-0.5 shrink-0 pl-2">
+                      <span>Foto</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </button>
+                </div>
+
+                {/* State Loading Scanning AI */}
+                {isScanningReceipt && (
+                  <div className="p-3.5 rounded-2xl bg-orange-500/10 dark:bg-orange-500/20 border border-orange-500/30 flex items-center gap-3">
+                    {receiptPreview ? (
+                      <div className="w-11 h-11 rounded-xl overflow-hidden border border-orange-500/30 shrink-0 bg-stone-900">
+                        <img src={receiptPreview} alt="Receipt preview" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-9 h-9 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0">
+                        <ScanLine className="w-5 h-5 animate-pulse" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <Loader2 className="w-3.5 h-3.5 text-[#E85024] animate-spin shrink-0" />
+                        <p className="text-xs font-bold text-stone-800 dark:text-slate-100">
+                          AI sedang membaca struk...
+                        </p>
+                      </div>
+                      <p className="text-[10px] text-stone-500 dark:text-slate-400 mt-0.5">
+                        Mengekstrak nama toko, nominal, tanggal & kategori
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* State Error Scan */}
+                {scanError && (
+                  <div className="p-3 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 min-w-0">
+                      <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                      <p className="text-xs text-red-600 dark:text-red-400 font-medium">
+                        {scanError}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setScanError(null)}
+                      className="text-stone-400 hover:text-stone-600 dark:hover:text-slate-300 p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
                 {/* 2. Switcher Tipe Transaksi (Pengeluaran / Pemasukan / Transfer) */}
                 <Controller
                   name="type"
@@ -696,6 +865,23 @@ export function TransactionDialog({
               {/* Scrollable Content Body */}
               <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 sm:px-7 py-2 space-y-4 custom-scrollbar">
                 <StepIndicator total={2} current={1} onBack={() => setStep(0)} showBack={true} />
+
+                {/* Banner Sukses Scan AI */}
+                {receiptSuccessMsg && (
+                  <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                      <Sparkles className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 truncate">
+                        {receiptSuccessMsg}
+                      </p>
+                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                        Data telah diisi otomatis oleh AI. Silakan cek detail di bawah.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex items-center gap-3 rounded-2xl border border-stone-200/60 dark:border-slate-800 bg-surface-muted/50 dark:bg-slate-800/50 p-3">
                   <div className={cn(
