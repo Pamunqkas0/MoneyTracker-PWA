@@ -10,6 +10,9 @@ import {
   ArrowDownLeft,
   PiggyBank,
   Receipt,
+  RotateCw,
+  Copy,
+  Check,
 } from "lucide-react";
 import { TransactionDialog } from "@/components/layout/transaction-dialog";
 import { AddAccountDialog } from "@/components/dashboard/bank-accounts";
@@ -17,6 +20,7 @@ import type { BankAccountRow } from "@/lib/supabase/types";
 import type { AvailableTransactionCategories } from "@/lib/supabase/queries";
 import type { FinancialSummary } from "@/lib/types";
 import { formatCurrency, cn } from "@/lib/utils";
+import { triggerHaptic } from "@/lib/haptics";
 
 interface LeftColumnBentoProps {
   summary: FinancialSummary;
@@ -304,6 +308,7 @@ export function LeftColumnBento({
         rawBalance: totalBalance > 0 ? totalBalance : 1222.0,
         currencySymbol: "$",
         accountNumber: "8899",
+        fullAccountNumber: "5590 8812 8899",
         expiry: "10/28",
         flag: (
           <svg className="w-5 h-5 rounded-full shrink-0 shadow-2xs" viewBox="0 0 32 32">
@@ -329,6 +334,7 @@ export function LeftColumnBento({
         rawBalance: 21.0,
         currencySymbol: "£",
         accountNumber: "4421",
+        fullAccountNumber: "4421 9012 4421",
         expiry: "09/27",
         flag: (
           <svg className="w-5 h-5 rounded-full shrink-0 shadow-2xs" viewBox="0 0 32 32">
@@ -351,6 +357,7 @@ export function LeftColumnBento({
         rawBalance: 1201.02,
         currencySymbol: "€",
         accountNumber: "3319",
+        fullAccountNumber: "3319 7721 3319",
         expiry: "11/29",
         flag: (
           <svg className="w-5 h-5 rounded-full shrink-0 shadow-2xs" viewBox="0 0 32 32">
@@ -390,6 +397,7 @@ export function LeftColumnBento({
         rawBalance: acc.balance,
         currencySymbol: "Rp",
         accountNumber: last4,
+        fullAccountNumber: acc.account_number || `5590 8812 ${last4}`,
         expiry: "10/28",
         flag: isImg ? (
           <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center p-0.5 shrink-0 overflow-hidden shadow-2xs">
@@ -402,8 +410,11 @@ export function LeftColumnBento({
     });
   }, [bankAccounts, defaultCurrencies]);
 
-  // Selected account state
+  // Selected account state & 3D Flip state
   const [selectedId, setSelectedId] = useState<string>(() => unifiedAccounts[0]?.id || "curr-usd");
+  const [isFlipped, setIsFlipped] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
+
   const activeAccount = unifiedAccounts.find((item) => item.id === selectedId) || unifiedAccounts[0];
   const [dialogOpen, setDialogOpen] = useState(false);
   const [addAccountOpen, setAddAccountOpen] = useState(false);
@@ -415,6 +426,27 @@ export function LeftColumnBento({
   const cardTheme = useMemo(() => {
     return getBankCardTheme(activeAccount.name, activeAccount.bankName);
   }, [activeAccount]);
+
+  const handleSelectAccount = (id: string) => {
+    triggerHaptic("selection");
+    setSelectedId(id);
+    setIsFlipped(false);
+  };
+
+  const handleFlipCard = () => {
+    triggerHaptic("medium");
+    setIsFlipped((prev) => !prev);
+  };
+
+  const handleCopyAccount = (e: React.MouseEvent, num: string) => {
+    e.stopPropagation();
+    triggerHaptic("success");
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(num.replace(/\s+/g, ""));
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleAction = (type: "transfer" | "receive" | "budget" | "bills") => {
     if (type === "transfer") {
@@ -446,7 +478,7 @@ export function LeftColumnBento({
             <button
               key={item.id}
               type="button"
-              onClick={() => setSelectedId(item.id)}
+              onClick={() => handleSelectAccount(item.id)}
               className={cn(
                 "rounded-2xl px-3.5 py-2 flex items-center gap-2 shrink-0 shadow-xs cursor-pointer transition-all duration-200 select-none",
                 isActive
@@ -489,59 +521,140 @@ export function LeftColumnBento({
         </button>
       </div>
 
-      {/* ═════════ 2. DYNAMIC HERO BALANCE CARD (Per-Bank Variation) ═════════ */}
-      <AnimatePresence mode="wait">
+      {/* ═════════ 2. DYNAMIC HERO BALANCE CARD (3D Interactive Flip Animation) ═════════ */}
+      <div
+        className="w-full [perspective:1000px] [-webkit-perspective:1000px] cursor-pointer select-none"
+        onClick={handleFlipCard}
+        title="Klik untuk membalik kartu (3D Flip)"
+      >
         <motion.div
-          key={activeAccount.id}
-          initial={{ opacity: 0.8, scale: 0.985 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0.8, scale: 0.985 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className={cn(
-            "w-full relative rounded-[28px] sm:rounded-3xl p-5 sm:p-6 flex flex-col justify-between overflow-hidden shadow-sm border border-black/[0.04] min-h-[190px] transition-colors duration-300",
-            cardTheme.bgStyle,
-            cardTheme.textColor
-          )}
+          animate={{ rotateY: isFlipped ? 180 : 0 }}
+          transition={{ type: "spring", stiffness: 280, damping: 24 }}
+          style={{
+            transformStyle: "preserve-3d",
+            WebkitTransformStyle: "preserve-3d",
+          }}
+          className="w-full relative min-h-[195px] sm:min-h-[205px] rounded-[28px] sm:rounded-3xl shadow-sm transition-shadow hover:shadow-md"
         >
-          {/* Decorative Bank Specific Pattern / Watermark di sudut kanan bawah */}
-          <div className="absolute right-0 bottom-0 pointer-events-none opacity-40 translate-x-3 translate-y-3">
-            {cardTheme.patternSvg}
-          </div>
+          {/* ── SISI DEPAN (FRONT SIDE) ── */}
+          <div
+            style={{
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              transform: "rotateY(0deg)",
+              WebkitTransform: "rotateY(0deg)",
+            }}
+            className={cn(
+              "absolute inset-0 w-full h-full rounded-[28px] sm:rounded-3xl p-5 sm:p-6 flex flex-col justify-between overflow-hidden border border-black/[0.04]",
+              cardTheme.bgStyle,
+              cardTheme.textColor,
+              isFlipped ? "pointer-events-none opacity-0" : "opacity-100"
+            )}
+          >
+            {/* Decorative Bank Specific Pattern / Watermark di sudut kanan bawah */}
+            <div className="absolute right-0 bottom-0 pointer-events-none opacity-40 translate-x-3 translate-y-3">
+              {cardTheme.patternSvg}
+            </div>
 
-          {/* Baris Atas: Logo Bank/Bendera + Label "Balance" vs Watermark Emblem Kanan Atas */}
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {activeAccount.flag}
-              <span className={cn("text-xs font-bold tracking-wider", cardTheme.subTextColor)}>
-                {activeAccount.name} Balance
+            {/* Baris Atas: Logo Bank/Bendera + Label "Balance" vs Watermark Emblem Kanan Atas */}
+            <div className="relative z-10 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {activeAccount.flag}
+                <span className={cn("text-xs font-bold tracking-wider", cardTheme.subTextColor)}>
+                  {activeAccount.name} Balance
+                </span>
+              </div>
+
+              {/* Emblem & Flip Hint */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-semibold opacity-75 flex items-center gap-1 bg-black/10 dark:bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-xs">
+                  <RotateCw className="w-2.5 h-2.5" /> Flip
+                </span>
+                {cardTheme.emblem}
+              </div>
+            </div>
+
+            {/* Nominal Saldo: Besar dan Tebal */}
+            <div className="relative z-10 my-3 sm:my-3.5">
+              <span className="text-3xl sm:text-4xl font-black tracking-tight tabular-nums block leading-tight">
+                {activeAccount.currencySymbol === "Rp"
+                  ? formatCurrency(activeAccount.rawBalance)
+                  : `${activeAccount.currencySymbol}${activeAccount.balanceDisplay}`}
               </span>
             </div>
 
-            {/* Emblem Kanan Atas */}
-            {cardTheme.emblem}
-          </div>
-
-          {/* Nominal Saldo: Besar dan Tebal */}
-          <div className="relative z-10 my-3.5 sm:my-4">
-            <span className="text-3xl sm:text-4xl font-black tracking-tight tabular-nums block leading-tight">
-              {activeAccount.currencySymbol === "Rp"
-                ? formatCurrency(activeAccount.rawBalance)
-                : `${activeAccount.currencySymbol}${activeAccount.balanceDisplay}`}
-            </span>
-          </div>
-
-          {/* Baris Bawah: Masked Account Number & Expiry Badge */}
-          <div className="relative z-10 flex items-center justify-between gap-2 pt-1">
-            <div className={cn("flex items-center gap-1.5 text-xs sm:text-sm font-mono font-bold", cardTheme.subTextColor)}>
-              <span className="text-lg leading-none">•</span>
-              <span>{activeAccount.accountNumber}</span>
+            {/* Baris Bawah: Masked Account Number & Expiry Badge */}
+            <div className="relative z-10 flex items-center justify-between gap-2 pt-1">
+              <div className={cn("flex items-center gap-1.5 text-xs sm:text-sm font-mono font-bold", cardTheme.subTextColor)}>
+                <span className="text-lg leading-none">•</span>
+                <span>{activeAccount.accountNumber}</span>
+              </div>
+              <span className={cn("px-3 py-1 rounded-full text-[11px] font-bold font-mono tracking-wider border shadow-2xs", cardTheme.badgeBg)}>
+                {activeAccount.expiry}
+              </span>
             </div>
-            <span className={cn("px-3 py-1 rounded-full text-[11px] font-bold font-mono tracking-wider border shadow-2xs", cardTheme.badgeBg)}>
-              {activeAccount.expiry}
-            </span>
+          </div>
+
+          {/* ── SISI BELAKANG (BACK SIDE PREVIEW) ── */}
+          <div
+            style={{
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              transform: "rotateY(180deg)",
+              WebkitTransform: "rotateY(180deg)",
+            }}
+            className={cn(
+              "absolute inset-0 w-full h-full rounded-[28px] sm:rounded-3xl flex flex-col justify-between overflow-hidden border border-black/[0.06] shadow-inner",
+              cardTheme.bgStyle,
+              cardTheme.textColor,
+              !isFlipped ? "pointer-events-none opacity-0" : "opacity-100"
+            )}
+          >
+            {/* 1. Magnetic Stripe */}
+            <div className="w-full h-9 bg-[#111827]/90 dark:bg-black/90 mt-4 shadow-xs flex items-center px-4">
+              <div className="h-1.5 w-16 bg-white/20 rounded-full" />
+            </div>
+
+            {/* 2. Signature & Security Code Box */}
+            <div className="px-5 py-1.5 flex items-center justify-between gap-3">
+              <div className="flex-1 bg-white/90 text-stone-900 font-mono text-[11px] font-bold italic px-3 py-1 rounded-md flex items-center justify-between shadow-2xs">
+                <span className="truncate max-w-[130px] sm:max-w-[170px]">{activeAccount.bankName}</span>
+                <span className="text-[9px] text-stone-500 font-normal">CVV</span>
+              </div>
+              <div className="bg-white/95 text-stone-950 font-mono font-black text-xs px-2.5 py-1 rounded-md shadow-2xs">
+                892
+              </div>
+            </div>
+
+            {/* 3. Account Number with Copy Button */}
+            <div className="px-5 pb-4 flex items-end justify-between gap-2">
+              <div className="flex flex-col">
+                <span className={cn("text-[9px] uppercase font-bold tracking-wider", cardTheme.subTextColor)}>
+                  Nomor Rekening
+                </span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-sm sm:text-base font-mono font-black tracking-wider">
+                    {activeAccount.fullAccountNumber}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => handleCopyAccount(e, activeAccount.fullAccountNumber)}
+                    className="p-1 rounded-md bg-white/20 hover:bg-white/30 text-white transition-all cursor-pointer active:scale-90"
+                    title="Salin Nomor Rekening"
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Flip back badge */}
+              <span className="text-[10px] font-semibold opacity-80 flex items-center gap-1 bg-black/15 dark:bg-white/15 px-2.5 py-1 rounded-full backdrop-blur-xs">
+                <RotateCw className="w-2.5 h-2.5" /> Flip back
+              </span>
+            </div>
           </div>
         </motion.div>
-      </AnimatePresence>
+      </div>
 
       {/* ═════════ 3. SLIDE PAGINATION DOTS (Interaktif & Sinkron) ═════════ */}
       <div className="flex items-center justify-center gap-1.5 my-1">
@@ -550,7 +663,7 @@ export function LeftColumnBento({
           return (
             <button
               key={item.id}
-              onClick={() => setSelectedId(item.id)}
+              onClick={() => handleSelectAccount(item.id)}
               className={cn(
                 "h-1.5 rounded-full transition-all duration-300 cursor-pointer",
                 isActive
