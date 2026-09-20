@@ -13,15 +13,11 @@ const bricolage = Bricolage_Grotesque({
 export const metadata: Metadata = {
   title: "MoneyTracker — Personal Finance Dashboard",
   description: "Kelola keuangan pribadi Anda dengan mudah dan cerdas.",
-  manifest: "/manifest.webmanifest",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "MoneyTracker",
-  },
-  icons: {
-    icon: "/icon-192.png",
-    apple: "/icon-192.png",
   },
 };
 

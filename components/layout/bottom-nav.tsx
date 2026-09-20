@@ -11,7 +11,6 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { triggerHaptic } from "@/lib/haptics";
 
 interface NavItem {
   id: string;
@@ -69,13 +68,8 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
     return false;
   };
 
-  const handleAddClick = () => {
-    triggerHaptic("medium");
-    onAddClick?.();
-  };
-
   return (
-    <div className="fixed bottom-safe-nav left-1/2 -translate-x-1/2 z-50 flex lg:hidden pointer-events-none w-full justify-center px-4">
+    <div className="fixed bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 flex lg:hidden pointer-events-none w-full justify-center px-4">
       <nav
         aria-label="Mobile Floating Navigation"
         className="pointer-events-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-[30px] sm:rounded-full p-2 sm:p-2.5 shadow-[0_16px_40px_rgba(0,0,0,0.16)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.5)] border border-black/[0.07] dark:border-slate-800 flex items-center justify-between gap-1.5 w-full max-w-[410px] transition-colors"
@@ -89,7 +83,7 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
               <button
                 key={item.id}
                 type="button"
-                onClick={handleAddClick}
+                onClick={onAddClick}
                 className="relative flex items-center justify-center cursor-pointer transition-transform active:scale-90 select-none w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white shadow-lg shadow-orange-500/25 mx-1 shrink-0"
                 aria-label="Tambah Transaksi"
                 title="Tambah Transaksi"
@@ -103,9 +97,6 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
             <Link
               key={item.id}
               href={item.href}
-              onClick={() => {
-                if (!isActive) triggerHaptic("light");
-              }}
               className="relative flex items-center justify-center cursor-pointer transition-transform active:scale-95 select-none"
               aria-current={isActive ? "page" : undefined}
             >
