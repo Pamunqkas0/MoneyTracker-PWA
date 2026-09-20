@@ -135,6 +135,36 @@ body {
   -moz-osx-font-smoothing: grayscale;
   /* Cegah overscroll/overshoot yang bisa trigger zoom-like effect */
   overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── iOS Native App Touch Feel ───────────────────────── */
+/* Hilangkan menu pop-up teks browser & seleksi yang tidak perlu pada elemen interaktif */
+button,
+a,
+nav,
+[role="button"],
+.interactive-card {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── iOS Safe Area Utilities ─────────────────────────── */
+.pt-safe {
+  padding-top: max(16px, env(safe-area-inset-top, 0px));
+}
+
+.pb-safe {
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+}
+
+.pb-safe-nav {
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.bottom-safe-nav {
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
 }
 
 .glass-card {
