@@ -15,6 +15,7 @@ import type {
   BudgetItemRow,
   SavingsGoalRow,
   UpcomingBillRow,
+  StockHoldingRow,
 } from "./types";
 
 export interface CategoryOption {
@@ -564,3 +565,21 @@ export async function getCategoryExpenses(month?: number, year?: number) {
 
   return result.sort((a, b) => b.amount - a.amount);
 }
+
+/**
+ * Ambil semua portofolio saham pengguna yang tercatat.
+ */
+export async function getStockHoldings(): Promise<StockHoldingRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("stock_holdings")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    // Jika tabel belum dibuat di supabase user, return graceful empty array
+    return [];
+  }
+  return (data ?? []) as StockHoldingRow[];
+}
+

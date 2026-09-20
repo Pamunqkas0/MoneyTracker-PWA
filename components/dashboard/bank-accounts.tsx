@@ -17,6 +17,8 @@ import {
   AlertCircle,
   Loader2,
   PencilLine,
+  X,
+  ArrowRight,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -98,7 +100,7 @@ function AccountCard({ account, hidden }: { account: BankAccountRow; hidden: boo
 
         {/* Middle row: Balance (Card Number style) */}
         <div className="mt-2 mb-1">
-          <p className="text-lg sm:text-xl font-bold text-white tracking-widest tabular-nums font-mono drop-shadow-md">
+          <p className="text-xl sm:text-2xl font-black text-white tracking-wider tabular-nums font-mono drop-shadow-md">
             {hidden ? "•••• •••• ••••" : formatCurrency(account.balance, true)}
           </p>
         </div>
@@ -273,12 +275,14 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [activeCategoryTab, setActiveCategoryTab] = useState<"bank" | "ewallet" | "cash">("bank");
 
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    watch,
     reset,
     formState: { errors },
   } = useForm<AddFormValues>({
@@ -286,10 +290,20 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
     defaultValues: { initialBalance: 0, presetId: "" },
   });
 
+  const selectedPresetId = watch("presetId");
+  const selectedPreset = BANK_PRESETS.find((p) => p.id === selectedPresetId);
+
   const handleBalanceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, "");
     setRawBalance(raw);
     setValue("initialBalance", Number(raw), { shouldValidate: !!raw });
+  };
+
+  const handleAddQuickAmount = (val: number) => {
+    const current = Number(rawBalance) || 0;
+    const updated = current + val;
+    setRawBalance(String(updated));
+    setValue("initialBalance", updated, { shouldValidate: true });
   };
 
   const onSubmit = async (data: AddFormValues) => {
@@ -298,7 +312,7 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
 
     const preset = BANK_PRESETS.find((p) => p.id === data.presetId);
     if (!preset) {
-      setErrorMsg("Preset rekening tidak ditemukan");
+      setErrorMsg("Pilih jenis rekening terlebih dahulu");
       setIsLoading(false);
       return;
     }
@@ -321,6 +335,10 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
         return;
       }
 
+      if (typeof window !== "undefined" && window.navigator?.vibrate) {
+        window.navigator.vibrate([30, 50, 30]);
+      }
+
       setIsLoading(false);
       setIsSuccess(true);
       setTimeout(() => {
@@ -340,189 +358,308 @@ export function AddAccountDialog({ open, onOpenChange }: { open: boolean; onOpen
       reset({ initialBalance: 0, presetId: "" });
       setRawBalance("");
       setIsSuccess(false);
+      setErrorMsg("");
     }
     onOpenChange(v);
   };
 
-  const bankPresets = BANK_PRESETS.filter((p) => p.type === "bank");
-  const ewalletPresets = BANK_PRESETS.filter((p) => p.type === "ewallet");
-  const cashPresets = BANK_PRESETS.filter((p) => p.type === "cash");
+  const filteredPresets = BANK_PRESETS.filter((p) => p.type === activeCategoryTab);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent showHandle className="max-w-lg p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl w-full mx-auto">
-        <DialogHeader className="p-6 pb-4 border-b border-stone-100 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E0E6FD] dark:bg-indigo-500/20 text-[#3B4CCA] dark:text-indigo-300 shadow-xs">
-              <Landmark className="h-5 w-5" />
-            </div>
-            <div>
-              <DialogTitle className="text-lg font-bold text-[#18181B] dark:text-slate-100">Tambah Rekening</DialogTitle>
-              <DialogDescription className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
-                Tambahkan bank atau e-wallet kamu secara instan
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
+      <DialogContent
+        hideClose
+        className="p-0 overflow-hidden flex flex-col max-h-[90svh] sm:max-h-[86vh] h-auto rounded-t-[36px] sm:rounded-[36px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl max-w-lg w-full"
+      >
+        {/* Dynamic Header (Fixed Top) */}
+        <div className="p-5 sm:p-6 pb-3 shrink-0">
+          {/* Grab Handle Bar (khusus mobile) */}
+          <div className="w-12 h-1.5 bg-stone-200 dark:bg-slate-700 rounded-full mx-auto mb-3 sm:hidden" />
 
-        <div className="px-6 py-4 overflow-y-auto max-h-[72vh] sm:max-h-[600px] space-y-4 custom-scrollbar">
-          <AnimatePresence mode="wait">
-            {isSuccess ? (
-              <motion.div
-                key="ok"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center justify-center py-10 gap-3"
-              >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shadow-2xs shrink-0 transition-colors bg-[#E0E6FD]/80 dark:bg-indigo-500/20 text-[#3B4CCA] dark:text-indigo-300">
+                <Landmark className="h-5 w-5 stroke-[2.2]" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg sm:text-xl font-bold text-[#18181B] dark:text-slate-100 tracking-tight">
+                  {isSuccess ? "Rekening Ditambahkan" : "Tambah Rekening Baru"}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
+                  {isSuccess
+                    ? "Rekening baru berhasil disimpan ke sistem"
+                    : "Hubungkan bank, e-wallet, atau pos kas tunai"}
+                </DialogDescription>
+              </div>
+            </div>
+
+            {/* Tombol Tutup Bulat */}
+            <button
+              type="button"
+              onClick={() => handleClose(false)}
+              className="w-9 h-9 rounded-full bg-stone-100/90 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 active:scale-95 flex items-center justify-center text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 transition-all cursor-pointer shrink-0"
+              aria-label="Tutup"
+            >
+              <X className="h-4 w-4 stroke-[2.5]" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content Body */}
+        <AnimatePresence mode="wait">
+          {isSuccess ? (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex-1 flex flex-col items-center justify-center py-10 px-5 sm:px-7 gap-4 text-center"
+            >
+              <div className="relative flex h-16 w-16 items-center justify-center">
+                <span className="absolute inset-0 rounded-full bg-[#D8F5A2]/60 dark:bg-emerald-500/30 animate-ping" />
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F5A2] dark:bg-emerald-950/60 text-stone-900 dark:text-emerald-300 shadow-sm border border-emerald-500/20">
                   <CheckCircle2 className="h-8 w-8 text-stone-800 dark:text-emerald-300" />
                 </div>
-                <div className="text-center">
-                  <p className="font-bold text-lg text-[#18181B] dark:text-slate-100">Rekening Ditambahkan!</p>
-                  <p className="text-xs text-stone-500 dark:text-slate-400 mt-1">Rekening baru berhasil disimpan ke sistem.</p>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.form
-                key="form"
-                onSubmit={handleSubmit(onSubmit)}
-                className="space-y-4 pt-1"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
+              </div>
+              <div className="space-y-1.5 px-2">
+                <p className="text-lg font-bold text-[#18181B] dark:text-slate-100">Rekening Berhasil Disimpan!</p>
+                <p className="text-xs text-stone-500 dark:text-slate-400 leading-relaxed max-w-xs mx-auto">
+                  Rekening <span className="font-bold text-[#18181B] dark:text-slate-100">{selectedPreset?.fullName || "baru"}</span> dengan saldo awal{" "}
+                  <span className="font-bold text-[#18181B] dark:text-slate-100 tabular-nums">
+                    {formatCurrency(Number(rawBalance) || 0)}
+                  </span>{" "}
+                  telah siap digunakan.
+                </p>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.form
+              key="form"
+              onSubmit={handleSubmit(onSubmit)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-col flex-1 min-h-0 overflow-hidden"
+            >
+              {/* Scrollable Form Content */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 sm:px-7 py-2 space-y-4 custom-scrollbar">
                 {errorMsg && (
-                  <div className="flex items-center gap-2 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-500/20 px-3.5 py-2.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    {errorMsg}
+                  <div className="p-3 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 min-w-0">
+                      <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                      <p className="text-xs text-red-600 dark:text-red-400 font-medium">{errorMsg}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setErrorMsg("")}
+                      className="text-stone-400 hover:text-stone-600 dark:hover:text-slate-300 p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 )}
 
-                {/* Preset Picker */}
-                <Controller
-                  name="presetId"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="space-y-3 bg-surface-muted/40 dark:bg-slate-800/40 border border-stone-200/60 dark:border-slate-700/60 p-3.5 rounded-3xl">
-                      {/* Banks */}
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">🏦 Bank</p>
-                        <div className="grid grid-cols-3 xs:grid-cols-4 gap-2">
-                          {bankPresets.map((p) => (
-                            <PresetButton key={p.id} preset={p} selected={field.value === p.id} onSelect={() => field.onChange(p.id)} />
-                          ))}
-                        </div>
-                      </div>
-                      {/* E-wallets */}
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">💳 E-Wallet</p>
-                        <div className="grid grid-cols-3 xs:grid-cols-4 gap-2">
-                          {ewalletPresets.map((p) => (
-                            <PresetButton key={p.id} preset={p} selected={field.value === p.id} onSelect={() => field.onChange(p.id)} />
-                          ))}
-                        </div>
-                      </div>
-                      {/* Cash */}
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">💵 Lainnya</p>
-                        <div className="grid grid-cols-3 xs:grid-cols-4 gap-2">
-                          {cashPresets.map((p) => (
-                            <PresetButton key={p.id} preset={p} selected={field.value === p.id} onSelect={() => field.onChange(p.id)} />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                />
-                {errors.presetId && (
-                  <p className="text-[11px] text-[#E85024] font-medium -mt-2">{errors.presetId.message}</p>
-                )}
+                {/* 1. Saldo Awal Box (Hero Bento Number Card) */}
+                <div className="bg-[#FAF8F5] dark:bg-slate-800/50 rounded-3xl p-4 sm:p-5 border border-black/[0.04] dark:border-slate-800 shadow-2xs flex flex-col gap-2.5 relative">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-400">
+                      Saldo Awal Rekening
+                    </span>
+                    <span className="bg-white dark:bg-slate-800 px-2.5 py-1 rounded-xl shadow-2xs font-extrabold text-[11px] sm:text-xs text-stone-600 dark:text-slate-300 border border-black/[0.02] dark:border-slate-700">
+                      IDR (Rp)
+                    </span>
+                  </div>
 
-                {/* Nickname */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="acc-nick" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Nama Panggilan Rekening</Label>
-                  <Input id="acc-nick" placeholder="Mis. BCA Tabungan, GoPay Utama…" className="h-11 text-sm rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border-stone-200/50 dark:border-slate-700 px-4 text-[#18181B] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all font-medium" {...register("nickname")} />
-                  {errors.nickname && (
-                    <p className="text-[11px] text-[#E85024] font-medium">{errors.nickname.message}</p>
+                  {/* Input Angka Besar */}
+                  <div className="flex items-baseline justify-end gap-2 py-1 min-h-[56px]">
+                    <span className="text-2xl sm:text-3xl font-black text-stone-300 dark:text-slate-600 select-none pb-0.5">
+                      Rp
+                    </span>
+                    <input
+                      id="acc-bal-input"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={rawBalance ? Number(rawBalance).toLocaleString("id-ID") : ""}
+                      onChange={handleBalanceChange}
+                      className={cn(
+                        "w-full text-right font-black text-[#18181B] dark:text-slate-100 tracking-tight bg-transparent border-none outline-none focus:outline-none focus:ring-0 p-0 m-0 tabular-nums placeholder:text-stone-300 dark:placeholder:text-slate-600 cursor-text leading-tight",
+                        rawBalance.length > 10
+                          ? "!text-2xl sm:!text-3xl"
+                          : rawBalance.length > 7
+                            ? "!text-3xl sm:!text-4xl"
+                            : "!text-4xl sm:!text-5xl"
+                      )}
+                    />
+                  </div>
+
+                  {/* Quick Amount Chips */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pt-1 max-w-full">
+                    {[
+                      { label: "+100 rb", val: 100000 },
+                      { label: "+500 rb", val: 500000 },
+                      { label: "+1 jt", val: 1000000 },
+                      { label: "+5 jt", val: 5000000 },
+                      { label: "+10 jt", val: 10000000 },
+                    ].map((chip) => (
+                      <button
+                        key={chip.label}
+                        type="button"
+                        onClick={() => handleAddQuickAmount(chip.val)}
+                        className="bg-white dark:bg-slate-800 hover:bg-[#FAD170]/40 dark:hover:bg-slate-700 text-stone-700 dark:text-slate-300 font-bold text-[11px] px-3 py-1.5 rounded-full border border-black/[0.03] dark:border-slate-700 shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0 select-none"
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {errors.initialBalance && (
+                    <p className="text-[11px] text-[#E85024] font-medium mt-1">{errors.initialBalance.message}</p>
                   )}
                 </div>
 
-                {/* Responsive Input Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="acc-num" className="text-xs font-semibold text-stone-500 dark:text-slate-400">
-                      No. Rekening <span className="text-stone-400 dark:text-slate-500 font-normal">(opsional)</span>
+                {/* 2. Type/Category Switcher Tabs for Presets */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-stone-600 dark:text-slate-400 uppercase tracking-wider block">
+                      Pilih Jenis Bank / E-Wallet
                     </Label>
-                    <Input id="acc-num" placeholder="4 digit terakhir" maxLength={25} className="h-11 text-sm rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border-stone-200/50 dark:border-slate-700 px-4 text-[#18181B] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all font-medium" {...register("accountNumber")} />
+                  </div>
+
+                  <div className="rounded-full bg-stone-100/80 dark:bg-slate-800/80 p-1 grid grid-cols-3 gap-1 mb-2 w-full border border-black/[0.03] dark:border-slate-700/50">
+                    {[
+                      { id: "bank" as const, label: "Bank", icon: Landmark },
+                      { id: "ewallet" as const, label: "E-Wallet", icon: Wallet2 },
+                      { id: "cash" as const, label: "Lainnya", icon: Banknote },
+                    ].map((tab) => {
+                      const Icon = tab.icon;
+                      const isActive = activeCategoryTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setActiveCategoryTab(tab.id)}
+                          className={cn(
+                            "py-2 px-1.5 sm:px-3 rounded-full text-center transition-all duration-150 cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-bold min-w-0",
+                            isActive
+                              ? "bg-[#1A1A1A] dark:bg-slate-700 text-white shadow-xs"
+                              : "text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 font-semibold"
+                          )}
+                        >
+                          <Icon className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{tab.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Preset Grid Cards */}
+                  <Controller
+                    name="presetId"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[170px] overflow-y-auto p-0.5 custom-scrollbar">
+                        {filteredPresets.map((preset) => {
+                          const isSelected = field.value === preset.id;
+                          const isImgLogo = preset.logo?.startsWith("/");
+                          return (
+                            <button
+                              key={preset.id}
+                              type="button"
+                              onClick={() => {
+                                field.onChange(preset.id);
+                                const currentNick = watch("nickname");
+                                if (!currentNick) {
+                                  setValue("nickname", preset.name);
+                                }
+                              }}
+                              className={cn(
+                                "relative flex flex-col items-center justify-center gap-1.5 rounded-2xl p-2.5 sm:p-3 text-center select-none cursor-pointer min-h-[74px] border transition-all duration-200 min-w-0",
+                                isSelected
+                                  ? "bg-gradient-to-b from-orange-50/60 dark:from-orange-950/30 to-white dark:to-slate-800 ring-2 ring-[#E85024] shadow-md shadow-orange-500/10 -translate-y-0.5 border-[#E85024]/40"
+                                  : "bg-white dark:bg-slate-800/70 hover:bg-stone-50/80 dark:hover:bg-slate-800 border-black/[0.04] dark:border-slate-700/60 shadow-xs hover:-translate-y-0.5"
+                              )}
+                            >
+                              <div
+                                className={cn(
+                                  "w-8 h-8 rounded-xl bg-white dark:bg-slate-900 shadow-2xs flex items-center justify-center p-1 shrink-0 overflow-hidden border border-black/[0.02] dark:border-slate-800",
+                                  isSelected ? "ring-1 ring-[#E85024]/30" : ""
+                                )}
+                              >
+                                {isImgLogo ? (
+                                  <img src={preset.logo} alt={preset.name} className="max-h-full max-w-full object-contain" />
+                                ) : (
+                                  <span className="text-base leading-none">{preset.logo}</span>
+                                )}
+                              </div>
+                              <span className="text-[11px] font-bold text-[#18181B] dark:text-slate-100 truncate w-full px-0.5">
+                                {preset.name}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  />
+                  {errors.presetId && (
+                    <p className="text-[11px] text-[#E85024] font-medium mt-1">{errors.presetId.message}</p>
+                  )}
+                </div>
+
+                {/* 3. Nickname & Account Number Fields */}
+                <div className="space-y-3 pt-1">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="acc-nick" className="text-xs font-bold text-stone-600 dark:text-slate-400 uppercase tracking-wider">
+                      Nama Panggilan Rekening
+                    </Label>
+                    <Input
+                      id="acc-nick"
+                      placeholder="Mis. BCA Utama, GoPay Jajan, Tabungan..."
+                      className="h-12 text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-medium px-4 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs placeholder:text-stone-400 dark:placeholder:text-slate-500"
+                      {...register("nickname")}
+                    />
+                    {errors.nickname && (
+                      <p className="text-[11px] text-[#E85024] font-medium">{errors.nickname.message}</p>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="acc-bal" className="text-xs font-semibold text-stone-500 dark:text-slate-400">Saldo Awal</Label>
-                    <div className="relative flex items-center rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border border-stone-200/50 dark:border-slate-700 p-1 focus-within:ring-2 focus-within:ring-black/10 dark:focus-within:ring-white/10 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all">
-                      <span className="pl-3 text-sm font-bold text-stone-400 dark:text-slate-500">Rp</span>
-                      <Input
-                        id="acc-bal"
-                        inputMode="numeric"
-                        placeholder="0"
-                        value={rawBalance ? Number(rawBalance).toLocaleString("id-ID") : ""}
-                        onChange={handleBalanceChange}
-                        className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] dark:text-slate-100 tabular-nums bg-transparent pr-2 placeholder:text-stone-400 dark:placeholder:text-slate-500"
-                      />
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="acc-num" className="text-xs font-bold text-stone-600 dark:text-slate-400 uppercase tracking-wider">
+                        No. Rekening / Nomor Kartu
+                      </Label>
+                      <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">Opsional</span>
                     </div>
-                    {errors.initialBalance && (
-                      <p className="text-[11px] text-[#E85024] font-medium">{errors.initialBalance.message}</p>
-                    )}
+                    <Input
+                      id="acc-num"
+                      placeholder="Mis. 4 digit terakhir atau no. lengkap"
+                      maxLength={25}
+                      className="h-12 text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-medium px-4 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs placeholder:text-stone-400 dark:placeholder:text-slate-500"
+                      {...register("accountNumber")}
+                    />
                   </div>
                 </div>
+              </div>
 
-                <div className="pt-2">
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full h-12 text-sm font-bold rounded-full cursor-pointer text-white bg-[#E85024] hover:bg-[#d44319] shadow-sm transition-all active:scale-[0.99]"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Menyimpan...</>
-                    ) : (
-                      <><Plus className="h-4 w-4 mr-1.5" /> Tambah Rekening</>
-                    )}
-                  </Button>
-                </div>
-              </motion.form>
-            )}
-          </AnimatePresence>
-        </div>
+              {/* 4. Fixed Pinned Footer Submit Button */}
+              <div className="p-4 sm:p-6 pt-3 pb-5 sm:pb-6 shrink-0 bg-white dark:bg-slate-900 border-t border-black/[0.04] dark:border-slate-800">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full rounded-full bg-gradient-to-r from-[#FF5C28] to-[#E85024] hover:from-[#e84d1a] hover:to-[#d44319] text-white font-extrabold py-3.5 sm:py-4 text-sm sm:text-base shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> <span>Menyimpan Rekening…</span></>
+                  ) : (
+                    <><Plus className="h-4 w-4 stroke-[2.5]" /> <span>Tambah Rekening</span></>
+                  )}
+                </button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
-  );
-}
-
-/* ── Preset Button ─────────────────────────────────────── */
-function PresetButton({ preset, selected, onSelect }: { preset: BankPreset; selected: boolean; onSelect: () => void }) {
-  const isImgLogo = preset.logo?.startsWith("/");
-
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={cn(
-        "flex flex-col items-center justify-center gap-1.5 rounded-2xl border p-2 text-center transition-all duration-150 select-none cursor-pointer min-h-[64px]",
-        selected
-          ? "border-[#1A1A1A] bg-[#1A1A1A] dark:border-slate-600 dark:bg-slate-700 text-white font-bold shadow-xs"
-          : "border-stone-200/60 dark:border-slate-800 bg-white dark:bg-slate-800/70 hover:bg-stone-50 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300"
-      )}
-    >
-      {isImgLogo ? (
-        <div className={cn("h-5 flex items-center justify-center rounded-md p-0.5 w-9", selected ? "bg-white/95" : "bg-white/90 dark:bg-slate-900/90")}>
-          <img src={preset.logo} alt={preset.name} className="h-full w-auto object-contain max-w-[38px]" />
-        </div>
-      ) : (
-        <span className="text-base sm:text-lg leading-none">{preset.logo}</span>
-      )}
-      <span className={cn("text-[9px] font-semibold leading-tight tracking-tight truncate max-w-full", selected ? "text-white" : "text-[#18181B] dark:text-slate-200")}>
-        {preset.name}
-      </span>
-    </button>
   );
 }
 
@@ -569,7 +706,7 @@ export function BankAccountsWidget({ accounts }: { accounts: BankAccountRow[] })
           <div className="mt-3.5 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 shadow-sm relative overflow-hidden text-white">
             <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-white/5" />
             <p className="text-[11px] font-medium text-emerald-100/90 tracking-wide uppercase">Total Semua Rekening</p>
-            <p className="text-xl sm:text-2xl font-bold mt-1 tracking-tight tabular-nums">
+            <p className="text-2xl sm:text-3xl font-black mt-1 tracking-tight tabular-nums leading-tight">
               {hidden ? "Rp ••••••••" : formatCurrency(totalBalance)}
             </p>
             <div className="mt-2.5 flex items-center gap-2 text-[10px] text-emerald-100/70 font-medium">

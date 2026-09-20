@@ -115,6 +115,20 @@ create table if not exists public.upcoming_bills (
   created_at timestamptz not null default now()
 );
 
+-- ── Stock Portfolio Holdings ──────────────────────────────────────────
+create table if not exists public.stock_holdings (
+  id            text        primary key,
+  user_id       uuid        not null references auth.users(id) on delete cascade,
+  symbol        text        not null,
+  company_name  text        not null,
+  shares_count  integer     not null check (shares_count > 0),
+  avg_buy_price numeric     not null check (avg_buy_price > 0),
+  current_price numeric     default 0,
+  notes         text,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+
 -- Existing-database migration helpers. These are no-ops on a fresh database.
 alter table public.profiles add column if not exists telegram_chat_id text unique;
 alter table public.profiles add column if not exists telegram_pairing_code text unique;
@@ -353,6 +367,7 @@ alter table public.categories     enable row level security;
 alter table public.budget_items   enable row level security;
 alter table public.savings_goals  enable row level security;
 alter table public.upcoming_bills enable row level security;
+alter table public.stock_holdings enable row level security;
 
 drop policy if exists "profiles_select_own" on public.profiles;
 create policy "profiles_select_own" on public.profiles
@@ -384,6 +399,10 @@ for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 drop policy if exists "upcoming_bills_own_all" on public.upcoming_bills;
 create policy "upcoming_bills_own_all" on public.upcoming_bills
+for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "stock_holdings_own_all" on public.stock_holdings;
+create policy "stock_holdings_own_all" on public.stock_holdings
 for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Remove old open policies if this project previously used single-user mode.

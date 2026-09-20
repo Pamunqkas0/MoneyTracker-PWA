@@ -76,7 +76,7 @@ export function MiddleColumnBento({
 
           <div>
             <span className="text-xs sm:text-sm font-medium text-stone-600 dark:text-stone-400 block mb-1">Income</span>
-            <p className="text-xl sm:text-2xl font-black tracking-tight text-black dark:text-white mb-2.5 truncate tabular-nums" title={String(totalIncome)}>
+            <p className="text-2xl sm:text-3xl font-black tracking-tight text-black dark:text-white mb-2.5 truncate tabular-nums leading-tight" title={String(totalIncome)}>
               {totalIncome > 0 ? formatCurrency(totalIncome, true) : "Rp0"}
             </p>
 
@@ -118,7 +118,7 @@ export function MiddleColumnBento({
 
           <div>
             <span className="text-xs sm:text-sm font-medium text-stone-600 dark:text-stone-400 block mb-1">Outcome</span>
-            <p className="text-xl sm:text-2xl font-black tracking-tight text-black dark:text-white mb-2.5 truncate tabular-nums" title={String(totalExpenses)}>
+            <p className="text-2xl sm:text-3xl font-black tracking-tight text-black dark:text-white mb-2.5 truncate tabular-nums leading-tight" title={String(totalExpenses)}>
               {totalExpenses > 0 ? formatCurrency(totalExpenses, true) : "Rp0"}
             </p>
 

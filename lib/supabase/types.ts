@@ -101,6 +101,21 @@ export type BudgetItemInsert  = Omit<BudgetItemRow,  "created_at">;
 export type SavingsGoalInsert = Omit<SavingsGoalRow, "created_at" | "updated_at">;
 export type UpcomingBillInsert = Omit<UpcomingBillRow, "created_at">;
 
+export interface StockHoldingRow {
+  id: string;
+  user_id: string;
+  symbol: string;
+  company_name: string;
+  shares_count: number;
+  avg_buy_price: number;
+  current_price?: number;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type StockHoldingInsert = Omit<StockHoldingRow, "created_at" | "updated_at">;
+
 // ── Database type (for Supabase generic) ──────────────────────────────────
 export type Database = {
   public: {
@@ -134,6 +149,11 @@ export type Database = {
         Row: UpcomingBillRow;
         Insert: UpcomingBillInsert;
         Update: Partial<UpcomingBillInsert>;
+      };
+      stock_holdings: {
+        Row: StockHoldingRow;
+        Insert: StockHoldingInsert;
+        Update: Partial<StockHoldingInsert>;
       };
     };
     Views: Record<string, never>;
