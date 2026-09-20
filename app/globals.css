@@ -160,11 +160,7 @@ nav,
 }
 
 .pb-safe-nav {
-  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
-}
-
-.bottom-safe-nav {
-  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
 }
 
 .glass-card {
