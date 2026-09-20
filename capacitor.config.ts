@@ -30,7 +30,7 @@ const config: CapacitorConfig = {
   },
   server: {
     // Ganti URL ini dengan domain live deployment Next.js Anda (misal Vercel) jika menggunakan mode Live URL
-    url: "https://moneyv1.vercel.app/",
+    url: "https://moneyv1.vercel.app",
     cleartext: false,
   },
   plugins: {
