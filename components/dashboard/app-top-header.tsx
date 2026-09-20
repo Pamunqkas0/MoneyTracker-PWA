@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { Menu, User, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { triggerHaptic } from "@/lib/haptics";
 
 export interface AppTopHeaderProps {
   name?: string;
@@ -34,7 +33,6 @@ export function AppTopHeader({
       {/* ── Sisi Kiri (Menu / Back Button) ── */}
       <Link
         href={leftHref}
-        onClick={() => triggerHaptic("light")}
         className="w-11 h-11 rounded-2xl bg-white dark:bg-[#1C1E23] border border-black/[0.06] dark:border-white/[0.06] shadow-xs flex items-center justify-center text-stone-800 dark:text-slate-200 hover:bg-stone-50 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer shrink-0"
         aria-label={leftAriaLabel}
       >
@@ -54,7 +52,6 @@ export function AppTopHeader({
       {/* ── Sisi Kanan (User Profile Button) ── */}
       <Link
         href={rightHref}
-        onClick={() => triggerHaptic("light")}
         className="w-11 h-11 rounded-2xl bg-white dark:bg-[#1C1E23] border border-black/[0.06] dark:border-white/[0.06] shadow-xs flex items-center justify-center text-stone-700 dark:text-slate-200 hover:bg-stone-50 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer shrink-0"
         aria-label={rightAriaLabel}
       >
