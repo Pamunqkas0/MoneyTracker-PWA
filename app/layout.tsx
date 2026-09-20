@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Bricolage_Grotesque } from "next/font/google";
 import { SwRegister } from "@/components/pwa/sw-register";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import "./globals.css";
 
-const geist = Geist({
-  variable: "--font-geist-sans",
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -42,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${geist.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="id" className={`${bricolage.variable} font-sans h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <AppLockProvider>

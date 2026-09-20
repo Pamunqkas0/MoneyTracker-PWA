@@ -458,7 +458,7 @@ export function LeftColumnBento({
               <div className="flex flex-col text-left leading-tight">
                 <span
                   className={cn(
-                    "text-[10px] font-bold tracking-tight",
+                    "text-[11px] font-bold tracking-tight",
                     isActive ? "text-stone-300 dark:text-slate-600" : "text-stone-500 dark:text-slate-400"
                   )}
                 >
@@ -466,7 +466,7 @@ export function LeftColumnBento({
                 </span>
                 <span
                   className={cn(
-                    "text-xs font-black tabular-nums",
+                    "text-sm font-black tabular-nums tracking-tight",
                     isActive ? "text-white dark:text-slate-950" : "text-stone-900 dark:text-slate-100"
                   )}
                 >
@@ -522,8 +522,8 @@ export function LeftColumnBento({
           </div>
 
           {/* Nominal Saldo: Besar dan Tebal */}
-          <div className="relative z-10 my-3">
-            <span className="text-2xl sm:text-3xl font-black tracking-tight tabular-nums block">
+          <div className="relative z-10 my-3.5 sm:my-4">
+            <span className="text-3xl sm:text-4xl font-black tracking-tight tabular-nums block leading-tight">
               {activeAccount.currencySymbol === "Rp"
                 ? formatCurrency(activeAccount.rawBalance)
                 : `${activeAccount.currencySymbol}${activeAccount.balanceDisplay}`}
@@ -532,8 +532,8 @@ export function LeftColumnBento({
 
           {/* Baris Bawah: Masked Account Number & Expiry Badge */}
           <div className="relative z-10 flex items-center justify-between gap-2 pt-1">
-            <div className={cn("flex items-center gap-1 text-xs font-mono font-bold", cardTheme.subTextColor)}>
-              <span className="text-base leading-none">•</span>
+            <div className={cn("flex items-center gap-1.5 text-xs sm:text-sm font-mono font-bold", cardTheme.subTextColor)}>
+              <span className="text-lg leading-none">•</span>
               <span>{activeAccount.accountNumber}</span>
             </div>
             <span className={cn("px-3 py-1 rounded-full text-[11px] font-bold font-mono tracking-wider border shadow-2xs", cardTheme.badgeBg)}>
@@ -606,11 +606,11 @@ export function LeftColumnBento({
         {/* Kartu Hijau Pastel (bg-[#D8F5A2] Full Width) */}
         <div
           onClick={() => setDialogOpen(true)}
-          className="w-full rounded-3xl bg-[#D8F5A2] text-[#18181B] p-5 relative overflow-hidden flex flex-col justify-between min-h-[140px] shadow-xs hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-pointer border border-black/[0.03]"
+          className="w-full rounded-3xl bg-[#D8F5A2] text-[#18181B] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between min-h-[145px] shadow-xs hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-pointer border border-black/[0.03]"
         >
           {/* Pojok Atas: Badge Total Kiri vs Tombol Bulat Panah Kanan */}
           <div className="flex items-center justify-between relative z-10">
-            <span className="px-2.5 py-1 rounded-full bg-white/80 text-[10px] font-bold text-stone-800 tracking-tight shadow-2xs">
+            <span className="px-3 py-1 rounded-full bg-white/85 text-[11px] font-bold text-stone-900 tracking-tight shadow-2xs">
               {bankAccounts && bankAccounts.length > 0
                 ? `${bankAccounts.length} Rekening Aktif`
                 : "Total Saldo"}
@@ -621,12 +621,12 @@ export function LeftColumnBento({
           </div>
 
           {/* Pojok Bawah: Saldo Tebal + % Pertumbuhan di Kiri vs Logo Rekening di Kanan */}
-          <div className="flex items-end justify-between relative z-10 mt-3">
+          <div className="flex items-end justify-between relative z-10 mt-3.5">
             <div>
-              <div className="text-xl font-black text-[#18181B] tracking-tight tabular-nums">
+              <div className="text-2xl sm:text-3xl font-black text-[#18181B] tracking-tight tabular-nums leading-tight">
                 {formatCurrency(totalBalance)}
               </div>
-              <p className="text-[11px] font-bold text-stone-700 mt-0.5">
+              <p className="text-xs font-bold text-stone-700 mt-1">
                 {summary?.balanceGrowth !== undefined && summary.balanceGrowth !== 0
                   ? `Pertumbuhan ${summary.balanceGrowth > 0 ? "+" : ""}${summary.balanceGrowth.toFixed(1)}%`
                   : "Total Saldo Bersih"}

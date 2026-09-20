@@ -12,6 +12,7 @@ import type {
   BudgetItemRow,
   SavingsGoalRow,
   UpcomingBillRow,
+  StockHoldingRow,
 } from "@/lib/supabase/types";
 import type { MonthlyData, CategoryExpense, Insight, FinancialSummary } from "@/lib/types";
 import type { AvailableTransactionCategories } from "@/lib/supabase/queries";
@@ -27,6 +28,7 @@ export interface DashboardClientProps {
   budgetItems: BudgetItemRow[];
   savingsGoals: SavingsGoalRow[];
   upcomingBills: UpcomingBillRow[];
+  stockHoldings?: StockHoldingRow[];
   currentMonth: number;
   currentYear: number;
   recentNotifications: TransactionRow[];
@@ -68,6 +70,7 @@ export function DashboardClient({
   budgetItems,
   savingsGoals,
   upcomingBills,
+  stockHoldings = [],
   currentMonth,
   currentYear,
   recentNotifications,
@@ -147,6 +150,7 @@ export function DashboardClient({
               summary={summary}
               monthlyData={monthlyData}
               budgetItems={budgetItems}
+              stockHoldings={stockHoldings}
             />
           </motion.div>
         </motion.main>

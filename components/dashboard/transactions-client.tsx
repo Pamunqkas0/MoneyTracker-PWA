@@ -464,8 +464,13 @@ export function TransactionsClient({
   const hasActiveFilters = search || typeFilter !== "all" || categoryFilter !== "all" || bankFilter !== "all" || sortBy !== "date_desc";
 
   return (
-    <div className="min-h-screen bg-[#F7F4EE] dark:bg-[#121316] text-[#18181B] dark:text-[#F1F5F9] px-3.5 py-4 sm:px-6 sm:py-6 md:px-8 flex justify-center items-start selection:bg-[#E85024]/20">
-      <div className="w-full max-w-lg sm:max-w-xl md:max-w-2xl flex flex-col gap-4 sm:gap-5 pb-24">
+    <div className="min-h-screen bg-[#F7F4EE] dark:bg-[#0b0f1a] text-[#18181B] dark:text-[#f1f5f9] px-3 pb-3 pt-0 sm:p-5 md:p-6 lg:p-8 flex justify-center items-start selection:bg-brand-orange/20">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="w-full max-w-xl md:max-w-2xl lg:max-w-3xl rounded-[32px] sm:rounded-[36px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-black/[0.04] dark:border-slate-800 p-5 sm:p-7 md:p-8 shadow-xs flex flex-col gap-6"
+      >
         
         {/* ══════════════════════════════════════════════════════════
             1. APP TOP HEADER (CONSISTENT REUSABLE COMPONENT)
@@ -473,37 +478,86 @@ export function TransactionsClient({
         <AppTopHeader />
 
         {/* ══════════════════════════════════════════════════════════
-            2. PAGE TITLE & CONTROLS (REAL DATA)
+            2. PAGE TITLE & CLEAN UNIFIED TIME CONTROLS
            ══════════════════════════════════════════════════════════ */}
-        <header className="flex flex-col gap-2.5 pt-0.5">
-          {/* Row 1: Title & Export Pill */}
-          <div className="flex items-center justify-between">
+        <header className="flex flex-col gap-3 pt-0.5">
+          {/* Row 1: Title & Live Status + Export Pill */}
+          <div className="flex items-center justify-between gap-2">
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-[#18181B] dark:text-white tracking-tight leading-none">
-                Arus Kas & Transaksi
-              </h1>
-              <p className="text-[11px] sm:text-xs text-stone-500 dark:text-slate-400 font-medium mt-1">
-                {hasLiveTransactions ? `${filteredAndSorted.length} transaksi terekam` : "Belum ada transaksi bulan ini"}
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-black text-[#18181B] dark:text-white tracking-tight leading-tight">
+                  Arus Kas & Transaksi
+                </h1>
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="hidden xs:inline">Realtime</span>
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-stone-500 dark:text-slate-400 font-medium mt-0.5">
+                {hasLiveTransactions ? `${filteredAndSorted.length} transaksi terekam` : "Belum ada transaksi"}
               </p>
             </div>
 
-            {/* Export CSV Button */}
+            {/* Export CSV Pill */}
             <button
               type="button"
               onClick={handleExportCSV}
               disabled={!hasLiveTransactions}
-              className="rounded-full bg-white dark:bg-[#1C1E23] border border-black/[0.04] dark:border-white/[0.06] px-3.5 py-1.5 text-xs font-bold text-stone-700 dark:text-stone-200 flex items-center gap-1.5 shadow-2xs hover:bg-stone-50 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer shrink-0 disabled:opacity-50"
+              className="rounded-full bg-surface-muted/80 dark:bg-slate-800/80 border border-black/[0.04] dark:border-slate-700/60 px-3 py-1.5 text-xs font-bold text-stone-700 dark:text-stone-200 flex items-center gap-1.5 shadow-2xs hover:bg-surface-muted dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer shrink-0 disabled:opacity-40"
               title="Export CSV"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#E85024]" />
-              <span>{filteredAndSorted.length} Data</span>
-              <Download className="w-3.5 h-3.5 text-stone-400 dark:text-slate-400 ml-0.5" />
+              <Download className="w-3.5 h-3.5 text-[#E85024]" />
+              <span className="hidden sm:inline">Export</span>
+              <span>{filteredAndSorted.length}</span>
             </button>
           </div>
 
-          {/* Row 2: Period & Status Sinkron */}
-          <div className="flex items-center justify-between gap-2 pt-0.5">
-            <div className="relative">
+          {/* Row 2: Unified Period & Timeframe Selector Toolbar */}
+          <div className="flex items-center justify-between gap-2 bg-surface-muted/50 dark:bg-slate-800/50 p-1 rounded-2xl border border-black/[0.03] dark:border-slate-700/50">
+            {/* Quick Period Tabs */}
+            <div className="flex items-center gap-1">
+              {[
+                {
+                  id: "current_month",
+                  label: "Bulan Ini",
+                  onClick: () => {
+                    const now = new Date();
+                    handlePeriodChange(now.getMonth(), now.getFullYear());
+                  },
+                  active: currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear(),
+                },
+                {
+                  id: "last_month",
+                  label: "Bulan Lalu",
+                  onClick: () => {
+                    const now = new Date();
+                    const lastM = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+                    const lastY = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+                    handlePeriodChange(lastM, lastY);
+                  },
+                  active:
+                    currentMonth === (new Date().getMonth() === 0 ? 11 : new Date().getMonth() - 1) &&
+                    currentYear === (new Date().getMonth() === 0 ? new Date().getFullYear() - 1 : new Date().getFullYear()),
+                },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={tab.onClick}
+                  className={cn(
+                    "px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap text-xs",
+                    tab.active
+                      ? "bg-[#1A1A1A] text-white dark:bg-white dark:text-stone-900 shadow-xs"
+                      : "text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white"
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Month/Year Dropdown Picker */}
+            <div className="relative shrink-0">
               <Select
                 value={`${currentMonth}-${currentYear}`}
                 onValueChange={(val) => {
@@ -511,10 +565,11 @@ export function TransactionsClient({
                   handlePeriodChange(m, y);
                 }}
               >
-                <SelectTrigger className="rounded-full bg-white dark:bg-[#1C1E23] border border-black/[0.04] dark:border-white/[0.06] px-3.5 py-2 h-9 text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5 shadow-2xs hover:bg-stone-50 dark:hover:bg-slate-800 cursor-pointer">
-                  <Calendar className="w-3.5 h-3.5 text-stone-400 dark:text-slate-400 shrink-0" />
-                  <span>{MONTHS[currentMonth]?.label || "September"} {currentYear}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-stone-400 ml-0.5 shrink-0" />
+                <SelectTrigger className="h-8 rounded-xl bg-white dark:bg-slate-800 border-black/[0.04] dark:border-slate-700 px-2.5 text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                  <Calendar className="w-3.5 h-3.5 text-[#E85024] shrink-0" />
+                  <span className="truncate">
+                    {MONTHS[currentMonth]?.label?.slice(0, 3)} {currentYear}
+                  </span>
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-stone-200 dark:border-slate-800 dark:bg-slate-900 shadow-xl max-h-[260px]">
                   {YEARS.map((y) =>
@@ -527,71 +582,18 @@ export function TransactionsClient({
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="bg-[#ECFDC5] dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-2xs shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Sinkron Realtime</span>
-            </div>
-          </div>
-
-          {/* Row 3: Quick Time Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5 -mx-1 px-1">
-            {[
-              {
-                id: "current_month",
-                label: "Bulan Ini",
-                onClick: () => {
-                  const now = new Date();
-                  handlePeriodChange(now.getMonth(), now.getFullYear());
-                },
-                active: currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear(),
-              },
-              {
-                id: "last_month",
-                label: "Bulan Lalu",
-                onClick: () => {
-                  const now = new Date();
-                  const lastM = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
-                  const lastY = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
-                  handlePeriodChange(lastM, lastY);
-                },
-                active:
-                  currentMonth === (new Date().getMonth() === 0 ? 11 : new Date().getMonth() - 1) &&
-                  currentYear === (new Date().getMonth() === 0 ? new Date().getFullYear() - 1 : new Date().getFullYear()),
-              },
-              {
-                id: "year_filter",
-                label: `Tahun ${currentYear}`,
-                onClick: () => {},
-                active: false,
-              },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={tab.onClick}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer shrink-0",
-                  tab.active
-                    ? "bg-[#1A1A1A] text-white dark:bg-white dark:text-stone-900 shadow-xs"
-                    : "bg-white dark:bg-[#1C1E23] text-stone-600 dark:text-slate-300 border border-black/[0.04] dark:border-white/[0.06] hover:bg-stone-50 dark:hover:bg-slate-800"
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
           </div>
         </header>
 
         {/* ══════════════════════════════════════════════════════════
             3. HERO BENTO: SALDO KAS BERSIH (REAL METRICS)
            ══════════════════════════════════════════════════════════ */}
-        <section className="bg-white dark:bg-[#1C1E23] rounded-[32px] p-5 sm:p-6 border border-black/[0.03] dark:border-white/[0.06] shadow-xs flex flex-col gap-4 transition-all">
+        <section className="bg-surface-muted/30 dark:bg-slate-800/40 rounded-3xl p-5 sm:p-6 border border-stone-200/60 dark:border-slate-700/60 shadow-xs flex flex-col gap-4 transition-all">
           {/* Top Row: Label vs Savings Rate Badge */}
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[11px] font-extrabold uppercase tracking-wider text-stone-400 dark:text-slate-400 truncate">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-stone-400 dark:text-slate-400">
               Saldo Kas Bersih
-            </p>
+            </span>
             <div
               className={cn(
                 "font-extrabold text-xs px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs shrink-0 whitespace-nowrap",
@@ -613,7 +615,7 @@ export function TransactionsClient({
 
           {/* Nominal Utama */}
           <div className="my-0.5">
-            <h2 className="text-3xl sm:text-4xl font-black text-[#18181B] dark:text-white tracking-tight tabular-nums">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#18181B] dark:text-white tracking-tight tabular-nums">
               {stats.net >= 0 ? "+" : ""}{formatCurrency(stats.net, false)}
             </h2>
           </div>
@@ -676,7 +678,7 @@ export function TransactionsClient({
         {/* ══════════════════════════════════════════════════════════
             4. BENTO CARD: ARUS KAS KUMULATIF (REAL DATA SPARKLINE)
            ══════════════════════════════════════════════════════════ */}
-        <section className="bg-white dark:bg-[#1C1E23] rounded-[32px] p-5 sm:p-6 border border-black/[0.03] dark:border-white/[0.06] shadow-xs flex flex-col gap-3 transition-all relative overflow-hidden">
+        <section className="bg-surface-muted/30 dark:bg-slate-800/40 rounded-3xl p-5 sm:p-6 border border-stone-200/60 dark:border-slate-700/60 shadow-xs flex flex-col gap-3 transition-all relative overflow-hidden">
           {/* Header Bar */}
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
@@ -694,7 +696,7 @@ export function TransactionsClient({
             </div>
 
             {/* Switcher Pill: Net | Volume */}
-            <div className="bg-stone-100 dark:bg-[#252830] p-1 rounded-full text-xs font-bold flex items-center gap-1 border border-black/[0.03] dark:border-white/[0.05] shrink-0">
+            <div className="bg-surface-muted/80 dark:bg-slate-800/80 p-1 rounded-full text-xs font-bold flex items-center gap-1 border border-stone-200/60 dark:border-slate-700/60 shrink-0">
               <button
                 type="button"
                 onClick={() => setChartMode("net")}
@@ -815,7 +817,7 @@ export function TransactionsClient({
         {/* ══════════════════════════════════════════════════════════
             5. BENTO CARD: LAJU BAKAR HARIAN (REAL BURN RATE & CATEGORY SPLIT)
            ══════════════════════════════════════════════════════════ */}
-        <section className="bg-white dark:bg-[#1C1E23] rounded-[32px] p-5 sm:p-6 border border-black/[0.03] dark:border-white/[0.06] shadow-xs flex flex-col gap-3.5 transition-all">
+        <section className="bg-surface-muted/30 dark:bg-slate-800/40 rounded-3xl p-5 sm:p-6 border border-stone-200/60 dark:border-slate-700/60 shadow-xs flex flex-col gap-3.5 transition-all">
           {/* Header */}
           <div className="flex items-center justify-between">
             <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-stone-400 dark:text-slate-400">
@@ -900,7 +902,7 @@ export function TransactionsClient({
                 placeholder="Cari transaksi atau kategori..."
                 value={search}
                 onChange={(e) => handleFilterChange(setSearch, e.target.value)}
-                className="w-full h-11 pl-11 pr-4 rounded-full bg-white dark:bg-[#1C1E23] border border-black/[0.04] dark:border-white/[0.06] text-xs sm:text-sm font-medium text-[#18181B] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-500 shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#E85024]/40 transition-all"
+                className="w-full h-11 pl-11 pr-4 rounded-full bg-surface-muted/60 dark:bg-slate-800/80 border border-stone-200/60 dark:border-slate-700/60 text-xs sm:text-sm font-medium text-[#18181B] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-500 shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#E85024]/40 transition-all"
               />
             </div>
 
@@ -909,7 +911,7 @@ export function TransactionsClient({
               type="button"
               onClick={() => setIsFilterDrawerOpen(true)}
               className={cn(
-                "h-11 px-3.5 sm:px-4 rounded-full bg-white dark:bg-[#1C1E23] border border-black/[0.04] dark:border-white/[0.06] shadow-2xs flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-stone-200 hover:bg-stone-50 active:scale-95 transition-all cursor-pointer shrink-0",
+                "h-11 px-3.5 sm:px-4 rounded-full bg-surface-muted/60 dark:bg-slate-800/80 border border-stone-200/60 dark:border-slate-700/60 shadow-2xs flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-stone-200 hover:bg-surface-muted dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer shrink-0",
                 hasActiveFilters && "border-[#E85024] bg-orange-50/60 dark:bg-orange-950/30 text-[#E85024]"
               )}
               title="Filter Lanjutan"
@@ -942,7 +944,7 @@ export function TransactionsClient({
                     "px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer shrink-0",
                     isActive
                       ? "bg-[#1A1A1A] text-white dark:bg-white dark:text-stone-900 shadow-xs"
-                      : "bg-white dark:bg-[#1C1E23] text-stone-600 dark:text-slate-300 border border-black/[0.04] dark:border-white/[0.06] hover:bg-stone-50"
+                      : "bg-surface-muted/60 dark:bg-slate-800/80 text-stone-600 dark:text-slate-300 border border-stone-200/60 dark:border-slate-700/60 hover:bg-surface-muted dark:hover:bg-slate-800"
                   )}
                 >
                   {t.label}
@@ -961,10 +963,10 @@ export function TransactionsClient({
                   type="button"
                   onClick={() => handleFilterChange(setCategoryFilter, isSelected ? "all" : cat.slug)}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer shrink-0 border border-black/[0.04] dark:border-white/[0.06]",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer shrink-0 border border-stone-200/60 dark:border-slate-700/60",
                     isSelected
                       ? "bg-[#1A1A1A] text-white dark:bg-white dark:text-stone-900 shadow-xs ring-2 ring-[#E85024]"
-                      : "bg-white dark:bg-[#1C1E23] text-stone-600 dark:text-slate-300 hover:bg-stone-50"
+                      : "bg-surface-muted/60 dark:bg-slate-800/80 text-stone-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800"
                   )}
                 >
                   <span className="w-4 h-4 rounded-full flex items-center justify-center text-[11px]">
@@ -982,7 +984,7 @@ export function TransactionsClient({
            ══════════════════════════════════════════════════════════ */}
         <section className="flex flex-col gap-3.5 pt-1">
           {groupedDisplayTransactions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-14 px-4 gap-3 bg-white dark:bg-[#1C1E23] border border-black/[0.03] dark:border-white/[0.06] rounded-[32px] text-center shadow-xs">
+            <div className="flex flex-col items-center justify-center py-14 px-4 gap-3 bg-surface-muted/30 dark:bg-slate-800/40 border border-stone-200/60 dark:border-slate-700/60 rounded-3xl text-center shadow-xs">
               <div className="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-950/40 text-[#E85024] flex items-center justify-center shadow-2xs">
                 <FilterX className="w-6 h-6" />
               </div>
@@ -1036,7 +1038,7 @@ export function TransactionsClient({
                 </div>
 
                 {/* Items Container Card */}
-                <div className="bg-white dark:bg-[#1C1E23] rounded-[28px] sm:rounded-[32px] p-2 border border-black/[0.03] dark:border-white/[0.06] shadow-xs divide-y divide-black/[0.03] dark:divide-white/[0.04]">
+                <div className="bg-surface-muted/30 dark:bg-slate-800/40 rounded-[28px] sm:rounded-3xl p-2 border border-stone-200/60 dark:border-slate-700/60 shadow-xs divide-y divide-black/[0.04] dark:divide-white/[0.05]">
                   {group.items.map((item) => {
                     const isIncome = item.type === "income";
                     const isTransfer = item.type === "transfer";
@@ -1052,8 +1054,8 @@ export function TransactionsClient({
                         key={item.id}
                         onClick={() => setEditingTransaction(item)}
                         className={cn(
-                          "p-3 sm:p-3.5 flex items-center justify-between gap-3 rounded-2xl hover:bg-stone-50/80 dark:hover:bg-slate-800/50 transition-all cursor-pointer select-none active:scale-[0.99]",
-                          selectedIds.has(item.id) && "bg-orange-50/50 dark:bg-orange-950/20 ring-1 ring-[#E85024]"
+                          "p-3 sm:p-3.5 flex items-center justify-between gap-3 rounded-2xl hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all cursor-pointer select-none active:scale-[0.99]",
+                          selectedIds.has(item.id) && "bg-orange-50/70 dark:bg-orange-950/30 ring-1 ring-[#E85024]"
                         )}
                       >
                         {/* Left: Checkbox + Category Animated Emoji Squircle + Info */}
@@ -1151,7 +1153,7 @@ export function TransactionsClient({
           </section>
         )}
 
-      </div>
+      </motion.div>
 
       {/* ── BULK ACTION BAR ── */}
       <AnimatePresence>
