@@ -96,10 +96,10 @@ export function RightColumnBento({
             <h2 className="text-sm sm:text-base md:text-lg font-bold text-[#18181B] dark:text-slate-100 tracking-tight">
               Saham & Pasar (IDX)
             </h2>
-            <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            {/* <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live
-            </span>
+            </span> */}
           </div>
 
           {/* Tab Switcher (Portofolio vs Pantauan Pasar) */}
@@ -114,7 +114,7 @@ export function RightColumnBento({
                   : "text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white"
               )}
             >
-              Portofolio ({stockHoldings.length})
+              Porto ({stockHoldings.length})
             </button>
             <button
               type="button"

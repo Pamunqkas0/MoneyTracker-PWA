@@ -17,7 +17,7 @@ export function DashboardShell({ children, bankAccounts, availableCategories }: 
 
   return (
     <>
-      <div className="pb-24 lg:pb-0">{children}</div>
+      <div className="pb-safe-nav lg:pb-0">{children}</div>
       <BottomNav onAddClick={() => setDialogOpen(true)} />
       <TransactionDialog
         open={dialogOpen}
