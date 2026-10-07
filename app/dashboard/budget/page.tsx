@@ -1,5 +1,6 @@
 import { getAvailableTransactionCategories, getBudgetItems, getSavingsGoals } from "@/lib/supabase/queries";
 import { BudgetClient } from "@/components/dashboard/budget-client";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
   title: "Savings & Anggaran | MoneyTracker",
@@ -13,6 +14,13 @@ interface BudgetPageProps {
 }
 
 export default async function BudgetPage({ searchParams }: BudgetPageProps) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const username = user?.email?.split("@")[0] || "Pengguna";
+  const name = String(user?.user_metadata?.full_name ?? "").trim() || username;
+
   // Ambil parameter bulan dan tahun dari URL (jika tidak ada, gunakan bulan & tahun saat ini)
   const params = await searchParams;
   const currentDate = new Date();
@@ -29,6 +37,8 @@ export default async function BudgetPage({ searchParams }: BudgetPageProps) {
 
   return (
     <BudgetClient
+      name={name}
+      username={username}
       initialBudgets={budgetItems}
       availableCategories={availableCategories}
       savingsGoals={savingsGoals}
@@ -37,4 +47,3 @@ export default async function BudgetPage({ searchParams }: BudgetPageProps) {
     />
   );
 }
-

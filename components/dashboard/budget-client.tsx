@@ -67,6 +67,8 @@ const MONTHS = [
 const YEARS = [2024, 2025, 2026, 2027];
 
 interface BudgetClientProps {
+  name: string;
+  username: string;
   initialBudgets: BudgetItemRow[];
   availableCategories: AvailableTransactionCategories;
   savingsGoals?: SavingsGoalRow[];
@@ -83,6 +85,8 @@ const GOAL_CARD_THEMES = [
 ];
 
 export function BudgetClient({
+  name,
+  username,
   initialBudgets,
   availableCategories,
   savingsGoals: initialSavingsGoals = [],
@@ -95,6 +99,7 @@ export function BudgetClient({
   const [budgets, setBudgets] = useState<BudgetItemRow[]>(initialBudgets);
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoalRow[]>(initialSavingsGoals);
   const [selectedTimeframe, setSelectedTimeframe] = useState<"Semua" | "Aktif" | "Tercapai">("Semua");
+  const [activeMobileSection, setActiveMobileSection] = useState<"goals" | "budgets">("goals");
   const [activeGoalId, setActiveGoalId] = useState<string>("");
   const [topUpSuccessMsg, setTopUpSuccessMsg] = useState<string | null>(null);
   const [isTopUpLoading, setIsTopUpLoading] = useState(false);
@@ -278,27 +283,30 @@ export function BudgetClient({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="w-full max-w-xl md:max-w-2xl lg:max-w-3xl rounded-[32px] sm:rounded-[36px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-black/[0.04] dark:border-slate-800 p-5 sm:p-7 md:p-8 shadow-xs flex flex-col gap-6"
+        className="w-full max-w-6xl rounded-[32px] sm:rounded-[36px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-black/[0.04] dark:border-slate-800 p-5 sm:p-7 md:p-8 shadow-xs flex flex-col gap-6"
       >
         {/* ── 1. TOP HEADER (Navigation & Profile) ── */}
-        <AppTopHeader />
+        <AppTopHeader name={name} username={username} />
 
-        {/* ── 2. SAVINGS & GOALS HERO SECTION (Rupiah Real) ── */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between">
+        {/* ── 2. SAVINGS HERO + PROGRESS ── */}
+        <div className="relative isolate overflow-hidden rounded-[30px] sm:rounded-[36px] border border-orange-200/60 dark:border-slate-700 bg-gradient-to-br from-[#FFF0C2] via-[#FFE0D1] to-[#FFF9EF] dark:from-slate-800 dark:via-slate-800 dark:to-[#202b3c] p-5 sm:p-7 md:p-8 shadow-lg shadow-orange-900/5">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full bg-white/50 blur-3xl dark:bg-brand-orange/10" />
+          <PiggyBank aria-hidden="true" className="pointer-events-none absolute -right-4 top-2 h-28 w-28 rotate-12 text-[#E85024]/10 sm:right-4 sm:top-4 sm:h-40 sm:w-40 dark:text-white/5" />
+          <div className="relative z-10 flex flex-col gap-1">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-xl sm:text-2xl font-black text-[#18181B] dark:text-slate-100 tracking-tight">
               Tabungan
             </h2>
 
             {/* Timeframe / Filter Selector Pill */}
-            <div className="flex items-center bg-surface-muted/80 dark:bg-slate-800/80 p-1 rounded-full border border-black/[0.03] dark:border-slate-700/60 text-xs font-medium">
+            <div className="flex w-full items-center bg-surface-muted/80 dark:bg-slate-800/80 p-1 rounded-full border border-black/[0.03] dark:border-slate-700/60 text-xs font-medium sm:w-auto">
               {(["Semua", "Aktif", "Tercapai"] as const).map((tab) => (
                 <button
                   key={tab}
                   type="button"
                   onClick={() => setSelectedTimeframe(tab)}
                   className={cn(
-                    "px-3 py-1 rounded-full transition-all cursor-pointer font-bold text-[11px] sm:text-xs",
+                    "flex-1 px-3 py-1.5 rounded-full transition-all cursor-pointer font-bold text-[11px] sm:flex-none sm:py-1 sm:text-xs",
                     selectedTimeframe === tab
                       ? "bg-[#E85024] text-white shadow-xs"
                       : "text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white"
@@ -331,7 +339,7 @@ export function BudgetClient({
         </div>
 
         {/* ── 3. GOAL SQUIRCLE CHIPS & SPECTRUM PROGRESS BAR ── */}
-        <div className="flex flex-col gap-3 pt-1">
+        <div className="relative z-10 mt-4 flex flex-col gap-3 border-t border-orange-900/10 pt-4 dark:border-white/10">
           {/* Goal Avatars Selector Row */}
           {savingsGoals.length > 0 && (
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1">
@@ -460,6 +468,7 @@ export function BudgetClient({
             </div>
           </div>
         </div>
+        </div>
 
         {/* ── 4. QUICK TOP-UP WIDGET (Rupiah Functional) ── */}
         {activeGoal && (
@@ -505,7 +514,7 @@ export function BudgetClient({
                   <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-200 flex items-center justify-center shadow-xs border border-amber-300 group-hover:rotate-12 transition-transform">
                     <span className="text-xs font-black text-amber-900 leading-none">🪙</span>
                   </div>
-                  <span className="text-xs font-bold text-stone-800 dark:text-slate-200 tabular-nums">
+                  <span className="whitespace-nowrap text-[10px] font-bold text-stone-800 dark:text-slate-200 tabular-nums sm:text-xs">
                     {chip.label}
                   </span>
                 </button>
@@ -514,8 +523,49 @@ export function BudgetClient({
           </div>
         )}
 
+        {/* ── 5. GOALS + BUDGET GRID ── */}
+        <div className="grid grid-cols-2 gap-1 rounded-2xl border border-black/[0.04] bg-surface-muted/70 p-1 dark:border-slate-700 dark:bg-slate-800/70 lg:hidden" role="tablist" aria-label="Bagian tabungan dan anggaran">
+          <button
+            type="button"
+            role="tab"
+            id="mobile-goals-tab"
+            aria-selected={activeMobileSection === "goals"}
+            aria-controls="mobile-goals-panel"
+            onClick={() => setActiveMobileSection("goals")}
+            className={cn(
+              "rounded-xl px-3 py-2 text-xs font-bold transition-all",
+              activeMobileSection === "goals"
+                ? "bg-white text-[#18181B] shadow-sm dark:bg-slate-700 dark:text-white"
+                : "text-stone-500 dark:text-slate-400"
+            )}
+          >
+            Target impian
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="mobile-budgets-tab"
+            aria-selected={activeMobileSection === "budgets"}
+            aria-controls="mobile-budgets-panel"
+            onClick={() => setActiveMobileSection("budgets")}
+            className={cn(
+              "rounded-xl px-3 py-2 text-xs font-bold transition-all",
+              activeMobileSection === "budgets"
+                ? "bg-white text-[#18181B] shadow-sm dark:bg-slate-700 dark:text-white"
+                : "text-stone-500 dark:text-slate-400"
+            )}
+          >
+            Anggaran
+          </button>
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
         {/* ── 5. DAFTAR TARGET TABUNGAN ── */}
-        <div className="flex flex-col gap-2.5 pt-1">
+        <div
+          id="mobile-goals-panel"
+          role="tabpanel"
+          aria-labelledby="mobile-goals-tab"
+          className={cn("min-w-0 flex flex-col gap-2.5 pt-1", activeMobileSection === "goals" ? "flex" : "hidden lg:flex")}
+        >
           <div className="flex items-center justify-between">
             <h3 className="text-sm sm:text-base font-bold text-[#18181B] dark:text-slate-100 tracking-tight">
               Target Impian
@@ -531,7 +581,7 @@ export function BudgetClient({
           </div>
 
           {/* Goal Cards Grid / List */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 pt-0.5">
             {filteredGoals.length === 0 ? (
               <div className="col-span-full flex flex-col items-center justify-center py-7 rounded-3xl bg-surface-muted/30 dark:bg-slate-800/40 border border-stone-200/50 dark:border-slate-700/60 text-center px-4">
                 <PiggyBank className="h-7 w-7 text-stone-300 dark:text-slate-600 mb-1.5" />
@@ -611,7 +661,12 @@ export function BudgetClient({
         </div>
 
         {/* ── 6. BATAS PENGELUARAN BULANAN (Monthly Budget Breakdown) ── */}
-        <div className="flex flex-col gap-3 pt-2 border-t border-stone-100 dark:border-slate-800">
+        <div
+          id="mobile-budgets-panel"
+          role="tabpanel"
+          aria-labelledby="mobile-budgets-tab"
+          className={cn("min-w-0 flex flex-col gap-3 border-t border-stone-100 pt-4 dark:border-slate-800 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-1", activeMobileSection === "budgets" ? "flex" : "hidden lg:flex")}
+        >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div>
               <h3 className="text-sm sm:text-base font-bold text-[#18181B] dark:text-slate-100">
@@ -697,10 +752,10 @@ export function BudgetClient({
                 return (
                   <div
                     key={item.id}
-                    className="p-3.5 sm:p-4 rounded-2xl bg-surface-muted/40 dark:bg-slate-800/60 hover:bg-surface-muted/70 dark:hover:bg-slate-800 transition-colors border border-stone-200/50 dark:border-slate-700/60 flex flex-col gap-3"
+                    className="p-3.5 sm:p-4 rounded-2xl bg-surface-muted/40 dark:bg-slate-800/60 hover:bg-surface-muted/70 dark:hover:bg-slate-800 transition-colors border border-stone-200/50 dark:border-slate-700/60 flex flex-col gap-2.5"
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
                         {/* Category Squircle Icon */}
                         <div
                           className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-2xs border border-black/[0.02] dark:border-white/[0.04]"
@@ -712,32 +767,35 @@ export function BudgetClient({
                         </div>
 
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs sm:text-sm font-bold text-[#18181B] dark:text-slate-100 truncate">
-                              {metaLabel}
+                          <span className="block truncate text-xs font-bold text-[#18181B] dark:text-slate-100 sm:text-sm">
+                            {metaLabel}
+                          </span>
+                          {isOver && (
+                            <span className="mt-0.5 block text-[10px] font-bold text-rose-600 dark:text-rose-300">
+                              Melebihi budget · {pct}%
                             </span>
-                            {isOver && (
-                              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 shrink-0">
-                                Overlimit ({pct}%)
-                              </span>
-                            )}
-                          </div>
+                          )}
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-xs font-black tabular-nums text-stone-900 dark:text-slate-100">
-                          {formatCurrency(item.spent, true)} / {formatCurrency(item.limit, true)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditBudget(item)}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
-                          title="Edit Limit"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditBudget(item)}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-stone-400 transition-colors hover:bg-stone-200/50 hover:text-stone-900 dark:hover:bg-slate-700/50 dark:hover:text-white"
+                        title="Edit budget"
+                        aria-label={`Edit budget ${metaLabel}`}
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="whitespace-nowrap text-[11px] font-bold tabular-nums text-stone-700 dark:text-slate-200 sm:text-xs">
+                        {formatCurrency(item.spent, true)} <span className="font-medium text-stone-400">dari</span> {formatCurrency(item.limit, true)}
+                      </span>
+                      <span className={cn("shrink-0 text-[10px] font-bold tabular-nums", isOver ? "text-rose-600 dark:text-rose-300" : pct >= 80 ? "text-amber-600 dark:text-amber-300" : "text-stone-500 dark:text-slate-400")}>
+                        {pct}%
+                      </span>
                     </div>
 
                     <div className="w-full bg-stone-200/80 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
@@ -754,6 +812,7 @@ export function BudgetClient({
               })
             )}
           </div>
+        </div>
         </div>
       </motion.div>
 
@@ -786,10 +845,10 @@ export function BudgetClient({
                     </div>
                     <div>
                       <h2 className="text-lg sm:text-xl font-bold text-[#18181B] dark:text-slate-100 tracking-tight">
-                        {editingBudget ? "Edit Batas Anggaran" : "Atur Batas Anggaran"}
+                        {editingBudget ? "Edit budget" : "Atur budget"}
                       </h2>
                       <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
-                        Tentukan batas limit pengeluaran bulanan per kategori.
+                        Atur batas pengeluaran tiap kategori.
                       </p>
                     </div>
                   </div>

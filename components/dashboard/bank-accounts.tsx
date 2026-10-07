@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Loader2,
   PencilLine,
+  Trash2,
   X,
   ArrowRight,
 } from "lucide-react";
@@ -34,7 +35,12 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { BANK_PRESETS } from "@/lib/mock-data";
 import { formatCurrency, cn } from "@/lib/utils";
-import { addBankAccount, updateBankAccountBalance } from "@/app/actions";
+import {
+  addBankAccount,
+  updateBankAccount,
+  updateBankAccountBalance,
+  deleteBankAccount,
+} from "@/app/actions";
 import type { BankAccountType, BankPreset } from "@/lib/types";
 import type { BankAccountRow } from "@/lib/supabase/types";
 import { usePrivacy } from "@/hooks/use-privacy";
@@ -130,140 +136,725 @@ function AccountCard({ account, hidden }: { account: BankAccountRow; hidden: boo
   );
 }
 
-function EditBalanceDialog({
+export function findPresetForAccount(account?: BankAccountRow | null): BankPreset {
+  if (!account) return BANK_PRESETS[0];
+
+  const lowerBank = (account.bank_name || "").trim().toLowerCase();
+  const lowerName = (account.name || "").trim().toLowerCase();
+
+  const matchFull = BANK_PRESETS.find(
+    (p) => p.fullName.toLowerCase() === lowerBank || p.name.toLowerCase() === lowerBank
+  );
+  if (matchFull) return matchFull;
+
+  const matchName = BANK_PRESETS.find(
+    (p) => p.name.toLowerCase() === lowerName || p.fullName.toLowerCase() === lowerName
+  );
+  if (matchName) return matchName;
+
+  if (account.logo) {
+    const matchLogo = BANK_PRESETS.find((p) => p.logo === account.logo);
+    if (matchLogo) return matchLogo;
+  }
+
+  const matchType = BANK_PRESETS.find((p) => p.type === account.type);
+  if (matchType) return matchType;
+
+  return BANK_PRESETS[0];
+}
+
+/* ── Edit-account schema ───────────────────────────────── */
+const editSchema = z.object({
+  presetId: z.string().min(1, "Pilih jenis rekening"),
+  nickname: z.string().min(2, "Nama min. 2 karakter").max(30),
+  accountNumber: z.string().max(25).optional(),
+  balance: z.number().min(0, "Saldo tidak boleh negatif"),
+});
+type EditFormValues = z.infer<typeof editSchema>;
+
+/* ── Edit-account dialog ───────────────────────────────── */
+export function EditAccountDialog({
   account,
   open,
   onOpenChange,
+  onSuccess,
+  onDeleted,
 }: {
   account: BankAccountRow | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+  onDeleted?: () => void;
 }) {
   const [rawBalance, setRawBalance] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [activeCategoryTab, setActiveCategoryTab] = useState<"bank" | "ewallet" | "cash">("bank");
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<EditFormValues>({
+    resolver: zodResolver(editSchema),
+    defaultValues: {
+      balance: 0,
+      presetId: "",
+      nickname: "",
+      accountNumber: "",
+    },
+  });
+
+  const selectedPresetId = watch("presetId");
+  const selectedPreset = BANK_PRESETS.find((p) => p.id === selectedPresetId);
 
   useEffect(() => {
     if (!account || !open) {
       setRawBalance("");
       setErrorMsg("");
+      setShowDeleteConfirm(false);
+      setIsSuccess(false);
       setIsLoading(false);
+      setIsDeleting(false);
       return;
     }
 
-    setRawBalance(String(Math.max(0, Math.trunc(Number(account.balance) || 0))));
+    const matchedPreset = findPresetForAccount(account);
+    const balanceNum = Math.max(0, Math.trunc(Number(account.balance) || 0));
+
+    reset({
+      presetId: matchedPreset.id,
+      nickname: account.name || matchedPreset.name,
+      accountNumber: account.account_number || "",
+      balance: balanceNum,
+    });
+    setRawBalance(String(balanceNum));
+    setActiveCategoryTab(matchedPreset.type as "bank" | "ewallet" | "cash");
     setErrorMsg("");
-  }, [account, open]);
+    setShowDeleteConfirm(false);
+  }, [account, open, reset]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleBalanceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    setRawBalance(raw);
+    setValue("balance", Number(raw), { shouldValidate: !!raw });
+  };
 
+  const handleAddQuickAmount = (val: number) => {
+    const current = Number(rawBalance) || 0;
+    const updated = current + val;
+    setRawBalance(String(updated));
+    setValue("balance", updated, { shouldValidate: true });
+  };
+
+  const onSubmit = async (data: EditFormValues) => {
     if (!account) return;
-
-    const balance = Number(rawBalance || "0");
-    if (!Number.isFinite(balance) || balance < 0) {
-      setErrorMsg("Nominal saldo tidak valid.");
-      return;
-    }
 
     setIsLoading(true);
     setErrorMsg("");
 
+    const preset = BANK_PRESETS.find((p) => p.id === data.presetId);
+    if (!preset) {
+      setErrorMsg("Pilih jenis rekening terlebih dahulu");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const result = await updateBankAccountBalance({
+      const result = await updateBankAccount({
         id: account.id,
-        balance,
+        name: data.nickname,
+        bank_name: preset.fullName,
+        type: preset.type as "bank" | "ewallet" | "cash",
+        account_number: data.accountNumber || null,
+        balance: data.balance,
+        color: preset.color,
+        logo: preset.logo,
+        gradient: preset.gradient,
       });
 
       if (!result.success) {
-        setErrorMsg(result.error || "Gagal memperbarui saldo.");
+        setErrorMsg(result.error || "Gagal memperbarui rekening");
         setIsLoading(false);
         return;
       }
 
-      onOpenChange(false);
+      if (typeof window !== "undefined" && window.navigator?.vibrate) {
+        window.navigator.vibrate([30, 50, 30]);
+      }
+
+      setIsLoading(false);
+      setIsSuccess(true);
+      setTimeout(() => {
+        setIsSuccess(false);
+        onOpenChange(false);
+        if (onSuccess) onSuccess();
+      }, 1200);
     } catch {
       setErrorMsg("Terjadi kesalahan jaringan. Coba lagi.");
-    } finally {
       setIsLoading(false);
     }
   };
 
+  const handleDelete = async () => {
+    if (!account) return;
+
+    setIsDeleting(true);
+    setErrorMsg("");
+
+    try {
+      const result = await deleteBankAccount(account.id);
+      if (!result.success) {
+        setErrorMsg(result.error || "Gagal menghapus rekening");
+        setIsDeleting(false);
+        return;
+      }
+
+      if (typeof window !== "undefined" && window.navigator?.vibrate) {
+        window.navigator.vibrate([40, 60]);
+      }
+
+      setIsDeleting(false);
+      onOpenChange(false);
+      if (onDeleted) onDeleted();
+    } catch {
+      setErrorMsg("Terjadi kesalahan jaringan saat menghapus rekening.");
+      setIsDeleting(false);
+    }
+  };
+
+  const handleClose = (v: boolean) => {
+    if (!v) {
+      setErrorMsg("");
+      setShowDeleteConfirm(false);
+      setIsSuccess(false);
+    }
+    onOpenChange(v);
+  };
+
+  const filteredPresets = BANK_PRESETS.filter((p) => p.type === activeCategoryTab);
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent
+        hideClose
+        className="p-0 overflow-hidden flex flex-col max-h-[90svh] sm:max-h-[86vh] h-auto rounded-t-[36px] sm:rounded-[36px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl max-w-lg w-full"
+      >
+        {/* Dynamic Header */}
+        <div className="p-5 sm:p-6 pb-3 shrink-0">
+          <div className="w-12 h-1.5 bg-stone-200 dark:bg-slate-700 rounded-full mx-auto mb-3 sm:hidden" />
+
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shadow-2xs shrink-0 transition-colors bg-[#FAD170]/80 dark:bg-amber-500/20 text-stone-900 dark:text-amber-300">
+                <PencilLine className="h-5 w-5 stroke-[2.2]" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg sm:text-xl font-bold text-[#18181B] dark:text-slate-100 tracking-tight">
+                  {isSuccess ? "Tersimpan" : "Edit Rekening"}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
+                  {isSuccess
+                    ? "Perubahan berhasil disimpan"
+                    : "Ubah data rekening dan saldo"}
+                </DialogDescription>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleClose(false)}
+              className="w-9 h-9 rounded-full bg-stone-100/90 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 active:scale-95 flex items-center justify-center text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 transition-all cursor-pointer shrink-0"
+              aria-label="Tutup"
+            >
+              <X className="h-4 w-4 stroke-[2.5]" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content Body */}
+        <AnimatePresence mode="wait">
+          {isSuccess ? (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex-1 flex flex-col items-center justify-center py-10 px-5 sm:px-7 gap-4 text-center"
+            >
+              <div className="relative flex h-16 w-16 items-center justify-center">
+                <span className="absolute inset-0 rounded-full bg-[#D8F5A2]/60 dark:bg-emerald-500/30 animate-ping" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D8F5A2] dark:bg-emerald-950/60 text-stone-900 dark:text-emerald-300 shadow-sm border border-emerald-500/20">
+                  <CheckCircle2 className="h-8 w-8 text-stone-800 dark:text-emerald-300" />
+                </div>
+              </div>
+              <div className="space-y-1.5 px-2">
+                <p className="text-lg font-bold text-[#18181B] dark:text-slate-100">Rekening Diperbarui</p>
+                <p className="text-xs text-stone-500 dark:text-slate-400 leading-relaxed max-w-xs mx-auto">
+                  Saldo rekening <span className="font-bold text-[#18181B] dark:text-slate-100">{watch("nickname")}</span> kini{" "}
+                  <span className="font-bold text-[#18181B] dark:text-slate-100 tabular-nums">
+                    {formatCurrency(Number(rawBalance) || 0)}
+                  </span>.
+                </p>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.form
+              key="form"
+              onSubmit={handleSubmit(onSubmit)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-col flex-1 min-h-0 overflow-hidden"
+            >
+              {/* Scrollable Form Content */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 sm:px-7 py-2 space-y-4 custom-scrollbar">
+                {errorMsg && (
+                  <div className="p-3 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 min-w-0">
+                      <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                      <p className="text-xs text-red-600 dark:text-red-400 font-medium">{errorMsg}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setErrorMsg("")}
+                      className="text-stone-400 hover:text-stone-600 dark:hover:text-slate-300 p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* 1. Saldo Box (Hero Bento Number Card) */}
+                <div className="bg-[#FAF8F5] dark:bg-slate-800/50 rounded-3xl p-4 sm:p-5 border border-black/[0.04] dark:border-slate-800 shadow-2xs flex flex-col gap-2.5 relative">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-400">
+                      Saldo Rekening
+                    </span>
+                    <span className="bg-white dark:bg-slate-800 px-2.5 py-1 rounded-xl shadow-2xs font-extrabold text-[11px] sm:text-xs text-stone-600 dark:text-slate-300 border border-black/[0.02] dark:border-slate-700">
+                      IDR
+                    </span>
+                  </div>
+
+                  {/* Input Angka Besar */}
+                  <div className="flex items-baseline justify-end gap-2 py-1 min-h-[56px]">
+                    <span className="text-2xl sm:text-3xl font-black text-stone-300 dark:text-slate-600 select-none pb-0.5">
+                      Rp
+                    </span>
+                    <input
+                      id="edit-acc-bal-input"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={rawBalance ? Number(rawBalance).toLocaleString("id-ID") : ""}
+                      onChange={handleBalanceChange}
+                      className={cn(
+                        "w-full text-right font-black text-[#18181B] dark:text-slate-100 tracking-tight bg-transparent border-none outline-none focus:outline-none focus:ring-0 p-0 m-0 tabular-nums placeholder:text-stone-300 dark:placeholder:text-slate-600 cursor-text leading-tight",
+                        rawBalance.length > 10
+                          ? "!text-2xl sm:!text-3xl"
+                          : rawBalance.length > 7
+                            ? "!text-3xl sm:!text-4xl"
+                            : "!text-4xl sm:!text-5xl"
+                      )}
+                    />
+                  </div>
+
+                  {/* Quick Amount Chips */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pt-1 max-w-full">
+                    {[
+                      { label: "+100 rb", val: 100000 },
+                      { label: "+500 rb", val: 500000 },
+                      { label: "+1 jt", val: 1000000 },
+                      { label: "+5 jt", val: 5000000 },
+                      { label: "+10 jt", val: 10000000 },
+                    ].map((chip) => (
+                      <button
+                        key={chip.label}
+                        type="button"
+                        onClick={() => handleAddQuickAmount(chip.val)}
+                        className="bg-white dark:bg-slate-800 hover:bg-[#FAD170]/40 dark:hover:bg-slate-700 text-stone-700 dark:text-slate-300 font-bold text-[11px] px-3 py-1.5 rounded-full border border-black/[0.03] dark:border-slate-700 shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0 select-none"
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRawBalance("0");
+                        setValue("balance", 0, { shouldValidate: true });
+                      }}
+                      className="bg-stone-100 dark:bg-slate-700/60 hover:bg-stone-200 dark:hover:bg-slate-700 text-stone-500 dark:text-slate-400 font-bold text-[11px] px-2.5 py-1.5 rounded-full border border-black/[0.03] dark:border-slate-700 shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0 select-none"
+                      title="Reset Saldo ke Nol"
+                    >
+                      Reset 0
+                    </button>
+                  </div>
+
+                  {errors.balance && (
+                    <p className="text-[11px] text-[#E85024] font-medium mt-1">{errors.balance.message}</p>
+                  )}
+                </div>
+
+                {/* 2. Type/Category Switcher Tabs for Presets */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-stone-600 dark:text-slate-400 uppercase tracking-wider block">
+                      Jenis Rekening
+                    </Label>
+                    {selectedPreset && (
+                      <span className="text-[11px] font-semibold text-[#E85024] dark:text-orange-400">
+                        {selectedPreset.fullName}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="rounded-full bg-stone-100/80 dark:bg-slate-800/80 p-1 grid grid-cols-3 gap-1 mb-2 w-full border border-black/[0.03] dark:border-slate-700/50">
+                    {[
+                      { id: "bank" as const, label: "Bank", icon: Landmark },
+                      { id: "ewallet" as const, label: "E-Wallet", icon: Wallet2 },
+                      { id: "cash" as const, label: "Lainnya", icon: Banknote },
+                    ].map((tab) => {
+                      const Icon = tab.icon;
+                      const isActive = activeCategoryTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setActiveCategoryTab(tab.id)}
+                          className={cn(
+                            "py-2 px-1.5 sm:px-3 rounded-full text-center transition-all duration-150 cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-bold min-w-0",
+                            isActive
+                              ? "bg-[#1A1A1A] dark:bg-slate-700 text-white shadow-xs"
+                              : "text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 font-semibold"
+                          )}
+                        >
+                          <Icon className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{tab.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Preset Grid Cards */}
+                  <Controller
+                    name="presetId"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[170px] overflow-y-auto p-0.5 custom-scrollbar">
+                        {filteredPresets.map((preset) => {
+                          const isSelected = field.value === preset.id;
+                          const isImgLogo = preset.logo?.startsWith("/");
+                          return (
+                            <button
+                              key={preset.id}
+                              type="button"
+                              onClick={() => {
+                                field.onChange(preset.id);
+                              }}
+                              className={cn(
+                                "relative flex flex-col items-center justify-center gap-1.5 rounded-2xl p-2.5 sm:p-3 text-center select-none cursor-pointer min-h-[74px] border transition-all duration-200 min-w-0",
+                                isSelected
+                                  ? "bg-gradient-to-b from-orange-50/60 dark:from-orange-950/30 to-white dark:to-slate-800 ring-2 ring-[#E85024] shadow-md shadow-orange-500/10 -translate-y-0.5 border-[#E85024]/40"
+                                  : "bg-white dark:bg-slate-800/70 hover:bg-stone-50/80 dark:hover:bg-slate-800 border-black/[0.04] dark:border-slate-700/60 shadow-xs hover:-translate-y-0.5"
+                              )}
+                            >
+                              <div
+                                className={cn(
+                                  "w-8 h-8 rounded-xl bg-white dark:bg-slate-900 shadow-2xs flex items-center justify-center p-1 shrink-0 overflow-hidden border border-black/[0.02] dark:border-slate-800",
+                                  isSelected ? "ring-1 ring-[#E85024]/30" : ""
+                                )}
+                              >
+                                {isImgLogo ? (
+                                  <img src={preset.logo} alt={preset.name} className="max-h-full max-w-full object-contain" />
+                                ) : (
+                                  <span className="text-base leading-none">{preset.logo}</span>
+                                )}
+                              </div>
+                              <span className="text-[11px] font-bold text-[#18181B] dark:text-slate-100 truncate w-full px-0.5">
+                                {preset.name}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  />
+                  {errors.presetId && (
+                    <p className="text-[11px] text-[#E85024] font-medium mt-1">{errors.presetId.message}</p>
+                  )}
+                </div>
+
+                {/* 3. Nickname & Account Number Fields */}
+                <div className="space-y-3 pt-1">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="edit-acc-nick" className="text-xs font-bold text-stone-600 dark:text-slate-400 uppercase tracking-wider">
+                      Nama Rekening
+                    </Label>
+                    <Input
+                      id="edit-acc-nick"
+                      placeholder="Mis. BCA Utama"
+                      className="h-12 text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-medium px-4 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs placeholder:text-stone-400 dark:placeholder:text-slate-500"
+                      {...register("nickname")}
+                    />
+                    {errors.nickname && (
+                      <p className="text-[11px] text-[#E85024] font-medium">{errors.nickname.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="edit-acc-num" className="text-xs font-bold text-stone-600 dark:text-slate-400 uppercase tracking-wider">
+                        No. Rekening
+                      </Label>
+                      <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">Opsional</span>
+                    </div>
+                    <Input
+                      id="edit-acc-num"
+                      placeholder="Mis. 1234567890"
+                      maxLength={25}
+                      className="h-12 text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-medium px-4 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs placeholder:text-stone-400 dark:placeholder:text-slate-500"
+                      {...register("accountNumber")}
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Danger Zone (Hapus Rekening) */}
+                <div className="pt-2 border-t border-stone-200/50 dark:border-slate-800">
+                  {showDeleteConfirm ? (
+                    <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 space-y-2.5">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                        <p className="text-xs text-rose-700 dark:text-rose-300 font-medium leading-relaxed">
+                          Hapus rekening ini? Rekening dengan transaksi aktif tidak bisa dihapus.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 pt-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 rounded-xl text-xs font-semibold text-stone-600 dark:text-slate-300 hover:bg-stone-200/60 dark:hover:bg-slate-800 cursor-pointer"
+                          onClick={() => setShowDeleteConfirm(false)}
+                          disabled={isDeleting}
+                        >
+                          Batal
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="h-8 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white cursor-pointer ml-auto"
+                          onClick={handleDelete}
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> Menghapus...</>
+                          ) : (
+                            <><Trash2 className="w-3.5 h-3.5 mr-1.5" /> Hapus</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 flex items-center gap-1.5 py-1 px-1 transition-colors cursor-pointer select-none"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus rekening</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* 5. Fixed Pinned Footer Submit Button */}
+              <div className="p-4 sm:p-6 pt-3 pb-5 sm:pb-6 shrink-0 bg-white dark:bg-slate-900 border-t border-black/[0.04] dark:border-slate-800 flex gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => handleClose(false)}
+                  disabled={isLoading || isDeleting}
+                  className="rounded-full bg-stone-100 hover:bg-stone-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-stone-700 dark:text-slate-200 font-bold py-3.5 sm:py-4 px-5 text-sm transition-all cursor-pointer disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading || isDeleting}
+                  className="flex-1 rounded-full bg-gradient-to-r from-[#FF5C28] to-[#E85024] hover:from-[#e84d1a] hover:to-[#d44319] text-white font-extrabold py-3.5 sm:py-4 text-sm sm:text-base shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> <span>Menyimpan…</span></>
+                  ) : (
+                    <><PencilLine className="h-4 w-4 stroke-[2.5]" /> <span>Simpan</span></>
+                  )}
+                </button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export const EditBalanceDialog = EditAccountDialog;
+
+/* ── Manage-accounts dialog (Daftar & Kelola Semua Rekening) ── */
+export function ManageAccountsDialog({
+  open,
+  onOpenChange,
+  accounts,
+  onAddAccount,
+  onEditAccount,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  accounts: BankAccountRow[];
+  onAddAccount?: () => void;
+  onEditAccount?: (account: BankAccountRow) => void;
+}) {
+  const totalBalance = accounts.reduce((s, a) => s + (Number(a.balance) || 0), 0);
+  const bankCount = accounts.filter((a) => a.type === "bank").length;
+  const ewalletCount = accounts.filter((a) => a.type === "ewallet").length;
+  const cashCount = accounts.filter((a) => a.type === "cash").length;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showHandle className="max-w-md p-0 overflow-hidden rounded-t-[28px] md:rounded-[32px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl w-full mx-auto">
-        <DialogHeader className="p-6 pb-4 border-b border-stone-100 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FAD170] dark:bg-amber-500/20 text-stone-900 dark:text-amber-300 shadow-xs">
-              <PencilLine className="h-5 w-5" />
-            </div>
-            <div>
-              <DialogTitle className="text-lg font-bold text-[#18181B] dark:text-slate-100">Ubah Nominal Saldo</DialogTitle>
-              <DialogDescription className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
-                Revisi saldo aktual untuk rekening atau dompet yang dipilih.
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
+      <DialogContent
+        hideClose
+        className="p-0 overflow-hidden flex flex-col max-h-[90svh] sm:max-h-[86vh] h-auto rounded-t-[36px] sm:rounded-[36px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl max-w-lg w-full"
+      >
+        {/* Dynamic Header */}
+        <div className="p-5 sm:p-6 pb-3 shrink-0">
+          <div className="w-12 h-1.5 bg-stone-200 dark:bg-slate-700 rounded-full mx-auto mb-3 sm:hidden" />
 
-        <form onSubmit={handleSubmit} className="space-y-4 p-6 pt-3">
-          {account && (
-            <div className="rounded-2xl border border-stone-200/60 dark:border-slate-700/60 bg-surface-muted/50 dark:bg-slate-800/60 p-3.5">
-              <p className="text-xs font-bold text-[#18181B] dark:text-slate-100">{account.name}</p>
-              <p className="mt-0.5 text-[11px] text-stone-500 dark:text-slate-400 font-medium">{account.bank_name}</p>
-              <p className="mt-2 text-xs text-stone-600 dark:text-slate-300 font-medium">
-                Saldo saat ini: <span className="font-bold text-[#18181B] dark:text-slate-100 tabular-nums">{formatCurrency(account.balance)}</span>
-              </p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shadow-2xs shrink-0 transition-colors bg-[#E0E6FD]/80 dark:bg-indigo-500/20 text-[#3B4CCA] dark:text-indigo-300">
+                <Wallet2 className="h-5 w-5 stroke-[2.2]" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg sm:text-xl font-bold text-[#18181B] dark:text-slate-100 tracking-tight">
+                  Daftar Rekening
+                </DialogTitle>
+                <DialogDescription className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
+                  {accounts.length} rekening aktif
+                </DialogDescription>
+              </div>
             </div>
-          )}
 
-          {errorMsg && (
-            <div className="flex items-center gap-2 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-500/20 px-3.5 py-2.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              {errorMsg}
-            </div>
-          )}
-
-          <div className="space-y-1.5">
-            <Label htmlFor="edit-balance" className="text-xs font-semibold text-stone-500 dark:text-slate-400">
-              Nominal Saldo Terbaru
-            </Label>
-            <div className="relative flex items-center rounded-2xl bg-surface-muted/60 dark:bg-slate-800/80 border border-stone-200/50 dark:border-slate-700 p-1 focus-within:ring-2 focus-within:ring-black/10 dark:focus-within:ring-white/10 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all">
-              <span className="pl-3 text-sm font-bold text-stone-400 dark:text-slate-500">Rp</span>
-              <Input
-                id="edit-balance"
-                inputMode="numeric"
-                placeholder="0"
-                value={rawBalance ? Number(rawBalance).toLocaleString("id-ID") : ""}
-                onChange={(e) => setRawBalance(e.target.value.replace(/\D/g, ""))}
-                className="border-0 shadow-none focus-visible:ring-0 text-right font-black text-lg h-9 text-[#18181B] dark:text-slate-100 tabular-nums bg-transparent pr-2 placeholder:text-stone-400 dark:placeholder:text-slate-500"
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2.5 pt-2">
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              className="flex-1 h-12 rounded-full bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 text-stone-700 dark:text-slate-200 font-semibold cursor-pointer text-sm"
               onClick={() => onOpenChange(false)}
-              disabled={isLoading}
+              className="w-9 h-9 rounded-full bg-stone-100/90 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 active:scale-95 flex items-center justify-center text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 transition-all cursor-pointer shrink-0"
+              aria-label="Tutup"
             >
-              Batal
-            </Button>
-            <Button
-              type="submit"
-              className="flex-1 h-12 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white font-bold cursor-pointer shadow-sm text-sm transition-all active:scale-[0.99]"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Menyimpan...</>
-              ) : (
-                <><PencilLine className="h-4 w-4 mr-1.5" /> Simpan Saldo</>
-              )}
-            </Button>
+              <X className="h-4 w-4 stroke-[2.5]" />
+            </button>
           </div>
-        </form>
+        </div>
+
+        {/* Total Saldo Card Banner */}
+        <div className="px-5 sm:px-6 pt-1 pb-3 shrink-0">
+          <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 text-white shadow-sm relative overflow-hidden">
+            <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-white/10 pointer-events-none" />
+            <p className="text-[11px] font-bold text-emerald-100 uppercase tracking-wider">Total Saldo</p>
+            <p className="text-2xl sm:text-3xl font-black mt-1 tracking-tight tabular-nums font-mono">
+              {formatCurrency(totalBalance)}
+            </p>
+          </div>
+        </div>
+
+        {/* Scrollable Account List */}
+        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-1 space-y-2.5 custom-scrollbar min-h-0">
+          {accounts.length === 0 ? (
+            <div className="py-12 text-center text-stone-400 dark:text-slate-500">
+              <Landmark className="w-10 h-10 mx-auto mb-2 opacity-50" />
+              <p className="text-sm font-semibold">Belum ada rekening</p>
+              <p className="text-xs mt-1">Tambahkan rekening untuk mulai mencatat.</p>
+            </div>
+          ) : (
+            accounts.map((account) => {
+              const pct = totalBalance > 0 ? Math.round((account.balance / totalBalance) * 100) : 0;
+              const isImgLogo = account.logo?.startsWith("/");
+
+              return (
+                <div
+                  key={account.id}
+                  className="flex items-center gap-3 rounded-2xl p-3 bg-stone-50/80 dark:bg-slate-800/60 border border-black/[0.04] dark:border-slate-700/60 hover:bg-stone-100/80 dark:hover:bg-slate-800 transition-all"
+                >
+                  <div
+                    className={cn(
+                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg border border-black/[0.03] dark:border-slate-700/50 overflow-hidden shadow-2xs",
+                      isImgLogo ? "bg-white p-1" : "bg-white dark:bg-slate-900"
+                    )}
+                  >
+                    {isImgLogo ? (
+                      <img src={account.logo} alt={account.name} className="max-h-full max-w-full object-contain" />
+                    ) : (
+                      <span>{account.logo || "💳"}</span>
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-bold text-[#18181B] dark:text-slate-100 truncate">
+                      {account.name}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-stone-500 dark:text-slate-400">
+                      <span className="font-medium text-stone-600 dark:text-slate-300">{account.bank_name}</span>
+                      {account.account_number && (
+                        <span>&bull; ••{account.account_number.slice(-4)}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end shrink-0 text-right">
+                    <p className="text-xs sm:text-sm font-black text-[#18181B] dark:text-slate-100 tabular-nums">
+                      {formatCurrency(account.balance, true)}
+                    </p>
+                    <p className="text-[10px] font-semibold text-stone-400 dark:text-slate-500 mt-0.5">{pct}% porsi</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenChange(false);
+                      onEditAccount?.(account);
+                    }}
+                    className="ml-1 flex h-8 px-2.5 items-center justify-center rounded-xl bg-white dark:bg-slate-700 hover:bg-stone-200/70 dark:hover:bg-slate-600 text-stone-700 dark:text-slate-200 text-xs font-bold gap-1 shadow-2xs transition-all cursor-pointer shrink-0"
+                    title={`Edit ${account.name}`}
+                  >
+                    <PencilLine className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Edit</span>
+                  </button>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Pinned Bottom Actions */}
+        <div className="p-4 sm:p-6 pt-3 pb-5 sm:pb-6 shrink-0 bg-white dark:bg-slate-900 border-t border-black/[0.04] dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => {
+              onOpenChange(false);
+              onAddAccount?.();
+            }}
+            className="w-full rounded-full bg-[#1A1A1A] hover:bg-stone-800 dark:bg-white dark:hover:bg-stone-200 text-white dark:text-stone-900 font-extrabold py-3.5 text-sm shadow-md flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer"
+          >
+            <Plus className="h-4 w-4 stroke-[2.5]" />
+            <span>Tambah Rekening</span>
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -822,7 +1413,7 @@ export function BankAccountsWidget({ accounts }: { accounts: BankAccountRow[] })
       </Card>
 
       <AddAccountDialog open={addOpen} onOpenChange={setAddOpen} />
-      <EditBalanceDialog
+      <EditAccountDialog
         account={editingAccount}
         open={!!editingAccount}
         onOpenChange={(open) => {

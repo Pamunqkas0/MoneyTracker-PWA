@@ -131,7 +131,7 @@ export function FinancialInsights({ initialInsights = [], month, year }: Financi
               <div>
                 <CardTitle className="text-sm sm:text-base font-semibold">AI Insights</CardTitle>
                 <CardDescription className="text-[11px] sm:text-xs mt-0.5">
-                  Analisis cerdas berdasarkan pola pengeluaran kamu
+                  Insight singkat dari pola pengeluaranmu
                 </CardDescription>
               </div>
             </div>
@@ -142,10 +142,10 @@ export function FinancialInsights({ initialInsights = [], month, year }: Financi
                 "flex h-8 items-center gap-1.5 rounded-lg border border-[var(--card-border)] bg-white/50 px-2.5 text-xs font-semibold text-[var(--foreground)] shadow-sm backdrop-blur-sm transition-all hover:bg-gray-50 active:scale-95 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-900/50 dark:hover:bg-gray-800 cursor-pointer",
                 isGenerating && "cursor-not-allowed"
               )}
-              title="Regenerasi analisis dengan AI"
+              title="Buat ulang insight dengan AI"
             >
               <RefreshCw className={cn("h-3 w-3 text-purple-500", isGenerating && "animate-spin")} />
-              <span className="hidden sm:inline text-[11px] sm:text-xs">Regenerasi AI</span>
+              <span className="hidden sm:inline text-[11px] sm:text-xs">Refresh insight</span>
             </button>
           </div>
         </CardHeader>
@@ -194,12 +194,12 @@ export function FinancialInsights({ initialInsights = [], month, year }: Financi
             })
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-6 text-center text-xs text-gray-500">
-              <p>Belum ada insight keuangan terkumpul.</p>
+              <p>Insight belum tersedia.</p>
               <button
                 onClick={handleRegenerate}
                 className="mt-2 text-purple-500 font-semibold hover:underline"
               >
-                Mulai Analisis AI
+                Buat insight
               </button>
             </div>
           )}

@@ -1,50 +1,67 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Lock, Unlock, KeyRound, Timer, ShieldCheck } from "lucide-react";
+import { Lock, Unlock, KeyRound, Timer, ShieldCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { APP_PIN_CHANGED_EVENT, APP_PIN_KEY, hashAppPin } from "@/lib/security/app-pin";
 
 const TIMEOUT_OPTIONS = [
-  { id: "0", label: "Langsung 🔒", desc: "Kunci saat keluar/minimize" },
-  { id: "60", label: "1 Menit ⏱️", desc: "Toleransi 60 detik" },
-  { id: "300", label: "5 Menit ⏳", desc: "Toleransi 5 menit" },
+  { id: "0", label: "Langsung 🔒", desc: "Saat PWA ditinggal" },
+  { id: "60", label: "1 Menit ⏱️", desc: "Di luar aplikasi" },
+  { id: "300", label: "5 Menit ⏳", desc: "Di luar aplikasi" },
 ];
 
 export function AppLockSettingsCard() {
   const [hasPin, setHasPin] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [pin, setPin] = useState("");
-  const [timeoutVal, setTimeoutVal] = useState<string>("0");
+  const [timeoutVal, setTimeoutVal] = useState<string>("60");
+  const [isSavingPin, setIsSavingPin] = useState(false);
+  const [pinSaveError, setPinSaveError] = useState("");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const savedPin = localStorage.getItem("mt_app_pin");
+    const savedPin = localStorage.getItem(APP_PIN_KEY);
     if (savedPin) {
       setHasPin(true);
     }
-    const savedTimeout = localStorage.getItem("mt_app_lock_timeout") || "0";
+    const savedTimeout = localStorage.getItem("mt_app_lock_timeout") || "60";
     setTimeoutVal(savedTimeout);
     setMounted(true);
   }, []);
 
-  const handleSavePin = () => {
-    if (pin.length === 4) {
+  const handleSavePin = async () => {
+    if (pin.length !== 4 || isSavingPin) return;
+
+    setIsSavingPin(true);
+    setPinSaveError("");
+    try {
+      const hashedPin = await hashAppPin(pin);
+      localStorage.setItem(APP_PIN_KEY, hashedPin);
+      window.dispatchEvent(new Event(APP_PIN_CHANGED_EVENT));
       triggerHaptic("success");
-      localStorage.setItem("mt_app_pin", pin);
       setHasPin(true);
       setIsEditing(false);
       setPin("");
+    } catch {
+      setPinSaveError("PIN belum bisa disimpan. Coba lagi di perangkat ini.");
+    } finally {
+      setIsSavingPin(false);
     }
   };
 
   const handleRemovePin = () => {
     triggerHaptic("warning");
-    localStorage.removeItem("mt_app_pin");
+    localStorage.removeItem(APP_PIN_KEY);
     localStorage.removeItem("mt_app_lock_timeout");
+    localStorage.removeItem("mt_last_inactive_time");
+    localStorage.removeItem("mt_app_pin_failed_attempts");
+    localStorage.removeItem("mt_app_pin_lockout_until");
     sessionStorage.removeItem("mt_app_unlocked");
+    window.dispatchEvent(new Event(APP_PIN_CHANGED_EVENT));
     setHasPin(false);
   };
 
@@ -67,7 +84,7 @@ export function AppLockSettingsCard() {
             Kunci Aplikasi (PIN)
           </h3>
           <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
-            Gunakan PIN 4 digit untuk mengamankan akses ke aplikasi
+            PIN diminta setiap PWA dibuka, setelah ditinggal sesuai pilihan, atau 5 menit tanpa aktivitas.
           </p>
         </div>
       </div>
@@ -108,7 +125,7 @@ export function AppLockSettingsCard() {
             <div className="rounded-2xl bg-surface-muted/40 dark:bg-slate-800/50 p-3.5 border border-black/[0.02] dark:border-white/[0.04] space-y-2">
               <div className="flex items-center gap-2 text-stone-700 dark:text-slate-300">
                 <Timer className="h-3.5 w-3.5 text-[#E85024]" />
-                <span className="text-xs font-bold">Durasi Kunci Otomatis</span>
+                <span className="text-xs font-bold">Kunci setelah PWA ditinggal</span>
               </div>
 
               <div className="grid grid-cols-3 gap-2 pt-1">
@@ -182,10 +199,11 @@ export function AppLockSettingsCard() {
                   <Button
                     size="sm"
                     className="flex-1 sm:flex-initial h-11 px-5 rounded-full bg-[#E85024] hover:bg-[#d44319] text-white text-xs font-bold cursor-pointer disabled:opacity-50"
-                    onClick={handleSavePin}
-                    disabled={pin.length !== 4}
+                    onClick={() => void handleSavePin()}
+                    disabled={pin.length !== 4 || isSavingPin}
                   >
-                    Simpan PIN
+                    {isSavingPin ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                    {isSavingPin ? "Menyimpan…" : "Simpan PIN"}
                   </Button>
                   <Button
                     size="sm"
@@ -202,6 +220,7 @@ export function AppLockSettingsCard() {
                 </div>
               </div>
             )}
+            {pinSaveError && <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">{pinSaveError}</p>}
           </div>
         )}
       </div>

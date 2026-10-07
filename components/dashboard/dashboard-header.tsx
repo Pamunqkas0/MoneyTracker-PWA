@@ -31,12 +31,14 @@ import type { BankAccountRow, TransactionRow } from "@/lib/supabase/types";
 import type { AvailableTransactionCategories } from "@/lib/supabase/queries";
 
 interface DashboardHeaderProps {
+  username: string;
   bankAccounts: BankAccountRow[];
   availableCategories: AvailableTransactionCategories;
   recentNotifications?: TransactionRow[];
 }
 
 export function DashboardHeader({
+  username,
   bankAccounts,
   availableCategories,
   recentNotifications = [],
@@ -186,7 +188,7 @@ export function DashboardHeader({
         {/* ═════════ 2B. Mobile Greeting Center (Khusus Mobile) ═════════ */}
         <div className="flex lg:hidden items-center justify-center flex-1 min-w-0 px-2">
           <p className="text-xs sm:text-sm font-bold text-[#18181B] dark:text-slate-100 truncate">
-            Hello, Pamungkas 👋
+            Hello, {username} 👋
           </p>
         </div>
 
@@ -393,4 +395,3 @@ export function DashboardHeader({
     </>
   );
 }
-

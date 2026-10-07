@@ -52,7 +52,7 @@ export function GoalsTracker({ goals }: { goals: SavingsGoalRow[] }) {
                 <Flag className="h-4 w-4 text-emerald-500" />
                 Target Tabungan
               </CardTitle>
-              <CardDescription className="text-xs mt-0.5">Progres menuju tujuan keuanganmu</CardDescription>
+              <CardDescription className="text-xs mt-0.5">Pantau progres targetmu</CardDescription>
             </div>
             <button
               onClick={openAddDialog}

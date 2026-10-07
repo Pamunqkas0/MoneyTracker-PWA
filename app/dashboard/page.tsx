@@ -1,4 +1,5 @@
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
+import { createClient } from "@/lib/supabase/server";
 
 import {
   getTransactions,
@@ -26,6 +27,15 @@ interface DashboardPageProps {
 }
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const username =
+    String(user?.user_metadata?.full_name ?? "").trim() ||
+    user?.email?.split("@")[0] ||
+    "Pengguna";
+
   // Ambil parameter bulan dan tahun dari URL (jika tidak ada, gunakan bulan & tahun saat ini)
   const params = await searchParams;
   const currentDate = new Date();
@@ -65,6 +75,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   return (
     <DashboardClient
+      username={username}
       summary={summary}
       monthlyData={monthlyData}
       categoryExpenses={categoryExpenses}

@@ -501,7 +501,7 @@ export function TransactionDialog({
                 </div>
               </div>
               <div className="space-y-1.5 px-2">
-                <p className="text-lg font-bold text-[#18181B] dark:text-slate-100">Transaksi Berhasil Disimpan!</p>
+                <p className="text-lg font-bold text-[#18181B] dark:text-slate-100">Transaksi tersimpan!</p>
                 <p className="text-xs text-stone-500 dark:text-slate-400 leading-relaxed max-w-xs mx-auto">
                   Catatan {type === "income" ? "pemasukan" : type === "transfer" ? "transfer" : "pengeluaran"}{" "}
                   <span className="font-bold text-[#18181B] dark:text-slate-100 tabular-nums">
@@ -558,7 +558,7 @@ export function TransactionDialog({
                       </div>
                       <div className="text-left min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-xs font-bold text-[#18181B] dark:text-slate-100">Scan Struk Belanja</span>
+                          <span className="text-xs font-bold text-[#18181B] dark:text-slate-100">Scan struk</span>
                           <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#E85024]/15 text-[#E85024] dark:text-orange-300 font-extrabold flex items-center gap-0.5">
                             <Sparkles className="w-2.5 h-2.5" /> AI
                           </span>
@@ -987,7 +987,7 @@ export function TransactionDialog({
                   </div>
                   <Textarea
                     id="d-notes"
-                    placeholder="Tulis catatan atau deskripsi transaksi di sini…"
+                    placeholder="Tambah catatan (opsional)…"
                     rows={3}
                     className="min-h-[84px] text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-medium p-3.5 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs resize-none placeholder:text-stone-400 dark:placeholder:text-slate-500"
                     {...register("notes")}

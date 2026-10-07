@@ -68,6 +68,8 @@ const MONTHS = [
 const YEARS = [2024, 2025, 2026, 2027];
 
 interface TransactionsClientProps {
+  name: string;
+  username: string;
   initialTransactions: TransactionRow[];
   bankAccounts: BankAccountRow[];
   availableCategories: AvailableTransactionCategories;
@@ -76,6 +78,8 @@ interface TransactionsClientProps {
 }
 
 export function TransactionsClient({
+  name,
+  username,
   initialTransactions,
   bankAccounts,
   availableCategories,
@@ -464,28 +468,28 @@ export function TransactionsClient({
   const hasActiveFilters = search || typeFilter !== "all" || categoryFilter !== "all" || bankFilter !== "all" || sortBy !== "date_desc";
 
   return (
-    <div className="min-h-screen bg-[#F7F4EE] dark:bg-[#0b0f1a] text-[#18181B] dark:text-[#f1f5f9] px-3 pb-3 pt-0 sm:p-5 md:p-6 lg:p-8 flex justify-center items-start selection:bg-brand-orange/20">
+    <div className="min-h-screen bg-[#F7F4EE] dark:bg-[#0b0f1a] text-[#18181B] dark:text-[#f1f5f9] px-3 pb-3 pt-[max(1rem,env(safe-area-inset-top))] sm:p-5 md:p-6 lg:p-8 flex justify-center items-start selection:bg-brand-orange/20">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="w-full max-w-xl md:max-w-2xl lg:max-w-3xl rounded-[32px] sm:rounded-[36px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-black/[0.04] dark:border-slate-800 p-5 sm:p-7 md:p-8 shadow-xs flex flex-col gap-6"
+        className="w-full max-w-xl md:max-w-2xl lg:max-w-3xl rounded-[32px] sm:rounded-[36px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-black/[0.04] dark:border-slate-800 p-4 sm:p-7 md:p-8 shadow-xs flex flex-col gap-5 sm:gap-6"
       >
         
         {/* ══════════════════════════════════════════════════════════
             1. APP TOP HEADER (CONSISTENT REUSABLE COMPONENT)
            ══════════════════════════════════════════════════════════ */}
-        <AppTopHeader />
+        <AppTopHeader name={name} username={username} />
 
         {/* ══════════════════════════════════════════════════════════
             2. PAGE TITLE & CLEAN UNIFIED TIME CONTROLS
            ══════════════════════════════════════════════════════════ */}
         <header className="flex flex-col gap-3 pt-0.5">
           {/* Row 1: Title & Live Status + Export Pill */}
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black text-[#18181B] dark:text-white tracking-tight leading-tight">
+          <div className="flex items-start justify-between gap-2 sm:items-center">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <h1 className="min-w-0 text-xl sm:text-2xl font-black text-[#18181B] dark:text-white tracking-tight leading-tight">
                   Arus Kas & Transaksi
                 </h1>
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
@@ -513,7 +517,7 @@ export function TransactionsClient({
           </div>
 
           {/* Row 2: Unified Period & Timeframe Selector Toolbar */}
-          <div className="flex items-center justify-between gap-2 bg-surface-muted/50 dark:bg-slate-800/50 p-1 rounded-2xl border border-black/[0.03] dark:border-slate-700/50">
+          <div className="flex items-center justify-between gap-1.5 bg-gradient-to-r from-orange-50/80 via-surface-muted/50 to-amber-50/80 dark:from-slate-800/80 dark:via-slate-800/60 dark:to-orange-950/20 p-1 rounded-2xl border border-orange-100/70 dark:border-slate-700/50 shadow-inner">
             {/* Quick Period Tabs */}
             <div className="flex items-center gap-1">
               {[
@@ -588,7 +592,7 @@ export function TransactionsClient({
         {/* ══════════════════════════════════════════════════════════
             3. HERO BENTO: SALDO KAS BERSIH (REAL METRICS)
            ══════════════════════════════════════════════════════════ */}
-        <section className="bg-surface-muted/30 dark:bg-slate-800/40 rounded-3xl p-5 sm:p-6 border border-stone-200/60 dark:border-slate-700/60 shadow-xs flex flex-col gap-4 transition-all">
+        <section className="relative overflow-hidden bg-gradient-to-br from-orange-50/90 via-white to-amber-50/70 dark:from-slate-800 dark:via-slate-800/90 dark:to-orange-950/30 rounded-3xl p-4 sm:p-6 border border-orange-200/60 dark:border-slate-700/60 shadow-[0_10px_26px_rgba(232,80,36,0.08)] flex flex-col gap-4 transition-all">
           {/* Top Row: Label vs Savings Rate Badge */}
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-stone-400 dark:text-slate-400">
@@ -615,7 +619,7 @@ export function TransactionsClient({
 
           {/* Nominal Utama */}
           <div className="my-0.5">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#18181B] dark:text-white tracking-tight tabular-nums">
+            <h2 className="text-[clamp(1.65rem,7vw,2.25rem)] lg:text-5xl font-black text-[#18181B] dark:text-white tracking-tight tabular-nums break-words">
               {stats.net >= 0 ? "+" : ""}{formatCurrency(stats.net, false)}
             </h2>
           </div>
@@ -623,7 +627,7 @@ export function TransactionsClient({
           {/* Dual Mini Summary Cards (Grid 2 Kolom) */}
           <div className="grid grid-cols-2 gap-3">
             {/* Pemasukan */}
-            <div className="bg-[#ECFDC5]/60 dark:bg-emerald-950/40 rounded-2xl p-3 sm:p-3.5 border border-emerald-200/40 dark:border-emerald-800/30 flex flex-col justify-between gap-1.5">
+            <div className="bg-gradient-to-br from-emerald-100/90 to-lime-50/60 dark:from-emerald-950/60 dark:to-emerald-950/20 rounded-2xl p-3 sm:p-3.5 border border-emerald-200/60 dark:border-emerald-800/40 shadow-inner flex flex-col justify-between gap-1.5 min-w-0">
               <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
                 <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center shrink-0">
                   <TrendingUp className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -631,7 +635,7 @@ export function TransactionsClient({
                 <span className="text-xs font-bold">Pemasukan</span>
               </div>
               <div>
-                <p className="text-sm sm:text-base font-black text-stone-900 dark:text-slate-100 tabular-nums">
+                <p className="text-[13px] sm:text-base font-black text-stone-900 dark:text-slate-100 tabular-nums break-words">
                   {formatCurrency(stats.income, false)}
                 </p>
                 <p className="text-[10px] sm:text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 mt-0.5">
@@ -641,7 +645,7 @@ export function TransactionsClient({
             </div>
 
             {/* Pengeluaran */}
-            <div className="bg-[#FFE2D9]/60 dark:bg-rose-950/40 rounded-2xl p-3 sm:p-3.5 border border-rose-200/40 dark:border-rose-800/30 flex flex-col justify-between gap-1.5">
+            <div className="bg-gradient-to-br from-rose-100/90 to-orange-50/60 dark:from-rose-950/50 dark:to-rose-950/20 rounded-2xl p-3 sm:p-3.5 border border-rose-200/60 dark:border-rose-800/40 shadow-inner flex flex-col justify-between gap-1.5 min-w-0">
               <div className="flex items-center gap-1.5 text-rose-800 dark:text-rose-300">
                 <div className="w-5 h-5 rounded-full bg-rose-100 dark:bg-rose-900/60 flex items-center justify-center shrink-0">
                   <TrendingDown className="w-3.5 h-3.5 stroke-[2.5] text-[#E85024]" />
@@ -649,7 +653,7 @@ export function TransactionsClient({
                 <span className="text-xs font-bold">Pengeluaran</span>
               </div>
               <div>
-                <p className="text-sm sm:text-base font-black text-stone-900 dark:text-slate-100 tabular-nums">
+                <p className="text-[13px] sm:text-base font-black text-stone-900 dark:text-slate-100 tabular-nums break-words">
                   {formatCurrency(stats.expense, false)}
                 </p>
                 <p className="text-[10px] sm:text-[11px] font-semibold text-rose-700 dark:text-rose-400 mt-0.5">
@@ -660,7 +664,7 @@ export function TransactionsClient({
           </div>
 
           {/* Bottom Footer */}
-          <div className="flex items-center justify-between pt-1 border-t border-black/[0.03] dark:border-white/[0.04] text-xs">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-orange-200/70 dark:border-white/[0.08] text-xs">
             <div className="flex items-center gap-1.5 text-stone-600 dark:text-slate-300 font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span>Runway: <strong className="font-bold text-stone-900 dark:text-white">{stats.runwayMonths > 0 ? `${stats.runwayMonths} Bulan` : "Aman"}</strong></span>
@@ -678,12 +682,12 @@ export function TransactionsClient({
         {/* ══════════════════════════════════════════════════════════
             4. BENTO CARD: ARUS KAS KUMULATIF (REAL DATA SPARKLINE)
            ══════════════════════════════════════════════════════════ */}
-        <section className="bg-surface-muted/30 dark:bg-slate-800/40 rounded-3xl p-5 sm:p-6 border border-stone-200/60 dark:border-slate-700/60 shadow-xs flex flex-col gap-3 transition-all relative overflow-hidden">
+        <section className="bg-gradient-to-br from-white via-orange-50/40 to-slate-50 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-900 rounded-3xl p-4 sm:p-6 border border-orange-100 dark:border-slate-700/60 shadow-[0_10px_28px_rgba(15,23,42,0.08)] flex flex-col gap-3 transition-all relative overflow-hidden">
           {/* Header Bar */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-black text-[#18181B] dark:text-white tracking-tight whitespace-nowrap">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <h3 className="text-sm sm:text-base font-black text-[#18181B] dark:text-white tracking-tight">
                   Arus Kas Kumulatif
                 </h3>
                 <span className="bg-[#FFE2D9] dark:bg-[#E85024]/20 text-[#E85024] dark:text-rose-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0">
@@ -696,12 +700,12 @@ export function TransactionsClient({
             </div>
 
             {/* Switcher Pill: Net | Volume */}
-            <div className="bg-surface-muted/80 dark:bg-slate-800/80 p-1 rounded-full text-xs font-bold flex items-center gap-1 border border-stone-200/60 dark:border-slate-700/60 shrink-0">
+            <div className="bg-surface-muted/80 dark:bg-slate-800/80 p-1 rounded-full text-xs font-bold flex items-center gap-1 border border-stone-200/60 dark:border-slate-700/60 w-full sm:w-auto sm:shrink-0">
               <button
                 type="button"
                 onClick={() => setChartMode("net")}
                 className={cn(
-                  "px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap",
+                  "flex-1 sm:flex-none px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap",
                   chartMode === "net"
                     ? "bg-white dark:bg-stone-800 text-[#18181B] dark:text-white shadow-xs"
                     : "text-stone-500 hover:text-stone-900 dark:text-slate-400"
@@ -713,7 +717,7 @@ export function TransactionsClient({
                 type="button"
                 onClick={() => setChartMode("flow")}
                 className={cn(
-                  "px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap",
+                  "flex-1 sm:flex-none px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap",
                   chartMode === "flow"
                     ? "bg-white dark:bg-stone-800 text-[#18181B] dark:text-white shadow-xs"
                     : "text-stone-500 hover:text-stone-900 dark:text-slate-400"
@@ -725,7 +729,7 @@ export function TransactionsClient({
           </div>
 
           {/* Area Sparkline Chart Container */}
-          <div className="w-full relative pt-7 pb-2">
+          <div className="w-full relative pt-8 sm:pt-7 pb-2 px-1">
             {/* Interactive Peak Tooltip Pill (Clamped to avoid clipping on edges) */}
             {hasLiveTransactions && (
               <div

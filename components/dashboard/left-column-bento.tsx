@@ -13,9 +13,14 @@ import {
   RotateCw,
   Copy,
   Check,
+  PencilLine,
 } from "lucide-react";
 import { TransactionDialog } from "@/components/layout/transaction-dialog";
-import { AddAccountDialog } from "@/components/dashboard/bank-accounts";
+import {
+  AddAccountDialog,
+  EditAccountDialog,
+  ManageAccountsDialog,
+} from "@/components/dashboard/bank-accounts";
 import type { BankAccountRow } from "@/lib/supabase/types";
 import type { AvailableTransactionCategories } from "@/lib/supabase/queries";
 import type { FinancialSummary } from "@/lib/types";
@@ -418,6 +423,8 @@ export function LeftColumnBento({
   const activeAccount = unifiedAccounts.find((item) => item.id === selectedId) || unifiedAccounts[0];
   const [dialogOpen, setDialogOpen] = useState(false);
   const [addAccountOpen, setAddAccountOpen] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<BankAccountRow | null>(null);
+  const [manageAccountsOpen, setManageAccountsOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"income" | "expense">("expense");
 
   const router = useRouter();
@@ -463,6 +470,19 @@ export function LeftColumnBento({
   const handleOpenAddAccount = () => {
     if (onAddAccountClick) {
       onAddAccountClick();
+    } else {
+      setAddAccountOpen(true);
+    }
+  };
+
+  const handleOpenEditAccount = (id?: string) => {
+    triggerHaptic("selection");
+    const targetId = id || activeAccount.id;
+    const found = bankAccounts?.find((a) => a.id === targetId);
+    if (found) {
+      setEditingAccount(found);
+    } else if (bankAccounts && bankAccounts.length > 0) {
+      setEditingAccount(bankAccounts[0]);
     } else {
       setAddAccountOpen(true);
     }
@@ -565,8 +585,19 @@ export function LeftColumnBento({
                 </span>
               </div>
 
-              {/* Emblem & Flip Hint */}
-              <div className="flex items-center gap-2">
+              {/* Emblem, Edit & Flip Hint */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenEditAccount();
+                  }}
+                  className="text-[10px] font-semibold opacity-85 hover:opacity-100 flex items-center gap-1 bg-black/15 dark:bg-white/15 hover:bg-black/25 dark:hover:bg-white/25 px-2 py-0.5 rounded-full backdrop-blur-xs transition-all cursor-pointer"
+                  title="Edit Rekening"
+                >
+                  <PencilLine className="w-2.5 h-2.5" /> Edit
+                </button>
                 <span className="text-[10px] font-semibold opacity-75 flex items-center gap-1 bg-black/10 dark:bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-xs">
                   <RotateCw className="w-2.5 h-2.5" /> Flip
                 </span>
@@ -647,10 +678,23 @@ export function LeftColumnBento({
                 </div>
               </div>
 
-              {/* Flip back badge */}
-              <span className="text-[10px] font-semibold opacity-80 flex items-center gap-1 bg-black/15 dark:bg-white/15 px-2.5 py-1 rounded-full backdrop-blur-xs">
-                <RotateCw className="w-2.5 h-2.5" /> Flip back
-              </span>
+              {/* Flip back badge & Edit button */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenEditAccount();
+                  }}
+                  className="text-[10px] font-semibold opacity-85 hover:opacity-100 flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-full backdrop-blur-xs transition-all cursor-pointer text-white"
+                  title="Edit Rekening"
+                >
+                  <PencilLine className="w-2.5 h-2.5" /> Edit
+                </button>
+                <span className="text-[10px] font-semibold opacity-80 flex items-center gap-1 bg-black/15 dark:bg-white/15 px-2.5 py-1 rounded-full backdrop-blur-xs">
+                  <RotateCw className="w-2.5 h-2.5" /> Flip back
+                </span>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -709,7 +753,10 @@ export function LeftColumnBento({
           <h2 className="text-sm font-bold text-[#18181B] dark:text-slate-100 tracking-tight">Wallet status</h2>
           <button
             type="button"
-            onClick={handleOpenAddAccount}
+            onClick={() => {
+              triggerHaptic("selection");
+              setManageAccountsOpen(true);
+            }}
             className="text-xs font-bold text-[#E85024] hover:underline cursor-pointer"
           >
             See all
@@ -718,7 +765,10 @@ export function LeftColumnBento({
 
         {/* Kartu Hijau Pastel (bg-[#D8F5A2] Full Width) */}
         <div
-          onClick={() => setDialogOpen(true)}
+          onClick={() => {
+            triggerHaptic("selection");
+            setManageAccountsOpen(true);
+          }}
           className="w-full rounded-3xl bg-[#D8F5A2] text-[#18181B] p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between min-h-[145px] shadow-xs hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-pointer border border-black/[0.03]"
         >
           {/* Pojok Atas: Badge Total Kiri vs Tombol Bulat Panah Kanan */}
@@ -779,6 +829,30 @@ export function LeftColumnBento({
         defaultType={dialogType}
         bankAccounts={bankAccounts}
         availableCategories={availableCategories}
+      />
+
+      {/* Manage Bank Accounts Dialog */}
+      <ManageAccountsDialog
+        open={manageAccountsOpen}
+        onOpenChange={setManageAccountsOpen}
+        accounts={bankAccounts || []}
+        onAddAccount={() => {
+          setManageAccountsOpen(false);
+          setAddAccountOpen(true);
+        }}
+        onEditAccount={(acc) => {
+          setManageAccountsOpen(false);
+          setEditingAccount(acc);
+        }}
+      />
+
+      {/* Edit Bank Account & Balance Dialog */}
+      <EditAccountDialog
+        account={editingAccount}
+        open={!!editingAccount}
+        onOpenChange={(open) => {
+          if (!open) setEditingAccount(null);
+        }}
       />
 
       {/* Add Bank Account Dialog */}

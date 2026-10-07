@@ -117,7 +117,7 @@ export function TelegramSettingsCard() {
           <div>
             <h3 className="text-sm sm:text-base font-bold text-[#18181B] dark:text-slate-100">Integrasi Telegram Bot</h3>
             <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
-              Catat pemasukan & pengeluaran lebih cepat via bot chat Telegram
+              Catat transaksi langsung dari Telegram.
             </p>
           </div>
         </div>
@@ -147,9 +147,9 @@ export function TelegramSettingsCard() {
             <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/60 p-4 flex gap-3">
               <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-300 shrink-0 mt-0.5" />
               <div className="text-xs">
-                <p className="font-bold text-emerald-900 dark:text-emerald-200">Telegram Berhasil Terhubung! 🎉</p>
+                <p className="font-bold text-emerald-900 dark:text-emerald-200">Telegram sudah nyambung! 🎉</p>
                 <p className="text-emerald-800 dark:text-emerald-300 mt-1">
-                  Kirim pesan langsung ke bot Telegram untuk mencatat transaksi keuangan secara otomatis.
+                  Kirim transaksi ke bot, nanti tercatat otomatis.
                 </p>
                 <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-stone-600 dark:text-slate-300 bg-white/80 dark:bg-slate-800/80 py-1 px-3 rounded-full w-max border border-emerald-200/40 dark:border-emerald-800/40">
                   <span>Chat ID:</span>
@@ -159,15 +159,15 @@ export function TelegramSettingsCard() {
             </div>
 
             <div className="bg-surface-muted/50 dark:bg-slate-800/80 rounded-2xl p-4 border border-black/[0.03] dark:border-white/[0.04] space-y-2">
-              <p className="text-xs font-bold text-[#18181B] dark:text-slate-100">💡 Format Chat Bot Telegram:</p>
+              <p className="text-xs font-bold text-[#18181B] dark:text-slate-100">💡 Format pesan:</p>
               <ul className="text-xs text-stone-600 dark:text-slate-300 space-y-1.5 list-disc pl-4">
                 <li>
-                  <span className="font-bold text-stone-900 dark:text-slate-100">Pengeluaran:</span> Cukup ketik nominal dan nama barang.
+                  <span className="font-bold text-stone-900 dark:text-slate-100">Pengeluaran:</span> Ketik nominal dan nama barang.
                   <br />
                   Contoh: <code className="font-mono font-bold text-[#E85024] bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded-lg border border-black/[0.04] dark:border-slate-700">25000 kopi susu</code>
                 </li>
                 <li>
-                  <span className="font-bold text-stone-900 dark:text-slate-100">Pemasukan:</span> Berikan tanda plus <code className="font-bold text-emerald-700 dark:text-emerald-400">+</code> di awal.
+                  <span className="font-bold text-stone-900 dark:text-slate-100">Pemasukan:</span> Tambahkan <code className="font-bold text-emerald-700 dark:text-emerald-400">+</code> di awal.
                   <br />
                   Contoh: <code className="font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded-lg border border-black/[0.04] dark:border-slate-700">+500000 bonus project</code>
                 </li>
@@ -192,7 +192,7 @@ export function TelegramSettingsCard() {
               <div className="text-xs">
                 <p className="font-bold text-amber-900 dark:text-amber-200">Hubungkan Bot Telegram</p>
                 <p className="text-amber-800 dark:text-amber-300 mt-0.5">
-                  Dapatkan kode token pairing untuk dikirimkan ke bot Telegram agar akun terhubung dengan aman.
+                  Buat kode pairing, lalu kirim ke bot Telegram untuk menghubungkan akunmu.
                 </p>
               </div>
             </div>
@@ -220,11 +220,11 @@ export function TelegramSettingsCard() {
                 </div>
 
                 <div className="text-xs text-stone-600 dark:text-slate-300 space-y-1 pl-3 border-l-2 border-blue-500">
-                  <p className="font-bold text-[#18181B] dark:text-slate-100">Langkah penyambungan:</p>
+                  <p className="font-bold text-[#18181B] dark:text-slate-100">Cara menghubungkan:</p>
                   <ol className="list-decimal pl-4 space-y-1">
-                    <li>Salin kode perintah di atas.</li>
-                    <li>Buka bot Telegram melalui tombol di bawah.</li>
-                    <li>Kirimkan perintah tersebut ke dalam bot chat.</li>
+                    <li>Salin kode pairing.</li>
+                    <li>Buka bot Telegram.</li>
+                    <li>Kirim kodenya ke bot.</li>
                   </ol>
                 </div>
 

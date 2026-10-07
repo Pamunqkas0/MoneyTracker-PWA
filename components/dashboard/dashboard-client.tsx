@@ -34,6 +34,7 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 
 export interface DashboardClientProps {
+  username: string;
   summary: FinancialSummary;
   monthlyData: MonthlyData[];
   categoryExpenses: CategoryExpense[];
@@ -89,6 +90,7 @@ const MONTH_NAMES = [
 ];
 
 export function DashboardClient({
+  username,
   summary,
   monthlyData,
   categoryExpenses,
@@ -155,6 +157,7 @@ export function DashboardClient({
       >
         {/* ── 3. Top Navigation Bar (SavOr Pill Header) ── */}
         <DashboardHeader
+          username={username}
           bankAccounts={bankAccounts}
           availableCategories={availableCategories}
           recentNotifications={recentNotifications}
@@ -297,4 +300,3 @@ export function DashboardClient({
     </div>
   );
 }
-

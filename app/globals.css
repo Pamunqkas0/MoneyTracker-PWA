@@ -64,6 +64,17 @@
   --glass-border: rgba(0, 0, 0, 0.05);
   --glass-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
 
+  /* Global skeuomorphic depth */
+  --surface-raised-shadow:
+    0 12px 28px -18px rgba(71, 54, 37, 0.34),
+    0 3px 8px rgba(71, 54, 37, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(125, 98, 67, 0.08);
+  --surface-pressed-shadow:
+    inset 0 2px 5px rgba(71, 54, 37, 0.12),
+    inset 0 1px 0 rgba(125, 98, 67, 0.08);
+  --surface-edge: rgba(125, 98, 67, 0.14);
+
   --income-color: #10b981;
   --expense-color: #f43f5e;
   --savings-color: #6366f1;
@@ -89,6 +100,16 @@
   --glass-bg: rgba(17, 24, 39, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 4px 24px -4px rgba(16, 185, 129, 0.12), 0 1px 3px rgba(0,0,0,0.3);
+
+  --surface-raised-shadow:
+    0 14px 30px -18px rgba(0, 0, 0, 0.82),
+    0 4px 10px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+  --surface-pressed-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(0, 0, 0, 0.16);
+  --surface-edge: rgba(255, 255, 255, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -103,6 +124,15 @@
     --glass-bg: rgba(17, 24, 39, 0.7);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-shadow: 0 4px 24px -4px rgba(16, 185, 129, 0.12), 0 1px 3px rgba(0,0,0,0.3);
+    --surface-raised-shadow:
+      0 14px 30px -18px rgba(0, 0, 0, 0.82),
+      0 4px 10px rgba(0, 0, 0, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+    --surface-pressed-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(0, 0, 0, 0.16);
+    --surface-edge: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -136,6 +166,41 @@ body {
   /* Cegah overscroll/overshoot yang bisa trigger zoom-like effect */
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Global surface treatment: retain each component's palette while adding
+   the raised edge and soft light that give skeuomorphic controls depth. */
+:where(div, section, article, aside)[class*="rounded-"][class*="shadow-"][class*="bg-"] {
+  border-color: color-mix(in srgb, var(--surface-edge) 42%, currentColor 4%);
+  box-shadow: var(--surface-raised-shadow);
+}
+
+:where(button, a)[class*="rounded-"][class*="bg-"] {
+  box-shadow:
+    0 3px 7px rgba(50, 38, 26, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.56),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  transition-property: box-shadow, transform, background-color, color, border-color;
+}
+
+:where(button, a)[class*="rounded-"][class*="bg-"]:active {
+  box-shadow: var(--surface-pressed-shadow);
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  box-shadow:
+    inset 0 2px 5px rgba(50, 38, 26, 0.08),
+    inset 0 1px 0 rgba(0, 0, 0, 0.03);
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark textarea,
+.dark select {
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(0, 0, 0, 0.16);
 }
 
 /* ── iOS Native App Touch Feel ───────────────────────── */

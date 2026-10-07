@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 
 export interface AppTopHeaderProps {
-  name?: string;
-  username?: string;
+  name: string;
+  username: string;
   leftHref?: string;
   leftIcon?: "menu" | "back";
   leftAriaLabel?: string;
@@ -18,8 +18,8 @@ export interface AppTopHeaderProps {
 }
 
 export function AppTopHeader({
-  name = "Fred",
-  username = "@freddoe12",
+  name,
+  username,
   leftHref = "/dashboard",
   leftIcon = "menu",
   leftAriaLabel = "Kembali ke Dashboard",
