@@ -430,10 +430,10 @@ export function TransactionDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         hideClose
-        className="p-0 overflow-hidden flex flex-col max-h-[90svh] sm:max-h-[86vh] h-auto rounded-t-[36px] sm:rounded-[36px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl max-w-lg w-full"
+        className="p-0 overflow-hidden flex flex-col h-[84dvh] max-h-[calc(100dvh-env(safe-area-inset-top)-0.75rem)] sm:h-auto sm:max-h-[86vh] rounded-t-[28px] sm:rounded-[36px] bg-white dark:bg-slate-900 border border-black/[0.04] dark:border-slate-800 shadow-2xl max-w-lg w-full"
       >
         {/* Dynamic Header (Fixed Top) */}
-        <div className="p-5 sm:p-6 pb-3 shrink-0">
+        <div className="px-5 pt-3 pb-3 sm:p-6 sm:pb-3 shrink-0">
           {/* Grab Handle Bar (Atas - khusus mobile) */}
           <div className="w-12 h-1.5 bg-stone-200 dark:bg-slate-700 rounded-full mx-auto mb-3 sm:hidden" />
 
@@ -911,7 +911,7 @@ export function TransactionDialog({
                   <Input
                     id="d-name"
                     placeholder="Mis. Belanja Mingguan, Makan Siang, Gaji…"
-                    className="h-12 text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-medium px-4 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs placeholder:text-stone-400 dark:placeholder:text-slate-500"
+                    className="h-12 text-base sm:text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-medium px-4 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs placeholder:text-stone-400 dark:placeholder:text-slate-500"
                     {...register("name")}
                   />
                   {errors.name && <p className="text-[11px] text-[#E85024] font-medium">{errors.name.message}</p>}
@@ -973,7 +973,7 @@ export function TransactionDialog({
                   <Input
                     id="d-date"
                     type="date"
-                    className="h-12 text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-semibold px-4 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs w-full cursor-pointer"
+                    className="h-12 text-base sm:text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-semibold px-4 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs w-full cursor-pointer"
                     {...register("date")}
                   />
                   {errors.date && <p className="text-[11px] text-[#E85024] font-medium">{errors.date.message}</p>}
@@ -989,14 +989,14 @@ export function TransactionDialog({
                     id="d-notes"
                     placeholder="Tambah catatan (opsional)…"
                     rows={3}
-                    className="min-h-[84px] text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-medium p-3.5 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs resize-none placeholder:text-stone-400 dark:placeholder:text-slate-500"
+                    className="min-h-[84px] text-base sm:text-sm rounded-2xl bg-[#FAF8F5] dark:bg-slate-800/60 border-black/[0.06] dark:border-slate-700 text-[#18181B] dark:text-slate-100 font-medium p-3.5 focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/10 focus-visible:bg-white dark:focus-visible:bg-slate-800 transition-all shadow-2xs resize-none placeholder:text-stone-400 dark:placeholder:text-slate-500"
                     {...register("notes")}
                   />
                 </div>
               </div>
 
               {/* Submit Action (Fixed Pinned Footer) */}
-              <div className="p-4 sm:p-6 pt-3 pb-5 sm:pb-6 shrink-0 bg-white dark:bg-slate-900 border-t border-black/[0.04] dark:border-slate-800">
+              <div className="px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6 sm:pt-3 shrink-0 bg-white dark:bg-slate-900 border-t border-black/[0.04] dark:border-slate-800">
                 <button
                   type="submit"
                   disabled={isLoading}
