@@ -53,7 +53,7 @@ async function resolveUserId(request: Request, bodyApiKey?: string) {
 function extractImageInput(body: Record<string, unknown>) {
   const image = body.image ?? body.base64 ?? body.image_base64;
   if (typeof image !== "string") return null;
-  const match = image.match(/^data:([^;,]+);base64,(.*)$/s);
+  const match = image.match(/^data:([^;,]+);base64,([\s\S]*)$/);
   return {
     mimeType: match?.[1] ?? (typeof body.mime_type === "string" ? body.mime_type : "image/jpeg"),
     data: (match?.[2] ?? image).replace(/\s/g, ""),
