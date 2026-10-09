@@ -8,6 +8,7 @@ export interface ParsedReceiptResult {
   date: string;
   category: string;
   items_summary: string;
+  bank_name: string;
   confidence_note?: string;
 }
 
@@ -61,6 +62,7 @@ Instruksi Analisis:
    - "other" (jika tidak masuk ke kategori di atas)
 5. "items_summary": Buat ringkasan ringkas daftar item barang/menu yang dibeli beserta kuantitasnya jika terlihat (maksimal 3-5 item teratas, contoh: "2x Kopi Susu, 1x Donat Cokelat").
 6. "confidence_note": Catatan singkat jika ada angka yang buram atau kurang jelas.
+7. "bank_name": Nama bank/e-wallet yang secara eksplisit terlihat sebagai sumber/metode pembayaran pada gambar (misalnya blu by BCA, BCA, Mandiri, GoPay). Jangan menebak dari nama merchant. Jika tidak terlihat, isi string kosong.
 
 Format output HARUS berupa JSON object dengan struktur:
 {
@@ -69,6 +71,7 @@ Format output HARUS berupa JSON object dengan struktur:
   "date": string,
   "category": string,
   "items_summary": string,
+  "bank_name": string,
   "confidence_note": string
 }
 `;
@@ -117,6 +120,7 @@ Format output HARUS berupa JSON object dengan struktur:
                   ],
                 },
                 items_summary: { type: "STRING" },
+                bank_name: { type: "STRING" },
                 confidence_note: { type: "STRING" },
               },
               required: [
@@ -125,6 +129,7 @@ Format output HARUS berupa JSON object dengan struktur:
                 "date",
                 "category",
                 "items_summary",
+                "bank_name",
               ],
             },
           },
@@ -170,6 +175,7 @@ Format output HARUS berupa JSON object dengan struktur:
         date: safeDate,
         category: parsed.category || "shopping",
         items_summary: parsed.items_summary?.trim() || "",
+        bank_name: parsed.bank_name?.trim() || "",
         confidence_note: parsed.confidence_note || "",
       },
     };

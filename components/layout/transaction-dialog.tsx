@@ -227,6 +227,24 @@ export function TransactionDialog({
 
       const receipt = response.data;
 
+      // Bank hanya dipilih bila namanya terbaca pada gambar dan cocok dengan rekening pengguna.
+      // Struk merchant sering tidak memuat informasi sumber pembayaran, jadi jangan menebak rekening.
+      const normalizeBankName = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const detectedBankName = normalizeBankName(receipt.bank_name);
+      const bankCandidates = bankAccounts.map((account) => ({
+        account,
+        names: [account.name, account.bank_name].map(normalizeBankName).filter(Boolean),
+      }));
+      const exactMatches = bankCandidates.filter(({ names }) => names.includes(detectedBankName));
+      const partialMatches = detectedBankName.length >= 4
+        ? bankCandidates.filter(({ names }) => names.some((name) => name.includes(detectedBankName) || detectedBankName.includes(name)))
+        : [];
+      const matchedBank = exactMatches.length === 1
+        ? exactMatches[0].account
+        : exactMatches.length === 0 && partialMatches.length === 1
+          ? partialMatches[0].account
+          : undefined;
+
       // Isi form secara otomatis
       setValue("type", "expense");
       setValue("amount", receipt.total_amount, { shouldValidate: true });
@@ -247,12 +265,14 @@ export function TransactionDialog({
         setValue("notes", receipt.items_summary);
       }
 
-      // Jika belum ada rekening dipilih, pilih rekening pertama
-      if (!bankId && displayBankAccounts.length > 0) {
-        setValue("bankAccountId", displayBankAccounts[0].id, { shouldValidate: true });
-      }
+      setValue("bankAccountId", matchedBank?.id ?? "", { shouldValidate: true });
 
-      setReceiptSuccessMsg(`Struk "${receipt.merchant_name}" terbaca: Rp ${receipt.total_amount.toLocaleString("id-ID")}`);
+      const bankMessage = matchedBank
+        ? `Rekening terdeteksi: ${matchedBank.name}.`
+        : receipt.bank_name
+          ? `Bank ${receipt.bank_name} terbaca, tetapi tidak cocok dengan rekening Anda. Silakan pilih rekening.`
+          : "Bank sumber tidak terlihat pada struk. Silakan pilih rekening yang digunakan.";
+      setReceiptSuccessMsg(`Struk "${receipt.merchant_name}" terbaca: Rp ${receipt.total_amount.toLocaleString("id-ID")} • ${bankMessage}`);
 
       if (typeof window !== "undefined" && window.navigator?.vibrate) {
         window.navigator.vibrate([30, 40, 30]);
