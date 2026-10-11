@@ -60,6 +60,32 @@ function extractImageInput(body: Record<string, unknown>) {
   };
 }
 
+function normalizeAmount(value: unknown) {
+  if (typeof value === "number") return value;
+  if (typeof value !== "string") return Number.NaN;
+
+  const normalized = value.trim().toLowerCase().replace(/\s/g, "");
+  const hasUnit = /(?:juta|jt|ribu|rb)\b/.test(normalized);
+  const multiplier = /(?:juta|jt)\b/.test(normalized)
+    ? 1_000_000
+    : /(?:ribu|rb)\b/.test(normalized)
+      ? 1_000
+      : 1;
+  const numeric = normalized
+    .replace(/rp\.?/g, "")
+    .replace(/(?:rupiah|juta|jt|ribu|rb)\b/g, "")
+    .replace(/[^\d.,-]/g, "");
+
+  if (!numeric || numeric.includes("-")) return Number.NaN;
+
+  // Indonesian formatting uses dots for thousands and commas for decimals.
+  const numericValue = hasUnit
+    ? Number(numeric.replace(/\.(?=\d{3}(?:,|$))/g, "").replace(",", "."))
+    : Number(numeric.replace(/[.,]/g, ""));
+  const amount = numericValue * multiplier;
+  return Number.isSafeInteger(amount) ? amount : Number.NaN;
+}
+
 async function parseWithGemini(text: string | null, image: ReturnType<typeof extractImageInput>) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY belum dikonfigurasi.");
@@ -69,6 +95,7 @@ async function parseWithGemini(text: string | null, image: ReturnType<typeof ext
 
 Aturan penting untuk nominal:
 - Ambil nominal transaksi yang sedang dilakukan/dibayar, bukan saldo, total pengeluaran, anggaran, rata-rata, grafik, atau angka transaksi lain.
+- Untuk invoice/tagihan, prioritaskan total yang harus dibayar seperti "Total", "Grand Total", "Jumlah Tagihan", "Total Pembayaran", atau "Amount Due". Jangan memilih subtotal, pajak, diskon, nomor invoice, atau rekening.
 - Abaikan notifikasi konfirmasi aplikasi seperti "transaksi berhasil dicatat", riwayat transaksi, dan nominal berulang pada daftar transaksi. Angka pada notifikasi/riwayat itu bukan transaksi baru.
 - Jika OCR berasal dari halaman dashboard/riwayat dan tidak ada bukti jelas tentang transaksi baru, amount harus 0. Jangan menebak atau memakai angka kecil seperti 1 sebagai nilai default.
 - Ubah nominal Indonesia ke integer rupiah: Rp 25.000 = 25000, Rp 3,5 jt = 3500000, Rp 25 rb = 25000. Jangan mengambil angka tanggal, persentase, atau nomor lain sebagai nominal.
@@ -135,7 +162,7 @@ export async function POST(request: Request) {
     }
 
     const parsed = await parseWithGemini(text || null, image);
-    const amount = Number(parsed.amount);
+    const amount = normalizeAmount(parsed.amount);
     const date = typeof parsed.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)
       ? parsed.date
       : new Date().toISOString().slice(0, 10);
@@ -149,6 +176,30 @@ export async function POST(request: Request) {
 
     if (!Number.isSafeInteger(amount) || amount <= 0) {
       return jsonError("Nominal transaksi baru tidak terbaca jelas. Ambil screenshot struk atau notifikasi pembayaran yang memuat nominal, lalu jalankan pintasan lagi.", 422);
+    }
+
+    const formattedAmount = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(amount);
+
+    // Safe preview mode for validating OCR/Gemini results without touching Supabase.
+    if (body.dry_run === true) {
+      return Response.json({
+        success: true,
+        dry_run: true,
+        message: "Simulasi berhasil. Transaksi tidak disimpan dan saldo tidak diubah.",
+        data: {
+          merchant,
+          amount,
+          formatted_amount: formattedAmount,
+          category: categorySlug,
+          date,
+          notes: typeof parsed.notes === "string" ? parsed.notes.trim().slice(0, 500) : null,
+          bank: typeof parsed.bank_name === "string" ? parsed.bank_name : null,
+        },
+      });
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -183,7 +234,6 @@ export async function POST(request: Request) {
       .update({ balance: newBalance, updated_at: new Date().toISOString() }).eq("id", account.id).eq("user_id", userId);
     if (balanceError) console.error("[auto-log] Saldo rekening gagal diperbarui:", balanceError.message);
 
-    const formattedAmount = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(amount);
     return Response.json({
       success: true,
       message: "Transaksi berhasil dicatat!",
