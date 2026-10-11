@@ -27,6 +27,8 @@ import {
   ArrowRightLeft,
   Sparkles,
   Wallet,
+  CircleCheck,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -44,11 +46,21 @@ import { TransactionDialog } from "@/components/layout/transaction-dialog";
 import { AppTopHeader } from "@/components/dashboard/app-top-header";
 import { AppPagination } from "@/components/ui/app-pagination";
 import { AnimatedEmoji } from "@/components/ui/animated-emoji";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { TransactionRow, BankAccountRow } from "@/lib/supabase/types";
 import type { TransactionType } from "@/lib/types";
 import type { AvailableTransactionCategories } from "@/lib/supabase/queries";
 
 const PAGE_SIZE = 10;
+
+type DeleteTarget =
+  | { type: "single"; id: string }
+  | { type: "bulk"; ids: string[] };
 
 const MONTHS = [
   { value: 0, label: "Januari" },
@@ -122,6 +134,8 @@ export function TransactionsClient({
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+  const [deleteFeedback, setDeleteFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
   const handleFilterChange = (setter: (v: any) => void, val: any) => {
@@ -383,23 +397,8 @@ export function TransactionsClient({
   }, [paginatedTransactions]);
 
   const handleDelete = async (id: string) => {
-    if (deletingId) return;
-    if (!confirm("Hapus transaksi ini?")) return;
-
-    setDeletingId(id);
-    try {
-      const res = await removeTransaction(id);
-      if (res && !res.success) alert(res.error || "Gagal menghapus transaksi");
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(id);
-        return newSet;
-      });
-    } catch {
-      alert("Terjadi kesalahan jaringan.");
-    } finally {
-      setDeletingId(null);
-    }
+    if (deletingId || isBulkDeleting) return;
+    setDeleteTarget({ type: "single", id });
   };
 
   const toggleSelection = (id: string) => {
@@ -413,22 +412,49 @@ export function TransactionsClient({
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0 || isBulkDeleting) return;
-    if (!confirm(`Hapus ${selectedIds.size} transaksi terpilih?`)) return;
+    setDeleteTarget({ type: "bulk", ids: Array.from(selectedIds) });
+  };
 
-    setIsBulkDeleting(true);
+  const confirmDelete = async () => {
+    if (!deleteTarget || deletingId || isBulkDeleting) return;
+    const target = deleteTarget;
+    const isBulk = target.type === "bulk";
+    if (isBulk) setIsBulkDeleting(true);
+    else setDeletingId(target.id);
+
     try {
-      const res = await deleteMultipleTransactions(Array.from(selectedIds));
+      const res = isBulk
+        ? await deleteMultipleTransactions(target.ids)
+        : await removeTransaction(target.id);
       if (res && !res.success) {
-        alert(res.error || "Gagal menghapus beberapa transaksi");
+        setDeleteFeedback({ type: "error", message: res.error || "Gagal menghapus transaksi." });
       } else {
-        setSelectedIds(new Set());
+        if (isBulk) {
+          setSelectedIds(new Set());
+          setDeleteFeedback({ type: "success", message: `${target.ids.length} transaksi berhasil dihapus.` });
+        } else {
+          setSelectedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(target.id);
+            return next;
+          });
+          setDeleteFeedback({ type: "success", message: "Transaksi berhasil dihapus." });
+        }
       }
     } catch {
-      alert("Terjadi kesalahan saat menghapus.");
+      setDeleteFeedback({ type: "error", message: "Terjadi kesalahan saat menghapus transaksi." });
     } finally {
+      setDeleteTarget(null);
+      setDeletingId(null);
       setIsBulkDeleting(false);
     }
   };
+
+  useEffect(() => {
+    if (!deleteFeedback) return;
+    const timeout = window.setTimeout(() => setDeleteFeedback(null), 3200);
+    return () => window.clearTimeout(timeout);
+  }, [deleteFeedback]);
 
   const handleExportCSV = () => {
     if (filteredAndSorted.length === 0) {
@@ -1166,7 +1192,7 @@ export function TransactionsClient({
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-[#1A1A1A]/95 dark:bg-slate-900/95 backdrop-blur-md text-white border border-white/10 dark:border-slate-700 rounded-full px-5 py-3 flex items-center gap-4 shadow-2xl min-w-[320px]"
+            className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5rem)] sm:bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] left-1/2 -translate-x-1/2 z-[60] bg-[#1A1A1A]/95 dark:bg-slate-900/95 backdrop-blur-md text-white border border-white/10 dark:border-slate-700 rounded-full px-5 py-3 flex items-center gap-4 shadow-2xl min-w-[320px]"
           >
             <div className="flex-1 flex items-center gap-2.5">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E85024] text-white text-xs font-bold">
@@ -1392,6 +1418,91 @@ export function TransactionsClient({
         availableCategories={availableCategories}
         onDelete={handleDelete}
       />
+
+      <Dialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !deletingId && !isBulkDeleting) setDeleteTarget(null);
+        }}
+      >
+        <DialogContent
+          hideClose
+          className="p-0 overflow-hidden rounded-t-[30px] sm:rounded-[30px] bg-white dark:bg-slate-900 border border-black/[0.05] dark:border-slate-800"
+        >
+          <div className="p-6 sm:p-7">
+            <div className="flex items-start gap-3.5 pr-7">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div className="pt-0.5">
+                <DialogTitle className="text-lg font-bold tracking-tight text-[#18181B] dark:text-slate-100">
+                  Hapus transaksi?
+                </DialogTitle>
+                <DialogDescription className="mt-1 text-sm leading-relaxed text-stone-500 dark:text-slate-400">
+                  {deleteTarget?.type === "bulk"
+                    ? `${deleteTarget.ids.length} transaksi yang dipilih akan dihapus. Tindakan ini tidak dapat dibatalkan.`
+                    : "Transaksi ini akan dihapus dan saldo rekening akan diperbarui. Tindakan ini tidak dapat dibatalkan."}
+                </DialogDescription>
+              </div>
+            </div>
+
+            <div className="mt-7 flex gap-2.5">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setDeleteTarget(null)}
+                disabled={Boolean(deletingId) || isBulkDeleting}
+                className="h-11 flex-1 rounded-full bg-stone-100 font-bold text-stone-700 hover:bg-stone-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              >
+                Batal
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={confirmDelete}
+                disabled={Boolean(deletingId) || isBulkDeleting}
+                className="h-11 flex-1 rounded-full bg-rose-600 font-bold hover:bg-rose-500"
+              >
+                {deletingId || isBulkDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+                {deletingId || isBulkDeleting ? "Menghapus…" : "Ya, hapus"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <AnimatePresence>
+        {deleteFeedback && (
+          <motion.div
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, x: "-50%", y: -12, scale: 0.96 }}
+            animate={{ opacity: 1, x: "-50%", y: 0, scale: 1 }}
+            exit={{ opacity: 0, x: "-50%", y: -8, scale: 0.98 }}
+            className={cn(
+              "fixed left-1/2 top-[max(1rem,env(safe-area-inset-top,0px))] z-[100] flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-xl backdrop-blur-xl",
+              "w-[calc(100%-2rem)] max-w-sm",
+              deleteFeedback.type === "success"
+                ? "border-emerald-200 bg-white/95 text-[#18181B] dark:border-emerald-900 dark:bg-slate-900/95 dark:text-slate-100"
+                : "border-rose-200 bg-white/95 text-[#18181B] dark:border-rose-900 dark:bg-slate-900/95 dark:text-slate-100"
+            )}
+          >
+            <span className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+              deleteFeedback.type === "success"
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                : "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+            )}>
+              {deleteFeedback.type === "success" ? <CircleCheck className="h-5 w-5" /> : <X className="h-5 w-5" />}
+            </span>
+            <span className="text-sm font-semibold">{deleteFeedback.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── ADD TRANSACTION MODAL ── */}
       <TransactionDialog

@@ -70,7 +70,7 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
   return (
     <nav
       aria-label="Mobile Navigation"
-      className="fixed bottom-5 sm:bottom-6 left-0 right-0 z-50 flex lg:hidden items-center justify-center px-4 pointer-events-none pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
+      className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] sm:bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] left-0 right-0 z-50 flex lg:hidden items-center justify-center px-4 pointer-events-none"
     >
       <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 max-w-full">
         {/* Navigation Pill Capsule - Clean surface matching card base colors without gray */}
