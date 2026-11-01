@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -53,12 +54,18 @@ interface BottomNavProps {
 
 export function BottomNav({ onAddClick }: BottomNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [optimisticPathname, setOptimisticPathname] = useState(pathname);
+
+  useEffect(() => {
+    setOptimisticPathname(pathname);
+  }, [pathname]);
 
   const getIsActive = (item: NavItem) => {
-    if (item.id === "home") return pathname === "/dashboard";
-    if (item.id === "savings") return pathname.startsWith("/dashboard/budget");
-    if (item.id === "stats") return pathname.startsWith("/dashboard/transactions");
-    if (item.id === "profile") return pathname.startsWith("/dashboard/profile");
+    if (item.id === "home") return optimisticPathname === "/dashboard";
+    if (item.id === "savings") return optimisticPathname.startsWith("/dashboard/budget");
+    if (item.id === "stats") return optimisticPathname.startsWith("/dashboard/transactions");
+    if (item.id === "profile") return optimisticPathname.startsWith("/dashboard/profile");
     return false;
   };
 
@@ -83,9 +90,13 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
               <Link
                 key={item.id}
                 href={item.href}
+                prefetch={true}
                 onClick={() => {
+                  setOptimisticPathname(item.href);
                   if (!isActive) triggerHaptic("light");
                 }}
+                onTouchStart={() => router.prefetch(item.href)}
+                onMouseEnter={() => router.prefetch(item.href)}
                 className={cn(
                   "relative flex items-center justify-center rounded-full transition-all duration-300 select-none group",
                   isActive

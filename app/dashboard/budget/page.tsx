@@ -1,5 +1,5 @@
 import { getAvailableTransactionCategories, getBudgetItems, getSavingsGoals } from "@/lib/supabase/queries";
-import { BudgetClient } from "@/components/dashboard/budget-client";
+import { BudgetClient } from "@/components/features/budget/budget-client";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {

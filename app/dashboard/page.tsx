@@ -1,4 +1,5 @@
-import { DashboardClient } from "@/components/dashboard/dashboard-client";
+import { DashboardClient } from "@/components/features/dashboard/dashboard-client";
+import { getDeficitRecoveryPlan } from "@/app/actions/deficit-recovery";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -59,6 +60,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     categoryExpenses,
     recentNotifications,
     stockHoldings,
+    deficitRecoveryPlan,
   ] = await Promise.all([
     getTransactions(selectedMonth, selectedYear), // Masukkan parameter jika query Anda mendukung filter
     getBankAccounts(),
@@ -71,6 +73,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     getCategoryExpenses(selectedMonth, selectedYear), // Masukkan parameter
     getRecentTransactions24h(),
     getStockHoldings(),
+    getDeficitRecoveryPlan(selectedMonth, selectedYear),
   ]);
 
   return (
@@ -88,6 +91,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       upcomingBills={upcomingBills}
       stockHoldings={stockHoldings}
       recentNotifications={recentNotifications}
+      deficitRecoveryPlan={deficitRecoveryPlan}
       // Kirim state bulan & tahun aktif ke client untuk ditaruh di dropdown komponen
       currentMonth={selectedMonth}
       currentYear={selectedYear}

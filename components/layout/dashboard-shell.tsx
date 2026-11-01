@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { BottomNav } from "@/components/layout/bottom-nav";
-import { TransactionDialog } from "@/components/layout/transaction-dialog";
+import { TransactionDialog } from "@/components/features/transactions/transaction-dialog";
 import type { BankAccountRow } from "@/lib/supabase/types";
 import type { AvailableTransactionCategories } from "@/lib/supabase/queries";
 

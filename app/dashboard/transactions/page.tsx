@@ -1,5 +1,5 @@
 import { getTransactions, getBankAccounts, getAvailableTransactionCategories } from "@/lib/supabase/queries";
-import { TransactionsClient } from "@/components/dashboard/transactions-client";
+import { TransactionsClient } from "@/components/features/transactions/transactions-client";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {

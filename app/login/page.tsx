@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { AuthForm } from "@/components/auth/auth-form";
+import { AuthForm } from "@/components/features/auth/auth-form";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { usePinLock } from '@/hooks/usePinLock';
-import { PinLockscreen } from '@/components/PinLockscreen';
+import { PinLockscreen } from '@/components/features/auth/pin-lockscreen';
 
 interface PinLockProviderProps {
   children: React.ReactNode;

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { ProfileClient } from "@/components/dashboard/profile-client";
+import { ProfileClient } from "@/components/features/profile/profile-client";
 import { getCategories } from "@/lib/supabase/queries";
 
 export const metadata = {
